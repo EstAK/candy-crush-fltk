@@ -1,7 +1,7 @@
 #include <FL/Fl.H>
 #include <FL/fl_draw.H>
 #include <FL/Fl_Double_Window.H>
-#include<FL/Fl_Window.H>
+#include <FL/Fl_Window.H>
 #include <FL/Fl_Box.H>
 #include <string>
 #include <math.h>
@@ -10,13 +10,11 @@
 #include <vector>
 #include <iostream>
 #include <random>
+#include <fstream>
+#include "const.h"
 
 
 using namespace std;
-const int windowWidth=500;
-const int windowHeight=500;
-const double refreshPerSecond=60;
-
 
 struct Point{int x; int y;};
 
@@ -81,44 +79,79 @@ bool Rectangle::contains(Point p) {
 
 class Candy:public Rectangle{
 public:
-    Candy(){}
-    Candy(Point center, int w, int h,Fl_Color frameColor = FL_BLACK,Fl_Color fillColor = FL_WHITE){
+    Candy(Point center, int w, int h, Fl_Color fillColor = FL_WHITE, Fl_Color frameColor = FL_BLACK){
         setCenter(center);
         setWidth(w);
         setHeight(h);
         setFrameColor(frameColor);
         setFillColor(fillColor);
     }
-    
 }; 
 
-class Canvas{
-   vector<vector<Candy>> candy;
-   Fl_Color color[6]={FL_RED,FL_BLUE,FL_YELLOW,FL_BLACK,FL_DARK_CYAN,FL_GREEN};
+class Wall:public Rectangle{
+    /*
+    Wall class 
+    non falling object blocking candies  
+    */
 public:
-    Canvas(Point center={100,100},int wi=850,int hi=850){
-        for (int x = 0; x<9; x++) {
-          candy.push_back({});
-          for (int y = 0; y<9; y++)
-            candy[x].push_back({{50*x+25, 50*y+25}, 40, 40,FL_BLACK,color[rand()%6]});
-  }
+    Wall(Point center, int w, int h,Fl_Color fillColor = FL_MAGENTA, Fl_Color frameColor = FL_BLACK){
+        setCenter(center);
+        setWidth(w);
+        setHeight(h);
+        setFrameColor(frameColor);
+        setFillColor(fillColor);   
     }
+};
+
+
+class Canvas{
+    vector<vector<Rectangle>> candy;                                                 //using Rectangle instead of Candy because a Wall is also a Rectangle but not a Candy
+    Fl_Color color[6]={FL_RED,FL_BLUE,FL_YELLOW,FL_BLACK,FL_DARK_CYAN,FL_GREEN};
+    vector<string> lines;
+public:
+    Canvas(Point center={100,100},int wi=850,int hi=850){                           //wi and hi are not used x think we should remove them
+        read_file();
+        int y = 0, i=0;
+        for (int x = 0; x<9; x++){
+            candy.push_back({});
+            for (int y = 0; y<9; y++){
+                cout<<lines[x][y]<<" ";
+                if (lines[y][x] == *c){
+                    candy[x].push_back(Candy{{50*x+25, 50*y+25}, 40, 40, color[rand()%6]});
+                }
+                else{
+                    candy[x].push_back(Wall{{50*x+25, 50*y+25}, 40, 40});
+                }
+            }
+            cout<<endl;
+        }
+    }
+    
+    void read_file(){
+        string line;                        //temporary input file
+        ifstream myfile(file);
+        while (myfile >> line) {
+            lines.push_back(line);
+        }
+        myfile.close(); 
+    }
+
     void draw(){
-      for(auto i:candy){
-          for(auto j:i){
+      for(auto x:candy){
+          for(auto j:x){
               j.draw();
           }
       }
     }
     void mouseMove(Point mouseLoc){
-        for(auto i:candy){
-          for(auto j:i){
-              if(j.contains(mouseLoc)){}
-          }
-      }
+        for(auto x:candy){
+            for(auto j:x){
+                if(j.contains(mouseLoc)){}
+            }
+        }
     }
     void mouseClick(Point mouseLoc){
-      for(auto i:candy){
+        for(auto i:candy){
           for(auto j:i){
               if(j.contains(mouseLoc)){cout<<j.getCenter().x<<" "<<j.getCenter().y<<endl;}
           }
