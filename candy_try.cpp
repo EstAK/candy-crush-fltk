@@ -20,68 +20,109 @@ const double refreshPerSecond=60;
 
 struct Point{int x; int y;};
 
+class Rectangle {
+  Point center;
+  int w, h;
+  Fl_Color fillColor, frameColor;
+ public:
+  void draw();
+  void setFillColor(Fl_Color newFillColor);
+  
+  Fl_Color getFillColor() {
+    return fillColor;
+  }
+  void setFrameColor(Fl_Color newFrameColor);
+  Fl_Color getFrameColor() {
+    return frameColor;
+  }
 
-class Rectangle{
-   Point center_pos;
-   int wi,hi;
-   Fl_Color frame;
-   Fl_Color fill;
-public:
-    //Setters
-    void set_center(Point center){center_pos=center;}
-    void set_wi(int w){wi=w;}
-    void set_hi(int h){hi=h;}
-    void set_frame(Fl_Color fr){frame=fr;}
-    void set_color(Fl_Color color){fill=color;}
+  void setCenter(Point p){
+      center=p;
+  }
 
-    void draw(){
-     fl_draw_box(FL_FLAT_BOX,center_pos.x,center_pos.y,wi,hi,fill);
-     fl_draw_box(FL_BORDER_FRAME,center_pos.x,center_pos.y,wi,hi,frame);
-    }
-    bool contains(Point p){
-       return p.x>=center_pos.x-wi/2 &&
-        p.x<center_pos.x+wi/2 &&
-        p.y>=center_pos.y-hi/2 &&
-        p.y<center_pos.y+hi/2;
-    }
-
- 
+  void setWidth(int neww) {
+    w = neww;
+  }
+  void setHeight(int newh) {
+    h = newh;
+  }
+  int getWidth() {
+    return w;
+  }
+  int getHeight() {
+    return h;
+  }
+  bool contains(Point p);
+  Point getCenter() {
+    return center;
+  }
 };
+
+void Rectangle::draw() {
+  fl_draw_box(FL_FLAT_BOX, center.x-w/2, center.y-h/2, w, h, fillColor);
+  fl_draw_box(FL_BORDER_FRAME, center.x-w/2, center.y-h/2, w, h, frameColor);
+}
+
+void Rectangle::setFillColor(Fl_Color newFillColor) {
+  fillColor = newFillColor;
+}
+
+void Rectangle::setFrameColor(Fl_Color newFrameColor) {
+  frameColor = newFrameColor;
+}
+
+bool Rectangle::contains(Point p) {
+  return p.x>=center.x-w/2 &&
+         p.x<center.x+w/2 &&
+         p.y>=center.y-h/2 &&
+         p.y<center.y+h/2;
+}
 
 
 class Candy:public Rectangle{
-   Fl_Color color[6]={FL_RED,FL_BLUE,FL_YELLOW,FL_BLACK,FL_GREEN,FL_DARK_CYAN};
 public:
-   Candy(Point center={0,0},int w=40, int h=40,int indice=rand()%6,Fl_Color frameColor=FL_BLACK,Fl_Color fillColor=FL_RED){
-       set_center(center);
-       set_wi(w);
-       set_hi(h);
-       set_frame(frameColor);
-       set_color(color[indice]);
-       
-   }
+    Candy(){}
+    Candy(Point center, int w, int h,Fl_Color frameColor = FL_BLACK,Fl_Color fillColor = FL_WHITE){
+        setCenter(center);
+        setWidth(w);
+        setHeight(h);
+        setFrameColor(frameColor);
+        setFillColor(fillColor);
+    }
+    
 }; 
 
 class Canvas{
-   vector<vector<Candy>>candy;
+   vector<vector<Candy>> candy;
+   Fl_Color color[6]={FL_RED,FL_BLUE,FL_YELLOW,FL_BLACK,FL_DARK_CYAN,FL_GREEN};
 public:
-    Canvas(Point center={100,100},int wi=350,int hi=350){
-      for (int x = 0; x<10; x++) {
-    candy.push_back({});
-    for (int y = 0; y<10; y++)
-      candy[x].push_back({{50*x+25, 50*y+25}, 40, 40});
+    Canvas(Point center={100,100},int wi=850,int hi=850){
+        for (int x = 0; x<9; x++) {
+          candy.push_back({});
+          for (int y = 0; y<9; y++)
+            candy[x].push_back({{50*x+25, 50*y+25}, 40, 40,FL_BLACK,color[rand()%6]});
   }
     }
     void draw(){
-       for(auto i:candy){
+      for(auto i:candy){
           for(auto j:i){
               j.draw();
           }
-       }
+      }
     }
-    void mouseMove(Point mouseLoc){}
+    void mouseMove(Point mouseLoc){
+        for(auto i:candy){
+          for(auto j:i){
+              if(j.contains(mouseLoc)){}
+          }
+      }
+    }
     void mouseClick(Point mouseLoc){
-      
+      for(auto i:candy){
+          for(auto j:i){
+              if(j.contains(mouseLoc)){cout<<j.getCenter().x<<" "<<j.getCenter().y<<endl;}
+          }
+      }
     }
     void keyPressed(int keyCode){
     exit(0);
