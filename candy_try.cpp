@@ -3,6 +3,8 @@
 #include <FL/Fl_Double_Window.H>
 #include <FL/Fl_Window.H>
 #include <FL/Fl_Box.H>
+#include<Fl/Fl_Button.H>
+#include<Fl/Fl_Text_Display.H>
 #include <string>
 #include <math.h>
 #include <time.h>
@@ -12,6 +14,7 @@
 #include <random>
 #include <fstream>
 #include "const.h"
+#include<array>
 
 
 using namespace std;
@@ -54,6 +57,14 @@ class Rectangle {
   Point getCenter() {
     return center;
   }
+  void setCode(Fl_Color code){
+      if(code==216){setFillColor(FL_BLUE);}
+      else if(code==140){setFillColor(FL_DARK_CYAN);}
+      else if(code==56){setFillColor(FL_BLACK);}
+      else if(code==95){setFillColor(FL_YELLOW);}
+      else if(code==88){setFillColor(FL_RED);}
+      else if(code==63){setFillColor(FL_GREEN);}
+  }
 };
 
 void Rectangle::draw() {
@@ -78,52 +89,58 @@ bool Rectangle::contains(Point p) {
 
 
 class Candy:public Rectangle{
+    bool wall=false; //Vlad:Use this to know which rectangle(candy) is a wall, no need for a whole class with a constructor for this in my opinion.
 public:
-    Candy(Point center, int w, int h, Fl_Color fillColor = FL_WHITE, Fl_Color frameColor = FL_BLACK){
+    vector<Candy*> neighbours;
+    Candy(){} //Dummy Constructor
+    Candy(Point center, int w, int h,Fl_Color fillColor = FL_WHITE, Fl_Color frameColor = FL_BLACK){
         setCenter(center);
         setWidth(w);
         setHeight(h);
         setFrameColor(frameColor);
         setFillColor(fillColor);
     }
+    bool verify_neighbours(Candy current){
+        if(this->get_wall()==true){return false;}
+        for(auto i:neighbours){
+            if(i->getCenter().x==current.getCenter().x && i->getCenter().y==current.getCenter().y){
+                Fl_Color save=this->getFillColor();    //TODO : Add the animation code here.
+                this->setCode(i->getFillColor());
+                i->setCode(save);   
+                return true;
+                }
+        }
+        return false;
+    }
+    void set_wall(bool wa){wall=wa;}
+    bool get_wall(){return wall;}
 }; 
 
-class Wall:public Rectangle{
-    /*
-    Wall class 
-    non falling object blocking candies  
-    */
-public:
-    Wall(Point center, int w, int h,Fl_Color fillColor = FL_MAGENTA, Fl_Color frameColor = FL_BLACK){
-        setCenter(center);
-        setWidth(w);
-        setHeight(h);
-        setFrameColor(frameColor);
-        setFillColor(fillColor);   
-    }
-};
 
 
 class Canvas{
-    vector<vector<Rectangle>> candy;                                                 //using Rectangle instead of Candy because a Wall is also a Rectangle but not a Candy
+    array<array<Candy,9>,9> candy;            //2d Array
     Fl_Color color[6]={FL_RED,FL_BLUE,FL_YELLOW,FL_BLACK,FL_DARK_CYAN,FL_GREEN};
     vector<string> lines;
+    Candy current{{0,0},0,0}; //stocks the current cell clicked on.
+    int x=0;int y=0; //currents coord in the array
+    Candy* point_current=&current;
 public:
-    Canvas(Point center={100,100},int wi=850,int hi=850){                           //wi and hi are not used x think we should remove them
+    Canvas(Point center={100,100},int wi=850,int hi=850){                           //wi and hi are not used x think we should remove them ; Vlad:Okey;
         read_file();
-        int y = 0, i=0;
         for (int x = 0; x<9; x++){
-            candy.push_back({});
             for (int y = 0; y<9; y++){
                 cout<<lines[x][y]<<" ";
                 if (lines[y][x] == *c){
-                    candy[x].push_back(Candy{{50*x+25, 50*y+25}, 40, 40, color[rand()%6]});
+                    candy[x][y]=(Candy{{50*x+25, 50*y+25}, 40, 40, color[rand()%6]});
                 }
                 else{
-                    candy[x].push_back(Wall{{50*x+25, 50*y+25}, 40, 40});
+                    candy[x][y]=(Candy{{50*x+25, 50*y+25}, 40, 40,FL_MAGENTA,FL_BLACK});
                 }
             }
             cout<<endl;
+            set_the_neighbours();
+            set_the_wall();
         }
     }
     
@@ -137,28 +154,120 @@ public:
     }
 
     void draw(){
-      for(auto x:candy){
-          for(auto j:x){
-              j.draw();
+      for(int i=0;i<candy.size();i++){
+          for(int j=0;j<candy[0].size();j++){
+              candy[i][j].draw();
           }
       }
     }
     void mouseMove(Point mouseLoc){
-        for(auto x:candy){
-            for(auto j:x){
-                if(j.contains(mouseLoc)){}
+        for(int i=0;i<candy.size();i++){
+            for(int j=0;j<candy[0].size();j++){
+                if(candy[i][j].contains(mouseLoc)){
+                    candy[i][j].setFrameColor(FL_RED);
+                }else{
+                    candy[i][j].setFrameColor(FL_BLACK);
+                }
             }
         }
     }
     void mouseClick(Point mouseLoc){
-        for(auto i:candy){
-          for(auto j:i){
-              if(j.contains(mouseLoc)){cout<<j.getCenter().x<<" "<<j.getCenter().y<<endl;}
+      for(int i=0;i<candy.size();i++){
+          for(int j=0;j<candy[0].size();j++){
+              if(candy[i][j].contains(mouseLoc) && current.getCenter().x==0 && current.getCenter().y==0){
+                if(candy[i][j].get_wall()==false){current=candy[i][j];x=i;y=j;} //make sure that is not a wall.
+              }else if(candy[i][j].contains(mouseLoc)){
+                  if(candy[i][j].verify_neighbours(current)){
+                      break_candy(i,j,x,y);
+                      current=Candy{{0,0},0,0};x=0;y=0;
+                      cout<<"Neigh"<<endl;
+                  }else{
+                      cout<<"Selected new one"<<endl;
+                      if(candy[i][j].get_wall()==false){current=candy[i][j];x=i;y=j;}     
+                  }
+               }
+           }
+        }
+   }
+
+    void break_candy(int x,int y,int i,int j){  //Function that will break the candies if possible if not it will revert the movement back (but no delay added so it is instant)
+       Candy temp_candy=candy[x][y];
+       int counter_left_right=1; 
+       int counter_up_down=1;
+       for(int i=x+1;i<candy.size();i++){  //Counter the same candies on the right line of the same color; counter begins of 1
+          if(candy[i][y].getFillColor()!=temp_candy.getFillColor()){break;}else{counter_left_right+=1;}
+       }
+       cout<<counter_left_right<<" on the right"<<endl;
+
+       for(int i=y+1;i<candy[0].size();i++){  //Counts the candies under.
+           if(candy[x][i].getFillColor()!=temp_candy.getFillColor()){break;}else{counter_up_down+=1;}
+       }
+       cout<<counter_up_down<<" down"<<endl;
+
+       for(int i=y-1;i>=0;i--){  //Counts the candies upwards
+           if(candy[x][i].getFillColor()!=temp_candy.getFillColor()){break;}else{counter_up_down+=1;}
+       }
+       cout<<counter_up_down<< " up"<<endl;
+
+
+       for(int i=x-1;i>=0;i--){  //Left
+           if(candy[i][y].getFillColor()!=temp_candy.getFillColor()){break;}else{counter_left_right+=1;}
+       }
+       cout<<counter_left_right<<" left"<<endl;
+       //Vlad: Can you try to add a delay when you do the animations?
+       if(counter_left_right<3 && counter_up_down<3){ //Changes back if the movement will not result in a break but i don't know how to add a delay.
+           Fl_Color save=candy[i][j].getFillColor();  // TODO : Add The animation code here
+           candy[i][j].setCode(candy[x][y].getFillColor());
+           candy[x][y].setCode(save);
+           return;
+       }
+       
+       //There will break all the candies in a row; First it will decide which one is better from left<->right or up<-->down in calculation the nomber of candies that will be broken.
+       if(counter_left_right>counter_up_down){ //A way to know which one will have the priority.
+           if(counter_left_right>=3){
+             int start_x=x;int start_y=y;
+             for(int i=x+1;i<candy.size();i++){  //Counter the same candies on the right line of the same color; counter begins of 1
+               if(candy[i][y].getFillColor()!=temp_candy.getFillColor()){break;}else{start_x=i;start_y=y;}
+            }
+              for(int i=start_x;i>=0;i--){  //Left
+                if(candy[i][start_y].getFillColor()!=temp_candy.getFillColor()){break;}else{candy[i][start_y]=Candy({0,0},0,0);}
+              }
+           }
+       }
+       else if(counter_up_down>=3){
+          int start_x=x;int start_y=y; 
+          for(int i=y-1;i>=0;i--){  //Counts the candies upwards
+           if(candy[x][i].getFillColor()!=temp_candy.getFillColor()){break;}else{start_x=x;start_y=i;}
           }
-      }
+          for(int i=start_y;i<candy[0].size();i++){  //Counts the candies under.
+           if(candy[start_x][i].getFillColor()!=temp_candy.getFillColor()){break;}else{candy[start_x][i]=Candy({0,0},0,0);}
+          }
+
+       }
+       
+
     }
     void keyPressed(int keyCode){
     exit(0);
+    }
+
+    void set_the_neighbours(){
+        for(int i=0;i<candy.size();i++){
+         for(int j=0;j<candy[0].size();j++){
+          if(i+1<candy.size()) candy[i][j].neighbours.push_back(&candy[i+1][j]);
+          if(j+1<candy[0].size()) candy[i][j].neighbours.push_back(&candy[i][j+1]);
+          if(i-1>=0) candy[i][j].neighbours.push_back(&candy[i-1][j]);
+          if(j-1>=0) candy[i][j].neighbours.push_back(&candy[i][j-1]);
+         }
+        }
+    }
+
+    void set_the_wall(){ //set the walls
+        for(int i=0;i<candy.size();i++){
+            for(int j=0;j<candy[0].size();j++){
+                if(candy[i][j].getFillColor()==248){candy[i][j].set_wall(true);}
+            }
+        }
     }
 };
 
@@ -168,7 +277,14 @@ public:
 class MainWindow : public Fl_Window {
     Canvas canva;
     public:
-    MainWindow() : Fl_Window(500, 500, windowWidth, windowHeight, "Candy Try") {
+    void can_show(){
+        this->show();
+    }
+
+    void can_hide(){
+        this->hide();
+    }
+    MainWindow() : Fl_Window(500, 500, windowWidth, windowHeight, "Candy_Try") {
         Fl::add_timeout(1.0/refreshPerSecond, Timer_CB, this);
         resizable(this);
     }
@@ -196,11 +312,48 @@ class MainWindow : public Fl_Window {
         o->redraw();
         Fl::repeat_timeout(1.0/refreshPerSecond, Timer_CB, userdata);
     }
+
 };
 
-int main(int argc, char *argv[]) {
+
+class Intro_Window : public Fl_Window{   //Temporary class for introduction_window; To be remodeled  and completed later;
+   bool start_the_game=false;
+   MainWindow* mw;
+   public:
+    Intro_Window() : Fl_Window(500, 500, 500, 500, "Candy Try") {
+        Fl_Text_Display* disp = new Fl_Text_Display(70,70,300,100,0);
+        Fl_Text_Buffer* buff = new Fl_Text_Buffer();
+        disp->buffer(buff);    //Sets the text in the buffer to be displayed;
+        buff->text("Esteban Matricule: later\nVlad Matricule: later\nCandy Try");           //Inserts text in the buffer ex: "line1\nline2"
+        Fl_Button* start_game = new Fl_Button(300,350,120,120,"Start The Game");            // Button to the the game.
+        start_game->callback((Fl_Callback*)start_game_candy,this);                          
+            
+    }
     
-    MainWindow window;
+    static void start_game_candy(Fl_Widget* obj,void*v){  //Function to toggle on/off the game window
+       Intro_Window* ptr=(Intro_Window*)v;
+       if(ptr->get_game()){ptr->start_the_game=false;}else{ptr->start_the_game=true;}
+        if(ptr->get_game()){
+            ptr->mw->can_show();
+        }
+        else{
+            ptr->mw->can_hide();
+        }
+       
+    }
+
+    bool get_game(){return start_the_game;}    
+    void set_mc(MainWindow& w){
+        mw=&w;
+    }
+    
+};
+
+
+int main(int argc, char *argv[]){
+    Intro_Window window;
     window.show(argc, argv);
+    MainWindow mw;;
+    window.set_mc(mw);
     return Fl::run();
 }
