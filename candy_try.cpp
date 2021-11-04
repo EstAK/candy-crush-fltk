@@ -14,7 +14,7 @@
 #include <random>
 #include <fstream>
 #include "const.h"
-#include<array>
+#include <array>
 
 
 using namespace std;
@@ -157,9 +157,54 @@ public:
       for(int i=0;i<candy.size();i++){
           for(int j=0;j<candy[0].size();j++){
               candy[i][j].draw();
+           }
+        }
+
+      for(int i=0;i<candy.size();i++){
+          for(int j=0;j<candy[0].size();j++){
+              if(candy[i][j].getCenter().x==0 && candy[i][j].getCenter().y==0){
+                  fall_candies(i,j);
+              }
           }
       }
+       
     }
+
+    int fall_candies(int start_x,int start_y){ //Function by Recursion
+        if(start_y<0){return 0;}
+        if(candy[start_x][start_y].get_wall()){return 0;} //If it's a wall do not touch 
+        if(start_y-1>=0){
+          int s_y=start_y-1;
+          if(candy[start_x][s_y].getCenter().x!=0 && candy[start_x][s_y].getCenter().y!=0 && candy[start_x][s_y].get_wall()!=true){
+              Point fall{candy[start_x][s_y].getCenter().x,candy[start_x][s_y].getCenter().y+50};
+              candy[start_x][start_y]=Candy(fall,40,40);
+              candy[start_x][start_y].setCode(candy[start_x][s_y].getFillColor());
+              candy[start_x][s_y]=Candy({0,0},0,0);
+              set_the_neighbours();
+              fall_candies(start_x,s_y);
+          }else{fall_candies(start_x,s_y);}
+        }
+        else{  //We know that we reached the top we want to generate a random candy in the top but we need the position of the column first.
+           if(candy[start_x][start_y+1].getCenter().x!=0 && candy[start_x][start_y+1].getCenter().y!=0 && candy[start_x][start_y+1].get_wall()!=true){
+              Point fall{candy[start_x][start_y+1].getCenter().x,candy[start_x][start_y+1].getCenter().y-50};
+              candy[start_x][start_y]=Candy(fall,40,40,color[rand()%6]);
+              set_the_neighbours();
+              }
+              
+           else if(start_x+1<candy.size() && candy[start_x+1][start_y].get_wall()!=true){
+                Point fall{candy[start_x+1][start_y].getCenter().x-50,candy[start_x+1][start_y].getCenter().y}; //Get the pos in using -50 the right-neigh position.
+                candy[start_x][start_y]=Candy(fall,40,40,color[rand()%6]);
+                set_the_neighbours();}
+            
+            else if(start_x-1>=0 && candy[start_x-1][start_y].get_wall()!=true){
+                Point fall{candy[start_x-1][start_y].getCenter().x+50,candy[start_x-1][start_y].getCenter().y}; //Get the pos in adding +50 the left-neigh position.
+                candy[start_x][start_y]=Candy(fall,40,40,color[rand()%6]);
+                set_the_neighbours();}
+            }
+           
+        return 0;
+    }
+
     void mouseMove(Point mouseLoc){
         for(int i=0;i<candy.size();i++){
             for(int j=0;j<candy[0].size();j++){
