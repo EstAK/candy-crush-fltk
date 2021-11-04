@@ -189,33 +189,51 @@ public:
            }
         }
    }
-
+    
     void break_candy(int x,int y,int i,int j){  //Function that will break the candies if possible if not it will revert the movement back (but no delay added so it is instant)
        Candy temp_candy=candy[x][y];
+       Candy temp_candy2=candy[i][j];
        int counter_left_right=1; 
        int counter_up_down=1;
+       int counter_left_right2=1;
+       int counter_up_down2=1;
        for(int i=x+1;i<candy.size();i++){  //Counter the same candies on the right line of the same color; counter begins of 1
           if(candy[i][y].getFillColor()!=temp_candy.getFillColor()){break;}else{counter_left_right+=1;}
        }
-       cout<<counter_left_right<<" on the right"<<endl;
+
+       for(int k=i+1;k<candy.size();k++){  //Counter the same candies on the right line of the same color; counter begins of 1 for temp_candy2
+          if(candy[k][j].getFillColor()!=temp_candy2.getFillColor()){break;}else{counter_left_right2+=1;}
+       }
+      
 
        for(int i=y+1;i<candy[0].size();i++){  //Counts the candies under.
            if(candy[x][i].getFillColor()!=temp_candy.getFillColor()){break;}else{counter_up_down+=1;}
        }
-       cout<<counter_up_down<<" down"<<endl;
+
+       for(int k=j+1;k<candy[0].size();k++){  //Counts the candies under. 2
+           if(candy[i][k].getFillColor()!=temp_candy2.getFillColor()){break;}else{counter_up_down2+=1;}
+       }
+      
 
        for(int i=y-1;i>=0;i--){  //Counts the candies upwards
            if(candy[x][i].getFillColor()!=temp_candy.getFillColor()){break;}else{counter_up_down+=1;}
        }
-       cout<<counter_up_down<< " up"<<endl;
+       
+       for(int k=j-1;k>=0;k--){  //Counts the candies upwards 2
+           if(candy[i][k].getFillColor()!=temp_candy2.getFillColor()){break;}else{counter_up_down2+=1;}
+       }
 
 
        for(int i=x-1;i>=0;i--){  //Left
            if(candy[i][y].getFillColor()!=temp_candy.getFillColor()){break;}else{counter_left_right+=1;}
        }
-       cout<<counter_left_right<<" left"<<endl;
+
+       for(int k=i-1;k>=0;k--){  //Left2
+           if(candy[k][j].getFillColor()!=temp_candy2.getFillColor()){break;}else{counter_left_right2+=1;}
+       }
+       
        //Vlad: Can you try to add a delay when you do the animations?
-       if(counter_left_right<3 && counter_up_down<3){ //Changes back if the movement will not result in a break but i don't know how to add a delay.
+       if(counter_left_right<3 && counter_up_down<3 && counter_left_right2<3 && counter_up_down2<3){ //Changes back if the movement will not result in a break but i don't know how to add a delay.
            Fl_Color save=candy[i][j].getFillColor();  // TODO : Add The animation code here
            candy[i][j].setCode(candy[x][y].getFillColor());
            candy[x][y].setCode(save);
@@ -245,6 +263,28 @@ public:
 
        }
        
+       //Second candy
+       if(counter_left_right2>counter_up_down2){ //A way to know which one will have the priority.
+           if(counter_left_right2>=3){
+             int start_x=i;int start_y=j;
+             for(int k=i+1;k<candy.size();k++){  //Counter the same candies on the right line of the same color; counter begins of 1
+               if(candy[k][j].getFillColor()!=temp_candy2.getFillColor()){break;}else{start_x=k;start_y=j;}
+            }
+              for(int k=start_x;k>=0;k--){  //Left
+                if(candy[k][start_y].getFillColor()!=temp_candy2.getFillColor()){break;}else{candy[k][start_y]=Candy({0,0},0,0);}
+              }
+           }
+       }
+       else if(counter_up_down2>=3){
+          int start_x=i;int start_y=j; 
+          for(int k=j-1;k>=0;k--){  //Counts the candies upwards
+           if(candy[i][k].getFillColor()!=temp_candy2.getFillColor()){break;}else{start_x=i;start_y=k;}
+          }
+          for(int k=start_y;k<candy[0].size();k++){  //Counts the candies under.
+           if(candy[start_x][k].getFillColor()!=temp_candy2.getFillColor()){break;}else{candy[start_x][k]=Candy({0,0},0,0);}
+          }
+
+       }
 
     }
     void keyPressed(int keyCode){
