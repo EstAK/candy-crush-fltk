@@ -160,7 +160,7 @@ public:
            }
         }
 
-      for(int i=0;i<candy.size();i++){
+      for(int i=0;i<candy.size();i++){ //Checks if there is a free place that can be filled ; Takes into consideration the walls(phyics) as well.
           for(int j=0;j<candy[0].size();j++){
               if(candy[i][j].getCenter().x==0 && candy[i][j].getCenter().y==0){
                   fall_candies(i,j);
@@ -175,14 +175,14 @@ public:
         if(candy[start_x][start_y].get_wall()){return 0;} //If it's a wall do not touch 
         if(start_y-1>=0){
           int s_y=start_y-1;
-          if(candy[start_x][s_y].getCenter().x!=0 && candy[start_x][s_y].getCenter().y!=0 && candy[start_x][s_y].get_wall()!=true){
-              Point fall{candy[start_x][s_y].getCenter().x,candy[start_x][s_y].getCenter().y+50};
-              candy[start_x][start_y]=Candy(fall,40,40);
+          if(candy[start_x][s_y].getCenter().x!=0 && candy[start_x][s_y].getCenter().y!=0 && candy[start_x][s_y].get_wall()!=true){ //If there is a candy above and is not a wall.
+              Point fall{candy[start_x][s_y].getCenter().x,candy[start_x][s_y].getCenter().y+50}; //that Candy will fall down and it's place will be liberated.
+              candy[start_x][start_y]=Candy(fall,40,40); //Candy falls down
               candy[start_x][start_y].setCode(candy[start_x][s_y].getFillColor());
-              candy[start_x][s_y]=Candy({0,0},0,0);
-              set_the_neighbours();
-              fall_candies(start_x,s_y);
-          }else{fall_candies(start_x,s_y);}
+              candy[start_x][s_y]=Candy({0,0},0,0); //Place liberated of the candy that fell Down.
+              set_the_neighbours(); //Reset the neig because new candies have been created.
+              fall_candies(start_x,s_y); //Continue the Rec.
+          }else{fall_candies(start_x,s_y);} //Else we will search more above.
         }
         else{  //We know that we reached the top we want to generate a random candy in the top but we need the position of the column first.
            if(candy[start_x][start_y+1].getCenter().x!=0 && candy[start_x][start_y+1].getCenter().y!=0 && candy[start_x][start_y+1].get_wall()!=true){
