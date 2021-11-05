@@ -87,6 +87,27 @@ bool Rectangle::contains(Point p) {
          p.y<center.y+h/2;
 }
 
+class Score{
+ int current_score=0;
+ int best_score=0; 
+public:
+ Score(int score=0):current_score(score){}
+ ~Score()=default;
+
+ //Setters
+ void set_score(int new_score){
+  current_score+=new_score;
+  if(best_score<=current_score){ //If the current score is better than the best score than we update the best_score
+    best_score=current_score;
+  }
+ }
+
+
+ //Getters
+ int get_score(){return current_score;}
+ int get_best_score(){return best_score;}
+
+};
 
 class Candy:public Rectangle{
     bool wall=false; //Vlad:Use this to know which rectangle(candy) is a wall, no need for a whole class with a constructor for this in my opinion.
@@ -125,6 +146,7 @@ class Canvas{
     Candy current{{0,0},0,0}; //stocks the current cell clicked on.
     int x=0;int y=0; //currents coord in the array
     Candy* point_current=&current;
+    Score candy_score; //By default the score begins at 0
 public:
     Canvas(Point center={100,100},int wi=850,int hi=850){                           //wi and hi are not used x think we should remove them ; Vlad:Okey;
         read_file();
@@ -157,6 +179,7 @@ public:
       for(int i=0;i<candy.size();i++){
           for(int j=0;j<candy[0].size();j++){
               candy[i][j].draw();
+              break_candy(i,j,0,0,true); //Checks all the candies all the time and breaks them if it must.
            }
         }
 
@@ -167,7 +190,7 @@ public:
               }
           }
       }
-       
+      
     }
 
     int fall_candies(int start_x,int start_y){ //Function by Recursion
@@ -235,7 +258,7 @@ public:
         }
    }
     
-    void break_candy(int x,int y,int i,int j){  //Function that will break the candies if possible if not it will revert the movement back (but no delay added so it is instant)
+    void break_candy(int x,int y,int i,int j,bool pc=false){  //Function that will break the candies if possible if not it will revert the movement back (but no delay added so it is instant)
        Candy temp_candy=candy[x][y];
        Candy temp_candy2=candy[i][j];
        int counter_left_right=1; 
@@ -278,7 +301,7 @@ public:
        }
        
        //Vlad: Can you try to add a delay when you do the animations?
-       if(counter_left_right<3 && counter_up_down<3 && counter_left_right2<3 && counter_up_down2<3){ //Changes back if the movement will not result in a break but i don't know how to add a delay.
+       if(counter_left_right<3 && counter_up_down<3 && counter_left_right2<3 && counter_up_down2<3 && !pc){ //Changes back if the movement will not result in a break but i don't know how to add a delay.
            Fl_Color save=candy[i][j].getFillColor();  // TODO : Add The animation code here
            candy[i][j].setCode(candy[x][y].getFillColor());
            candy[x][y].setCode(save);
@@ -293,7 +316,11 @@ public:
                if(candy[i][y].getFillColor()!=temp_candy.getFillColor()){break;}else{start_x=i;start_y=y;}
             }
               for(int i=start_x;i>=0;i--){  //Left
-                if(candy[i][start_y].getFillColor()!=temp_candy.getFillColor()){break;}else{candy[i][start_y]=Candy({0,0},0,0);}
+                if(candy[i][start_y].getFillColor()!=temp_candy.getFillColor()){break;}else{
+			candy[i][start_y]=Candy({0,0},0,0);
+		        candy_score.set_score(counter_left_right); //Temp way to increase the score; TODO: Change it later
+		        cout<<"The score is "<<candy_score.get_score()<<endl;	
+		        }
               }
            }
        }
@@ -303,8 +330,12 @@ public:
            if(candy[x][i].getFillColor()!=temp_candy.getFillColor()){break;}else{start_x=x;start_y=i;}
           }
           for(int i=start_y;i<candy[0].size();i++){  //Counts the candies under.
-           if(candy[start_x][i].getFillColor()!=temp_candy.getFillColor()){break;}else{candy[start_x][i]=Candy({0,0},0,0);}
-          }
+           if(candy[start_x][i].getFillColor()!=temp_candy.getFillColor()){break;}else{
+		   candy[start_x][i]=Candy({0,0},0,0);
+                   candy_score.set_score(counter_up_down);
+		           cout<<"The score is "<<candy_score.get_score()<<endl; //Temp way to increase the score; change it later
+	           }
+            }
 
        }
        
