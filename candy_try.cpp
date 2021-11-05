@@ -15,7 +15,7 @@
 #include <fstream>
 #include "const.h"
 #include <array>
-
+#include <functional>
 
 using namespace std;
 
@@ -389,7 +389,6 @@ public:
 
 
 
-
 class MainWindow : public Fl_Window {
     Canvas canva;
     public:
@@ -432,37 +431,74 @@ class MainWindow : public Fl_Window {
 };
 
 
-class Intro_Window : public Fl_Window{   //Temporary class for introduction_window; To be remodeled  and completed later;
-   bool start_the_game=false;
-   MainWindow* mw;
-   public:
-    Intro_Window() : Fl_Window(500, 500, 500, 500, "Candy Try") {
-        Fl_Text_Display* disp = new Fl_Text_Display(70,70,300,100,0);
-        Fl_Text_Buffer* buff = new Fl_Text_Buffer();
-        disp->buffer(buff);    //Sets the text in the buffer to be displayed;
-        buff->text("Esteban Matricule: later\nVlad Matricule: later\nCandy Try");           //Inserts text in the buffer ex: "line1\nline2"
-        Fl_Button* start_game = new Fl_Button(300,350,120,120,"Start The Game");            // Button to the the game.
-        start_game->callback((Fl_Callback*)start_game_candy,this);                          
-            
-    }
-    
-    static void start_game_candy(Fl_Widget* obj,void*v){  //Function to toggle on/off the game window
-       Intro_Window* ptr=(Intro_Window*)v;
-       if(ptr->get_game()){ptr->start_the_game=false;}else{ptr->start_the_game=true;}
-        if(ptr->get_game()){
-            ptr->mw->can_show();
-        }
-        else{
-            ptr->mw->can_hide();
-        }
-       
+template<typename Type>
+class Widget_wrapper : public Type {
+    /* 
+        wrapper class abstracting text_window implementation from the intro_window
+        TODO : make it pretty
+    */
+public:
+    Widget_wrapper(int posx, int posy, int height, int width, const char* txt): Type(posx, posy, height, width, txt) {}
+
+    void set_callback(function<void(Fl_Widget *)> foo){
     }
 
-    bool get_game(){return start_the_game;}    
+};
+
+
+/*template<typename Type>
+class Button_wrapper: public Type{
+    function<void(Fl_Widget*)> func = NULL;
+    static void cb(Fl_Widget* obj, void* v){
+
+    }
+public:
+    Button_wrapper(int posx, int posy, int height, int width, const char* txt): Type(int posx, int posy, int height, int width){}
+    void set_cb(function<void(Fl_Widget*)> foo){
+        func = foo;
+        this->callback(Button_wrapper::cb, &func);
+    }
+};*/
+
+
+class Intro_Window : public Fl_Window{                                                      //Temporary class for introduction_window; To be remodeled  and completed later;
+    bool start_the_game=false;
+    MainWindow* mw;
+public:
+    Intro_Window() : Fl_Window(500, 500, 500, 500, "Candy Try") {
+        resizable(this);
+        auto txt_display = new Widget_wrapper<Fl_Box>(70,70,300,100,"Esteban Matricule: later\nVlad Matricule: later\nCandy Try");
+        auto test_button = new Widget_wrapper<Fl_Button>(0,0,120,120,"hehe");
+        // test_button->set_callback([](Fl_Widget* button) {button->label("hihi");} );
+        //Esteban : I abstracted your implementation into a wrapper to clean the constructor
+        static Fl_Button* start_game = new Fl_Button(300,350,120,120,"Start The Game");     //Button to the the game.
+        start_game->callback((Fl_Callback*)start_game_candy,this);     
+
+    }
+
+    static void start_game_candy(Fl_Widget* obj,void*v){                                    //Function to toggle on/off the game window
+        Intro_Window* ptr=(Intro_Window*)v;
+        if(ptr->get_game()){
+            ptr->start_the_game=false;
+        }else{
+            ptr->start_the_game=true;
+        }
+
+        if(ptr->get_game()){                    //if you manually close the window you have to double click on start the game to open it again
+            ptr->mw->can_show();
+            // ptr->start_the_game = false;     //using this line prevents that but the button cannot close the game  
+        }else{
+            ptr->mw->can_hide();
+        }
+    }
+
+    bool get_game(){
+        return start_the_game;
+    }    
     void set_mc(MainWindow& w){
         mw=&w;
     }
-    
+
 };
 
 
