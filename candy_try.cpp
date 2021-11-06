@@ -459,25 +459,26 @@ public:
 };
 
 class Score_board {
-
-    const char* read_score_file(){
+    
+    const char* pt;
+    string letsgo;
+    void read_score_file(){
         
         string temp_res, line;                                  //Esteban: I believe that I have found a bug with fltk after spending about 3 hours not understanding
-        ifstream myfile(score_file);                            //if not i am just totally dumb 
-        while(myfile>>line){                                 
+        ifstream myfile("score_file.txt");                            //if not i am just totally dumb 
+        while(myfile>>line){                                          
             temp_res+=line;
         }
-        myfile.close(); 
-        const char* txt = temp_res.c_str();
-        cout<<txt<<endl;                                        //the output looks right
-        cout<<typeid(txt).name()<<endl;                         //same goes for the type
-                                                                //but for some reason when used as arguments Fl_Box displays fs0.font.vertical_rotate 
-        return temp_res.c_str();
-    }
+        myfile.close();
+        letsgo=temp_res;                                                                                     
+                                                 //Vlad:Thats because the return if pretty fcked up if leaved as const char* you can check it later with a print.
+    } //Vlad: Try to not make any return const char* or string either (I don't know why but it bugs as fck with the returns and ofstream here).
 
 public:
     Score_board(int posx, int posy, int height, int width){
-        auto box_window = new Widget_wrapper<Fl_Box>(posx, posy, height, width, read_score_file());
+        read_score_file();
+        pt=letsgo.c_str(); //Now it works.
+        Fl_Box* box_window = new Widget_wrapper<Fl_Box>(posx, posy, height, width,pt); //Try to make it a pointer rather than auto bcs bad use i think.
     }
     ~Score_board(){
         cout<<"refreshing scores"<<endl;
@@ -496,8 +497,8 @@ class Intro_Window : public Fl_Window{                                          
 public:
     Intro_Window() : Fl_Window(500, 500, 500, 500, "Candy Try") {
         resizable(this);
-        auto txt_display = new Widget_wrapper<Fl_Box>(70,70,300,100,"Esteban Matricule: later\nVlad Matricule: later\nCandy Try");
-        auto test_button = new Score_board(0,0,120,120);            //Esteban:instead of insisting with multihtreading I think drawing a Box would be smarter
+        Fl_Box* txt_display = new Widget_wrapper<Fl_Box>(70,70,300,100,"Esteban Matricule: later\nVlad Matricule: later\nCandy Try");
+        Score_board* test_button = new Score_board(0,0,120,120);            //Esteban:instead of insisting with multihtreading I think drawing a Box would be smarter
         static Fl_Button* start_game = new Fl_Button(300,350,120,120,"Start The Game");     //Button to the the game.
         start_game->callback((Fl_Callback*)start_game_candy,this);     
 
