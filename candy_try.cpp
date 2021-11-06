@@ -209,7 +209,7 @@ public:
 
     int fall_candies(int start_x,int start_y){ //Function by Recursion
         if(start_y<0){return 0;}
-        if(candy[start_x][start_y].get_wall()){return 0;} //If it's a wall do not touch 
+        if(candy[start_x][start_y].get_wall()){fall_walls(start_x,start_y);return 0;} //If it's a wall then make candies fall from the diag with fall_walls()
         if(start_y-1>=0){
           int s_y=start_y-1;
           if(candy[start_x][s_y].getCenter().x!=0 && candy[start_x][s_y].getCenter().y!=0 && candy[start_x][s_y].get_wall()!=true){ //If there is a candy above and is not a wall.
@@ -240,6 +240,24 @@ public:
             }
            
         return 0;
+    }
+    
+    void fall_walls(int start_x, int start_y){ //Function to make the candies fall in diag if there is a wall above.
+        if(candy[start_x-1][start_y].getCenter().x!=0 && candy[start_x-1][start_y].getCenter().y!=0){ //make the candy in the right diag fall.
+            Point fall{candy[start_x][start_y].getCenter().x,candy[start_x][start_y].getCenter().y+50};
+            candy[start_x][start_y+1]=Candy(fall,40,40);
+            candy[start_x][start_y+1].setCode(candy[start_x-1][start_y].getFillColor());
+            candy[start_x-1][start_y]=Candy({0,0},0,0);
+            set_the_neighbours();
+            fall_candies(start_x-1,start_y);
+        }else{ //If no candy in the right diag then we take the one from the left diag
+            Point fall{candy[start_x][start_y].getCenter().x,candy[start_x][start_y].getCenter().y+50};
+            candy[start_x][start_y+1]=Candy(fall,40,40);
+            candy[start_x][start_y+1].setCode(candy[start_x+1][start_y].getFillColor());
+            candy[start_x+1][start_y]=Candy({0,0},0,0);
+            set_the_neighbours();
+            fall_candies(start_x+1,start_y);
+        }
     }
 
     void mouseMove(Point mouseLoc){
