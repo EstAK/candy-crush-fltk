@@ -15,11 +15,24 @@
 #include <fstream>
 #include "const.h"
 #include <array>
-#include <functional>
+// #include <functional> //not needed for now but might become handy
 
 using namespace std;
 
 struct Point{int x; int y;};
+
+
+// struct Translation{
+//     //code directly taken from the TP
+//     Translation(Point p){
+//         fl_push_matrix();
+//         fl_translate(p.x, p.y);
+//     }
+//     ~Translation() {
+//         fl_pop_matrix();
+//     }
+// };
+
 
 class Rectangle {
   Point center;
@@ -167,8 +180,8 @@ public:
     }
     
     void read_file(){
-        string line;                        //temporary input file
-        ifstream myfile(file);
+        string line;                        //temporary input var
+        ifstream myfile(board);
         while (myfile >> line) {
             lines.push_back(line);
         }
@@ -431,6 +444,7 @@ class MainWindow : public Fl_Window {
 };
 
 
+
 template<typename Type>
 class Widget_wrapper : public Type {
     /* 
@@ -440,40 +454,56 @@ class Widget_wrapper : public Type {
 public:
     Widget_wrapper(int posx, int posy, int height, int width, const char* txt): Type(posx, posy, height, width, txt) {}
 
-    void set_callback(function<void(Fl_Widget *)> foo){
-    }
 
 };
 
+class Score_board {
 
-/*template<typename Type>
-class Button_wrapper: public Type{
-    function<void(Fl_Widget*)> func = NULL;
-    static void cb(Fl_Widget* obj, void* v){
-
+    const char* read_score_file(){
+        
+        string temp_res, line;                                  //Esteban: I believe that I have found a bug with fltk after spending about 3 hours not understanding
+        ifstream myfile(score_file);                            //if not i am just totally dumb 
+        while(myfile>>line){                                 
+            temp_res+=line;
+        }
+        myfile.close(); 
+        const char* txt = temp_res.c_str();
+        cout<<txt<<endl;                                        //the output looks right
+        cout<<typeid(txt).name()<<endl;                         //same goes for the type
+                                                                //but for some reason when used as arguments Fl_Box displays fs0.font.vertical_rotate 
+        return temp_res.c_str();
     }
+
 public:
-    Button_wrapper(int posx, int posy, int height, int width, const char* txt): Type(int posx, int posy, int height, int width){}
-    void set_cb(function<void(Fl_Widget*)> foo){
-        func = foo;
-        this->callback(Button_wrapper::cb, &func);
+    Score_board(int posx, int posy, int height, int width){
+        auto box_window = new Widget_wrapper<Fl_Box>(posx, posy, height, width, read_score_file());
     }
-};*/
+    ~Score_board(){
+        cout<<"refreshing scores"<<endl;
+    }
+
+
+
+};
 
 
 class Intro_Window : public Fl_Window{                                                      //Temporary class for introduction_window; To be remodeled  and completed later;
     bool start_the_game=false;
     MainWindow* mw;
+
+
 public:
     Intro_Window() : Fl_Window(500, 500, 500, 500, "Candy Try") {
         resizable(this);
         auto txt_display = new Widget_wrapper<Fl_Box>(70,70,300,100,"Esteban Matricule: later\nVlad Matricule: later\nCandy Try");
-        auto test_button = new Widget_wrapper<Fl_Button>(0,0,120,120,"hehe");
-        // test_button->set_callback([](Fl_Widget* button) {button->label("hihi");} );
-        //Esteban : I abstracted your implementation into a wrapper to clean the constructor
+        auto test_button = new Score_board(0,0,120,120);            //Esteban:instead of insisting with multihtreading I think drawing a Box would be smarter
         static Fl_Button* start_game = new Fl_Button(300,350,120,120,"Start The Game");     //Button to the the game.
         start_game->callback((Fl_Callback*)start_game_candy,this);     
 
+    }
+
+
+    static void make_score_board(){
     }
 
     static void start_game_candy(Fl_Widget* obj,void*v){                                    //Function to toggle on/off the game window
@@ -484,9 +514,9 @@ public:
             ptr->start_the_game=true;
         }
 
-        if(ptr->get_game()){                    //if you manually close the window you have to double click on start the game to open it again
+        if(ptr->get_game()){                    //Esteban:if you manually close the window you have to double click on start the game to open it again
             ptr->mw->can_show();
-            // ptr->start_the_game = false;     //using this line prevents that but the button cannot close the game  
+            // ptr->start_the_game = false;
         }else{
             ptr->mw->can_hide();
         }
