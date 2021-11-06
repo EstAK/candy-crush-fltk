@@ -192,7 +192,8 @@ public:
       for(int i=0;i<candy.size();i++){
           for(int j=0;j<candy[0].size();j++){
               candy[i][j].draw();
-              break_candy(i,j,0,0,true); //Checks all the candies all the time and breaks them if it must.
+	      if(candy[i][j].get_wall()!=true){
+              break_candy(i,j,0,0,true);} //Checks all the candies all the time and breaks them if it must.
            }
         }
 
