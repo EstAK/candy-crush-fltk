@@ -477,15 +477,18 @@ public:
 };
 
 class Score_board {
-    
+    // Esteban:Using a global score board might not be relevant anymore when introducing a campaign like level selector as each level should have it's own score
+
     const char* pt;
     string letsgo;
     void read_score_file(){
         
-        string temp_res, line;                                  //Esteban: I believe that I have found a bug with fltk after spending about 3 hours not understanding
-        ifstream myfile("score_file.txt");                            //if not i am just totally dumb 
+        string temp_res="TOP SCORE\n", line;                                  //Esteban: I believe that I have found a bug with fltk after spending about 3 hours not understanding
+        ifstream myfile(score_file);                            //if not i am just totally dumb 
+        int i = 1;
         while(myfile>>line){                                          
-            temp_res+=line;
+            temp_res+=to_string(i)+".\t"+line+"\n";
+            i++;
         }
         myfile.close();
         letsgo=temp_res;                                                                                     
