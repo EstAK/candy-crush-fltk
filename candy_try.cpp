@@ -26,6 +26,8 @@ class Animation_pop;    //class declaration Esteban: the code is becoming a tota
                         //new classes without causing a billion class not found because written 
                         //before but cannot write before otherwise code goes full kamikaze mode
 
+                        //Vlad: Roger Roger
+
 class Rectangle {
   Point center;
   int w, h;
@@ -199,7 +201,6 @@ public:
 }; 
 
 
-
 class Canvas{
     array<array<Candy,9>,9> candy;            //2d Array
     Fl_Color color[6]={FL_RED,FL_BLUE,FL_YELLOW,FL_BLACK,FL_DARK_CYAN,FL_GREEN};
@@ -208,10 +209,15 @@ class Canvas{
     int x=0;int y=0; //currents coord in the array
     Candy* point_current=&current;
     Score candy_score; //By default the score begins at 0
-
+    bool not_impossible=false;
 
 public:
     Canvas(Point center={100,100},int wi=850,int hi=850){                           //wi and hi are not used x think we should remove them ; Vlad:Okey;
+        make_board(); //Vlad: Made the board in a method so when impossible is true than the board can be remaked later.
+        
+    }
+    
+    void make_board(){ //TODO: Finish it later.
         read_file();
         for (int x = 0; x<9; x++){
             for (int y = 0; y<9; y++){
@@ -228,7 +234,7 @@ public:
             set_the_wall();
         }
     }
-    
+
     void read_file(){
         string line;                        //temporary input var
         ifstream myfile(board);
@@ -244,9 +250,18 @@ public:
               candy[i][j].draw();
 	      if(candy[i][j].get_wall()!=true){
               break_candy(i,j,0,0,true);} //Checks all the candies all the time and breaks them if it must.
+              check_impossible(i,j);
            }
         }
 
+        if(not_impossible){
+            not_impossible=false;
+            
+        }else{
+            make_board();
+        }
+
+       
       for(int i=0;i<candy.size();i++){ //Checks if there is a free place that can be filled ; Takes into consideration the walls(phyics) as well.
           for(int j=0;j<candy[0].size();j++){
               if(candy[i][j].getCenter().x==0 && candy[i][j].getCenter().y==0){
@@ -256,6 +271,86 @@ public:
       }
       
     }
+
+  
+    void check_impossible(int i,int j){
+        Fl_Color save=candy[i][j].getFillColor();
+        if(candy[i][j].get_wall()){return;}
+        candy[i][j].setFillColor(FL_WHITE); //Set it temp white(colorless) so the algo doesn't include this one when it's forshadowing this candy.
+        if(i+1<candy.size() && !candy[i+1][j].get_wall()){
+            if(forshadowing_over_9000(i+1,j,save)){
+               not_impossible=true;
+            }
+        }
+
+        if(j+1<candy[0].size() && !candy[i][j+1].get_wall()){
+             if(forshadowing_over_9000(i,j+1,save)){
+                not_impossible=true;
+             }
+        }
+
+        if(i-1>=0 && !candy[i-1][j].get_wall()){
+            if(forshadowing_over_9000(i-1,j,save)){
+               not_impossible=true;
+            }
+        }
+
+        if(j-1>=0 && !candy[i][j-1].get_wall()){
+            if(forshadowing_over_9000(i,j-1,save)){
+               not_impossible=true;
+            }
+        }
+        
+        candy[i][j].setCode(save); //Sets the color back.
+    }
+
+    bool forshadowing_over_9000(int x,int y,Fl_Color color){ //Vlad: just change it's name later.... IT'S OVER 9000!!!
+       //Vlad: Prototype method; I will change break_candies in order to work with this as well when i will have the mood -_-
+       Candy temp_candy=candy[x][y]; 
+       temp_candy.setCode(color);
+       int counter_left_right=1; 
+       int counter_up_down=1;
+        for(int i=x+1;i<candy.size();i++){  //Counter the same candies on the right line of the same color; counter begins of 1
+            if(candy[i][y].getFillColor()!=temp_candy.getFillColor()){
+                break;
+            }else{
+                counter_left_right+=1;
+            }
+        }
+        
+
+        for(int i=y+1;i<candy[0].size();i++){  //Counts the candies under.
+            if(candy[x][i].getFillColor()!=temp_candy.getFillColor()){
+                break;
+            }else{
+                counter_up_down+=1;
+            }
+        }
+  
+        for(int i=y-1;i>=0;i--){  //Counts the candies upwards
+            if(candy[x][i].getFillColor()!=temp_candy.getFillColor()){
+                break;
+            }else{
+                counter_up_down+=1;
+            }
+        }
+       
+        for(int i=x-1;i>=0;i--){  //Left
+            if(candy[i][y].getFillColor()!=temp_candy.getFillColor()){
+                break;
+            }else{
+                counter_left_right+=1;
+            }
+        }
+
+          
+        if(counter_left_right<3 && counter_up_down<3 ){ 
+            return false; 
+        }else{
+            return true;
+        }
+           
+    } 
 
     int fall_candies(int start_x,int start_y){ //Function by Recursion
         if(start_y<0){return 0;}
@@ -341,10 +436,8 @@ public:
    }
     
     void break_candy(int x,int y,int i,int j,bool pc=false){  //Function that will break the candies if possible if not it will revert the movement back (but no delay added so it is instant)
-
-        // Esteban: i reindented your whole class to modify it more easily
-
-        Candy temp_candy=candy[x][y];
+        
+        Candy temp_candy=candy[x][y];  
         Candy temp_candy2=candy[i][j];
         int counter_left_right=1; 
         int counter_up_down=1;
@@ -419,10 +512,9 @@ public:
        //Vlad: Can you try to add a delay when you do the animations?
         if(counter_left_right<3 && counter_up_down<3 && counter_left_right2<3 && counter_up_down2<3 && !pc){ //Changes back if the movement will not result in a break but i don't know how to add a delay.
             Fl_Color save=candy[i][j].getFillColor();  // TODO : Add The animation code here
-            candy[i][j].start_pop_animation();  //esteban:lmao i've animated the not moving candy, i don't really know where to put the animation so if you have an idea go for it
             candy[i][j].setCode(candy[x][y].getFillColor());
             candy[x][y].setCode(save);
-            return;
+            
         }
        
         //There will break all the candies in a row; First it will decide which one is better from left<->right or up<-->down in calculation the nomber of candies that will be broken.
@@ -442,6 +534,7 @@ public:
                         break;
                     }else{
                         candy[i][start_y]=Candy({0,0},0,0);
+                        candy[i][j].start_pop_animation();  
                         candy_score.set_score(counter_left_right); //Temp way to increase the score; TODO: Change it later
                         cout<<"The score is "<<candy_score.get_score()<<endl;	
                     }
@@ -462,6 +555,7 @@ public:
                     break;
                 }else{
                     candy[start_x][i]=Candy({0,0},0,0);
+                    candy[i][j].start_pop_animation();  
                     candy_score.set_score(counter_up_down);
     		        cout<<"The score is "<<candy_score.get_score()<<endl; //Temp way to increase the score; change it later
                 }
@@ -486,6 +580,7 @@ public:
                         break;
                     }else{
                         candy[k][start_y]=Candy({0,0},0,0);
+                        candy[i][j].start_pop_animation();  
                     }
                 }
             }
@@ -504,9 +599,11 @@ public:
                     break;
                 }else{
                     candy[start_x][k]=Candy({0,0},0,0);
+                    candy[i][j].start_pop_animation();  
                 }
             }
         }
+        
     }
 
 
