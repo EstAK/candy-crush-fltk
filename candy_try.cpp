@@ -21,31 +21,20 @@ using namespace std;
 
 struct Point{int x; int y;};
 
-
-// struct Translation{
-//     //code directly taken from the TP
-//     Translation(Point p){
-//         fl_push_matrix();
-//         fl_translate(p.x, p.y);
-//     }
-//     ~Translation() {
-//         fl_pop_matrix();
-//     }
-// };
-
+class Animation_pop;    //class declaration Esteban: the code is becoming a total clusterfuck
+                        //we should move it to separate files because I don't even where to put     
+                        //new classes without causing a billion class not found because written 
+                        //before but cannot write before otherwise code goes full kamikaze mode
 
 class Rectangle {
   Point center;
   int w, h;
   Fl_Color fillColor, frameColor;
  public:
-  void draw();
-  void setFillColor(Fl_Color newFillColor);
   
   Fl_Color getFillColor() {
     return fillColor;
   }
-  void setFrameColor(Fl_Color newFrameColor);
   Fl_Color getFrameColor() {
     return frameColor;
   }
@@ -66,7 +55,6 @@ class Rectangle {
   int getHeight() {
     return h;
   }
-  bool contains(Point p);
   Point getCenter() {
     return center;
   }
@@ -78,27 +66,66 @@ class Rectangle {
       else if(code==88){setFillColor(FL_RED);}
       else if(code==63){setFillColor(FL_GREEN);}
   }
+    void draw() {
+      fl_draw_box(FL_FLAT_BOX, center.x-w/2, center.y-h/2, w, h, fillColor);
+      fl_draw_box(FL_BORDER_FRAME, center.x-w/2, center.y-h/2, w, h, frameColor);
+    }
+
+    void setFillColor(Fl_Color newFillColor) {
+      fillColor = newFillColor;
+    }
+
+    void setFrameColor(Fl_Color newFrameColor) {
+      frameColor = newFrameColor;
+    }
+
+    bool contains(Point p) {
+      return p.x>=center.x-w/2 &&
+             p.x<center.x+w/2 &&
+             p.y>=center.y-h/2 &&
+             p.y<center.y+h/2;
+    }
+
 };
 
-void Rectangle::draw() {
-  fl_draw_box(FL_FLAT_BOX, center.x-w/2, center.y-h/2, w, h, fillColor);
-  fl_draw_box(FL_BORDER_FRAME, center.x-w/2, center.y-h/2, w, h, frameColor);
-}
 
-void Rectangle::setFillColor(Fl_Color newFillColor) {
-  fillColor = newFillColor;
-}
+struct Pop{
+    Pop(int x, int y, int w, int h){
+        fl_draw_box(FL_BORDER_FRAME, x, y, w, h, FL_BLACK);
+        fl_push_matrix();
+    }
+    ~Pop(){
+        fl_pop_matrix();
+    }
+};
 
-void Rectangle::setFrameColor(Fl_Color newFrameColor) {
-  frameColor = newFrameColor;
-}
 
-bool Rectangle::contains(Point p) {
-  return p.x>=center.x-w/2 &&
-         p.x<center.x+w/2 &&
-         p.y>=center.y-h/2 &&
-         p.y<center.y+h/2;
-}
+class Animation_pop{
+
+    int animationTime;
+    Rectangle *r;
+    int time{0};
+public:
+
+    Animation_pop(Rectangle* Candy_to_animate,int animationTime = 5): animationTime{animationTime}, r{Candy_to_animate} {}
+
+    void draw() {
+        ++time;
+        
+        int w = r->getWidth()*time;
+        int h = r->getHeight()*time;
+
+        Pop t{r->getCenter().x-w/2, r->getCenter().y-h/2, w, h};        //WOP i still have to make it pretty
+        
+        r->draw();
+    }
+
+    bool isComplete() {
+        return time > animationTime;
+    }
+
+};
+
 
 class Score{
  int current_score=0;
@@ -124,10 +151,12 @@ public:
 
 class Candy:public Rectangle{
     bool wall=false; //Vlad:Use this to know which rectangle(candy) is a wall, no need for a whole class with a constructor for this in my opinion.
+    Animation_pop* animation_pop;           //not templating because every Candy has to have those 2 animations
+    // Animation_slide* animation_slide;
 public:
     vector<Candy*> neighbours;
     Candy(){} //Dummy Constructor
-    Candy(Point center, int w, int h,Fl_Color fillColor = FL_WHITE, Fl_Color frameColor = FL_BLACK){
+    Candy(Point center, int w, int h,Fl_Color fillColor = FL_WHITE, Fl_Color frameColor = FL_BLACK): animation_pop{nullptr}{
         setCenter(center);
         setWidth(w);
         setHeight(h);
@@ -146,8 +175,27 @@ public:
         }
         return false;
     }
+
     void set_wall(bool wa){wall=wa;}
     bool get_wall(){return wall;}
+
+
+    void start_pop_animation(){
+        animation_pop = new Animation_pop(this);
+    }
+
+
+    void draw(){    //redifining rectangle animation in candy
+        if (animation_pop && animation_pop->isComplete()){
+            delete animation_pop;
+            animation_pop = nullptr;
+        }
+        if (animation_pop){
+            animation_pop->draw();
+        }else{
+            Rectangle::draw();
+        }
+    }
 }; 
 
 
@@ -160,6 +208,8 @@ class Canvas{
     int x=0;int y=0; //currents coord in the array
     Candy* point_current=&current;
     Score candy_score; //By default the score begins at 0
+
+
 public:
     Canvas(Point center={100,100},int wi=850,int hi=850){                           //wi and hi are not used x think we should remove them ; Vlad:Okey;
         read_file();
@@ -291,110 +341,175 @@ public:
    }
     
     void break_candy(int x,int y,int i,int j,bool pc=false){  //Function that will break the candies if possible if not it will revert the movement back (but no delay added so it is instant)
-       Candy temp_candy=candy[x][y];
-       Candy temp_candy2=candy[i][j];
-       int counter_left_right=1; 
-       int counter_up_down=1;
-       int counter_left_right2=1;
-       int counter_up_down2=1;
-       for(int i=x+1;i<candy.size();i++){  //Counter the same candies on the right line of the same color; counter begins of 1
-          if(candy[i][y].getFillColor()!=temp_candy.getFillColor()){break;}else{counter_left_right+=1;}
-       }
 
-       for(int k=i+1;k<candy.size();k++){  //Counter the same candies on the right line of the same color; counter begins of 1 for temp_candy2
-          if(candy[k][j].getFillColor()!=temp_candy2.getFillColor()){break;}else{counter_left_right2+=1;}
-       }
+        // Esteban: i reindented your whole class to modify it more easily
+
+        Candy temp_candy=candy[x][y];
+        Candy temp_candy2=candy[i][j];
+        int counter_left_right=1; 
+        int counter_up_down=1;
+        int counter_left_right2=1;
+        int counter_up_down2=1;
+
+        for(int i=x+1;i<candy.size();i++){  //Counter the same candies on the right line of the same color; counter begins of 1
+            if(candy[i][y].getFillColor()!=temp_candy.getFillColor()){
+                break;
+            }else{
+                counter_left_right+=1;
+            }
+        }
+
+        for(int k=i+1;k<candy.size();k++){  //Counter the same candies on the right line of the same color; counter begins of 1 for temp_candy2
+            if(candy[k][j].getFillColor()!=temp_candy2.getFillColor()){
+                break;
+            }else{
+                counter_left_right2+=1;
+            }
+        }
+
+        for(int i=y+1;i<candy[0].size();i++){  //Counts the candies under.
+            if(candy[x][i].getFillColor()!=temp_candy.getFillColor()){
+                break;
+            }else{
+                counter_up_down+=1;
+            }
+        }
+
+        for(int k=j+1;k<candy[0].size();k++){  //Counts the candies under. 2
+            if(candy[i][k].getFillColor()!=temp_candy2.getFillColor()){
+                break;
+            }else{
+                counter_up_down2+=1;
+            }
+        }
       
-
-       for(int i=y+1;i<candy[0].size();i++){  //Counts the candies under.
-           if(candy[x][i].getFillColor()!=temp_candy.getFillColor()){break;}else{counter_up_down+=1;}
-       }
-
-       for(int k=j+1;k<candy[0].size();k++){  //Counts the candies under. 2
-           if(candy[i][k].getFillColor()!=temp_candy2.getFillColor()){break;}else{counter_up_down2+=1;}
-       }
-      
-
-       for(int i=y-1;i>=0;i--){  //Counts the candies upwards
-           if(candy[x][i].getFillColor()!=temp_candy.getFillColor()){break;}else{counter_up_down+=1;}
-       }
+        for(int i=y-1;i>=0;i--){  //Counts the candies upwards
+            if(candy[x][i].getFillColor()!=temp_candy.getFillColor()){
+                break;
+            }else{
+                counter_up_down+=1;
+            }
+        }
        
-       for(int k=j-1;k>=0;k--){  //Counts the candies upwards 2
-           if(candy[i][k].getFillColor()!=temp_candy2.getFillColor()){break;}else{counter_up_down2+=1;}
-       }
+        for(int k=j-1;k>=0;k--){  //Counts the candies upwards 2
+            if(candy[i][k].getFillColor()!=temp_candy2.getFillColor()){
+                break;
+            }else{
+                counter_up_down2+=1;
+            }
+        }
 
 
-       for(int i=x-1;i>=0;i--){  //Left
-           if(candy[i][y].getFillColor()!=temp_candy.getFillColor()){break;}else{counter_left_right+=1;}
-       }
+        for(int i=x-1;i>=0;i--){  //Left
+            if(candy[i][y].getFillColor()!=temp_candy.getFillColor()){
+                break;
+            }else{
+                counter_left_right+=1;
+            }
+        }
 
-       for(int k=i-1;k>=0;k--){  //Left2
-           if(candy[k][j].getFillColor()!=temp_candy2.getFillColor()){break;}else{counter_left_right2+=1;}
-       }
+        for(int k=i-1;k>=0;k--){  //Left2
+            if(candy[k][j].getFillColor()!=temp_candy2.getFillColor()){
+                break;
+            }else{
+                counter_left_right2+=1;
+            }
+        }
        
        //Vlad: Can you try to add a delay when you do the animations?
-       if(counter_left_right<3 && counter_up_down<3 && counter_left_right2<3 && counter_up_down2<3 && !pc){ //Changes back if the movement will not result in a break but i don't know how to add a delay.
-           Fl_Color save=candy[i][j].getFillColor();  // TODO : Add The animation code here
-           candy[i][j].setCode(candy[x][y].getFillColor());
-           candy[x][y].setCode(save);
-           return;
+        if(counter_left_right<3 && counter_up_down<3 && counter_left_right2<3 && counter_up_down2<3 && !pc){ //Changes back if the movement will not result in a break but i don't know how to add a delay.
+            Fl_Color save=candy[i][j].getFillColor();  // TODO : Add The animation code here
+            candy[i][j].start_pop_animation();  //esteban:lmao i've animated the not moving candy, i don't really know where to put the animation so if you have an idea go for it
+            candy[i][j].setCode(candy[x][y].getFillColor());
+            candy[x][y].setCode(save);
+            return;
+        }
+       
+        //There will break all the candies in a row; First it will decide which one is better from left<->right or up<-->down in calculation the nomber of candies that will be broken.
+        if(counter_left_right>counter_up_down){ //A way to know which one will have the priority.
+            if(counter_left_right>=3){
+                int start_x=x;int start_y=y;
+                for(int i=x+1;i<candy.size();i++){  //Counter the same candies on the right line of the same color; counter begins of 1
+                    if(candy[i][y].getFillColor()!=temp_candy.getFillColor()){
+                        break;
+                    }else{
+                        start_x=i;
+                        start_y=y;
+                    }
+                }
+                for(int i=start_x;i>=0;i--){  //Left
+                    if(candy[i][start_y].getFillColor()!=temp_candy.getFillColor()){
+                        break;
+                    }else{
+                        candy[i][start_y]=Candy({0,0},0,0);
+                        candy_score.set_score(counter_left_right); //Temp way to increase the score; TODO: Change it later
+                        cout<<"The score is "<<candy_score.get_score()<<endl;	
+                    }
+                }
+            }
+        }else if(counter_up_down>=3){
+            int start_x=x;int start_y=y; 
+            for(int i=y-1;i>=0;i--){  //Counts the candies upwards
+                if(candy[x][i].getFillColor()!=temp_candy.getFillColor()){
+                    break;
+                }else{
+                    start_x=x;
+                    start_y=i;
+                }
+            }
+            for(int i=start_y;i<candy[0].size();i++){  //Counts the candies under.
+                if(candy[start_x][i].getFillColor()!=temp_candy.getFillColor()){
+                    break;
+                }else{
+                    candy[start_x][i]=Candy({0,0},0,0);
+                    candy_score.set_score(counter_up_down);
+    		        cout<<"The score is "<<candy_score.get_score()<<endl; //Temp way to increase the score; change it later
+                }
+            }
+
        }
        
-       //There will break all the candies in a row; First it will decide which one is better from left<->right or up<-->down in calculation the nomber of candies that will be broken.
-       if(counter_left_right>counter_up_down){ //A way to know which one will have the priority.
-           if(counter_left_right>=3){
-             int start_x=x;int start_y=y;
-             for(int i=x+1;i<candy.size();i++){  //Counter the same candies on the right line of the same color; counter begins of 1
-               if(candy[i][y].getFillColor()!=temp_candy.getFillColor()){break;}else{start_x=i;start_y=y;}
+        //Second candy
+        if(counter_left_right2>counter_up_down2){ //A way to know which one will have the priority.
+            if(counter_left_right2>=3){
+                int start_x=i;int start_y=j;
+                for(int k=i+1;k<candy.size();k++){  //Counter the same candies on the right line of the same color; counter begins of 1
+                    if(candy[k][j].getFillColor()!=temp_candy2.getFillColor()){
+                        break;
+                        }else{
+                            start_x=k;
+                            start_y=j;
+                        }
+                }          
+                for(int k=start_x;k>=0;k--){  //Left
+                    if(candy[k][start_y].getFillColor()!=temp_candy2.getFillColor()){
+                        break;
+                    }else{
+                        candy[k][start_y]=Candy({0,0},0,0);
+                    }
+                }
             }
-              for(int i=start_x;i>=0;i--){  //Left
-                if(candy[i][start_y].getFillColor()!=temp_candy.getFillColor()){break;}else{
-			candy[i][start_y]=Candy({0,0},0,0);
-		        candy_score.set_score(counter_left_right); //Temp way to increase the score; TODO: Change it later
-		        cout<<"The score is "<<candy_score.get_score()<<endl;	
-		        }
-              }
-           }
-       }
-       else if(counter_up_down>=3){
-          int start_x=x;int start_y=y; 
-          for(int i=y-1;i>=0;i--){  //Counts the candies upwards
-           if(candy[x][i].getFillColor()!=temp_candy.getFillColor()){break;}else{start_x=x;start_y=i;}
-          }
-          for(int i=start_y;i<candy[0].size();i++){  //Counts the candies under.
-           if(candy[start_x][i].getFillColor()!=temp_candy.getFillColor()){break;}else{
-		   candy[start_x][i]=Candy({0,0},0,0);
-                   candy_score.set_score(counter_up_down);
-		           cout<<"The score is "<<candy_score.get_score()<<endl; //Temp way to increase the score; change it later
-	           }
+        }else if(counter_up_down2>=3){
+            int start_x=i;int start_y=j; 
+            for(int k=j-1;k>=0;k--){  //Counts the candies upwards
+                if(candy[i][k].getFillColor()!=temp_candy2.getFillColor()){
+                    break;
+                }else{
+                    start_x=i;
+                    start_y=k;
+                }
             }
-
-       }
-       
-       //Second candy
-       if(counter_left_right2>counter_up_down2){ //A way to know which one will have the priority.
-           if(counter_left_right2>=3){
-             int start_x=i;int start_y=j;
-             for(int k=i+1;k<candy.size();k++){  //Counter the same candies on the right line of the same color; counter begins of 1
-               if(candy[k][j].getFillColor()!=temp_candy2.getFillColor()){break;}else{start_x=k;start_y=j;}
+            for(int k=start_y;k<candy[0].size();k++){  //Counts the candies under.
+                if(candy[start_x][k].getFillColor()!=temp_candy2.getFillColor()){
+                    break;
+                }else{
+                    candy[start_x][k]=Candy({0,0},0,0);
+                }
             }
-              for(int k=start_x;k>=0;k--){  //Left
-                if(candy[k][start_y].getFillColor()!=temp_candy2.getFillColor()){break;}else{candy[k][start_y]=Candy({0,0},0,0);}
-              }
-           }
-       }
-       else if(counter_up_down2>=3){
-          int start_x=i;int start_y=j; 
-          for(int k=j-1;k>=0;k--){  //Counts the candies upwards
-           if(candy[i][k].getFillColor()!=temp_candy2.getFillColor()){break;}else{start_x=i;start_y=k;}
-          }
-          for(int k=start_y;k<candy[0].size();k++){  //Counts the candies under.
-           if(candy[start_x][k].getFillColor()!=temp_candy2.getFillColor()){break;}else{candy[start_x][k]=Candy({0,0},0,0);}
-          }
-
-       }
-
+        }
     }
+
+
     void keyPressed(int keyCode){
     exit(0);
     }
