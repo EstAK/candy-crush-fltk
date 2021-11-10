@@ -21,12 +21,12 @@ using namespace std;
 
 struct Point{int x; int y;};
 
-class Animation_pop;    //class declaration Esteban: the code is becoming a total clusterfuck
-                        //we should move it to separate files because I don't even where to put     
-                        //new classes without causing a billion class not found because written 
-                        //before but cannot write before otherwise code goes full kamikaze mode
+//class declaration Esteban: the code is becoming a total clusterfuck
+//we should move it to separate files because I don't even where to put     
+//new classes without causing a billion class not found because written 
+//before but cannot write before otherwise code goes full kamikaze mode
 
-                        //Vlad: Roger Roger
+//Vlad: Roger Roger
 
 class Rectangle {
   Point center;
@@ -107,15 +107,21 @@ class Animation_pop{
     int animationTime;
     Rectangle *r;
     int time{0};
+    int spread_coeff = 10;
 public:
 
-    Animation_pop(Rectangle* Candy_to_animate,int animationTime = 5): animationTime{animationTime}, r{Candy_to_animate} {}
+    Animation_pop(Rectangle* Candy_to_animate,int animationTime = 25): animationTime{animationTime}, r{Candy_to_animate} {
+        cout<<"start of animation on "<<(Candy_to_animate->getCenter().x-25)/50<<" "<<(Candy_to_animate->getCenter().y-25)/50<<endl;
+    }
 
+    ~ Animation_pop(){
+        cout<<"end of animation"<<(r->getCenter().x-25)/50<<" "<<(r->getCenter().y-25)/50<<endl;
+    }
     void draw() {
         ++time;
         
-        int w = r->getWidth()*time;
-        int h = r->getHeight()*time;
+        int w = log(r->getWidth()*time)*spread_coeff;
+        int h = log(r->getHeight()*time)*spread_coeff;
 
         Pop t{r->getCenter().x-w/2, r->getCenter().y-h/2, w, h};        //WOP i still have to make it pretty
         
@@ -130,24 +136,24 @@ public:
 
 
 class Score{
- int current_score=0;
- int best_score=0; 
+    int current_score=0;
+    int best_score=0; 
 public:
- Score(int score=0):current_score(score){}
- ~Score()=default;
+    Score(int score=0):current_score(score){}
+    ~Score()=default;
 
- //Setters
- void set_score(int new_score){
-  current_score+=new_score;
-  if(best_score<=current_score){ //If the current score is better than the best score than we update the best_score
-    best_score=current_score;
-  }
- }
+    //Setters
+    void set_score(int new_score){
+        current_score+=new_score;
+        if(best_score<=current_score){ //If the current score is better than the best score than we update the best_score
+            best_score=current_score;
+        }
+    }
 
 
- //Getters
- int get_score(){return current_score;}
- int get_best_score(){return best_score;}
+    //Getters
+    int get_score(){return current_score;}
+    int get_best_score(){return best_score;}
 
 };
 
@@ -158,7 +164,7 @@ class Candy:public Rectangle{
 public:
     vector<Candy*> neighbours;
     Candy(){} //Dummy Constructor
-    Candy(Point center, int w, int h,Fl_Color fillColor = FL_WHITE, Fl_Color frameColor = FL_BLACK): animation_pop{nullptr}{
+    Candy(Point center, int w, int h,Fl_Color fillColor = FL_WHITE, Fl_Color frameColor = FL_BLACK, Animation_pop* animation=nullptr): animation_pop{animation}{
         setCenter(center);
         setWidth(w);
         setHeight(h);
@@ -181,6 +187,9 @@ public:
     void set_wall(bool wa){wall=wa;}
     bool get_wall(){return wall;}
 
+    Animation_pop* get_animation_ptr(){
+        return animation_pop;
+    }
 
     void start_pop_animation(){
         animation_pop = new Animation_pop(this);
@@ -214,8 +223,8 @@ class Canvas{
 public:
     Canvas(Point center={100,100},int wi=850,int hi=850){                           //wi and hi are not used x think we should remove them ; Vlad:Okey;
         make_board(); //Vlad: Made the board in a method so when impossible is true than the board can be remaked later.
-        
     }
+
     
     void make_board(){ //TODO: Finish it later.
         read_file();
@@ -266,6 +275,7 @@ public:
           for(int j=0;j<candy[0].size();j++){
               if(candy[i][j].getCenter().x==0 && candy[i][j].getCenter().y==0){
                   fall_candies(i,j);
+                  candy[i][j].start_pop_animation();
               }
           }
       }
@@ -353,32 +363,36 @@ public:
     } 
 
     int fall_candies(int start_x,int start_y){ //Function by Recursion
-        if(start_y<0){return 0;}
-        if(candy[start_x][start_y].get_wall()){fall_walls(start_x,start_y);return 0;} //If it's a wall then make candies fall from the diag with fall_walls()
-        if(start_y-1>=0){
-          int s_y=start_y-1;
-          if(candy[start_x][s_y].getCenter().x!=0 && candy[start_x][s_y].getCenter().y!=0 && candy[start_x][s_y].get_wall()!=true){ //If there is a candy above and is not a wall.
-              Point fall{candy[start_x][s_y].getCenter().x,candy[start_x][s_y].getCenter().y+50}; //that Candy will fall down and it's place will be liberated.
-              candy[start_x][start_y]=Candy(fall,40,40); //Candy falls down
-              candy[start_x][start_y].setCode(candy[start_x][s_y].getFillColor());
-              candy[start_x][s_y]=Candy({0,0},0,0); //Place liberated of the candy that fell Down.
-              set_the_neighbours(); //Reset the neig because new candies have been created.
-              fall_candies(start_x,s_y); //Continue the Rec.
-          }else{fall_candies(start_x,s_y);} //Else we will search more above.
+        if(start_y<0){
+            return 0;
         }
-        else{  //We know that we reached the top we want to generate a random candy in the top but we need the position of the column first.
-           if(candy[start_x][start_y+1].getCenter().x!=0 && candy[start_x][start_y+1].getCenter().y!=0 && candy[start_x][start_y+1].get_wall()!=true){
-              Point fall{candy[start_x][start_y+1].getCenter().x,candy[start_x][start_y+1].getCenter().y-50};
-              candy[start_x][start_y]=Candy(fall,40,40,color[rand()%6]);
-              set_the_neighbours();
-              }
-              
-           else if(start_x+1<candy.size() && candy[start_x+1][start_y].get_wall()!=true){
+        if(candy[start_x][start_y].get_wall()){
+            fall_walls(start_x,start_y);
+            return 0;
+        } //If it's a wall then make candies fall from the diag with fall_walls()
+        if(start_y-1>=0){
+
+            int s_y=start_y-1;
+            if(candy[start_x][s_y].getCenter().x!=0 && candy[start_x][s_y].getCenter().y!=0 && candy[start_x][s_y].get_wall()!=true){ //If there is a candy above and is not a wall.
+                Point fall{candy[start_x][s_y].getCenter().x,candy[start_x][s_y].getCenter().y+50}; //that Candy will fall down and it's place will be liberated.
+                candy[start_x][start_y]=Candy(fall,40,40); //Candy falls down
+                candy[start_x][start_y].setCode(candy[start_x][s_y].getFillColor());
+                candy[start_x][s_y]=Candy({0,0},0,0); //Place liberated of the candy that fell Down.
+                set_the_neighbours(); //Reset the neig because new candies have been created.
+                fall_candies(start_x,s_y); //Continue the Rec.
+            }else{
+                fall_candies(start_x,s_y);} //Else we will search more above.
+
+        }else{  //We know that we reached the top we want to generate a random candy in the top but we need the position of the column first.
+            if(candy[start_x][start_y+1].getCenter().x!=0 && candy[start_x][start_y+1].getCenter().y!=0 && candy[start_x][start_y+1].get_wall()!=true){
+                Point fall{candy[start_x][start_y+1].getCenter().x,candy[start_x][start_y+1].getCenter().y-50};
+                candy[start_x][start_y]=Candy(fall,40,40,color[rand()%6]);
+                set_the_neighbours();
+            }else if(start_x+1<candy.size() && candy[start_x+1][start_y].get_wall()!=true){
                 Point fall{candy[start_x+1][start_y].getCenter().x-50,candy[start_x+1][start_y].getCenter().y}; //Get the pos in using -50 the right-neigh position.
                 candy[start_x][start_y]=Candy(fall,40,40,color[rand()%6]);
-                set_the_neighbours();}
-            
-            else if(start_x-1>=0 && candy[start_x-1][start_y].get_wall()!=true){
+                set_the_neighbours();
+            }else if(start_x-1>=0 && candy[start_x-1][start_y].get_wall()!=true){
                 Point fall{candy[start_x-1][start_y].getCenter().x+50,candy[start_x-1][start_y].getCenter().y}; //Get the pos in adding +50 the left-neigh position.
                 candy[start_x][start_y]=Candy(fall,40,40,color[rand()%6]);
                 set_the_neighbours();}
@@ -514,13 +528,16 @@ public:
             Fl_Color save=candy[i][j].getFillColor();  // TODO : Add The animation code here
             candy[i][j].setCode(candy[x][y].getFillColor());
             candy[x][y].setCode(save);
+
             
         }
        
         //There will break all the candies in a row; First it will decide which one is better from left<->right or up<-->down in calculation the nomber of candies that will be broken.
         if(counter_left_right>counter_up_down){ //A way to know which one will have the priority.
             if(counter_left_right>=3){
-                int start_x=x;int start_y=y;
+                // cout<<"------------------------------------------------------------------------------------------------------------------------------"<<endl;
+                int start_x=x;
+                int start_y=y;
                 for(int i=x+1;i<candy.size();i++){  //Counter the same candies on the right line of the same color; counter begins of 1
                     if(candy[i][y].getFillColor()!=temp_candy.getFillColor()){
                         break;
@@ -534,7 +551,6 @@ public:
                         break;
                     }else{
                         candy[i][start_y]=Candy({0,0},0,0);
-                        candy[i][j].start_pop_animation();  
                         candy_score.set_score(counter_left_right); //Temp way to increase the score; TODO: Change it later
                         cout<<"The score is "<<candy_score.get_score()<<endl;	
                     }
@@ -555,7 +571,6 @@ public:
                     break;
                 }else{
                     candy[start_x][i]=Candy({0,0},0,0);
-                    candy[i][j].start_pop_animation();  
                     candy_score.set_score(counter_up_down);
     		        cout<<"The score is "<<candy_score.get_score()<<endl; //Temp way to increase the score; change it later
                 }
@@ -570,22 +585,25 @@ public:
                 for(int k=i+1;k<candy.size();k++){  //Counter the same candies on the right line of the same color; counter begins of 1
                     if(candy[k][j].getFillColor()!=temp_candy2.getFillColor()){
                         break;
-                        }else{
-                            start_x=k;
-                            start_y=j;
-                        }
+                    }else{
+                        start_x=k;
+                        start_y=j;
+                    }
                 }          
+                
                 for(int k=start_x;k>=0;k--){  //Left
                     if(candy[k][start_y].getFillColor()!=temp_candy2.getFillColor()){
                         break;
                     }else{
                         candy[k][start_y]=Candy({0,0},0,0);
-                        candy[i][j].start_pop_animation();  
                     }
                 }
             }
         }else if(counter_up_down2>=3){
-            int start_x=i;int start_y=j; 
+            
+            int start_x=i;
+            int start_y=j; 
+            
             for(int k=j-1;k>=0;k--){  //Counts the candies upwards
                 if(candy[i][k].getFillColor()!=temp_candy2.getFillColor()){
                     break;
@@ -594,16 +612,15 @@ public:
                     start_y=k;
                 }
             }
+
             for(int k=start_y;k<candy[0].size();k++){  //Counts the candies under.
                 if(candy[start_x][k].getFillColor()!=temp_candy2.getFillColor()){
                     break;
                 }else{
                     candy[start_x][k]=Candy({0,0},0,0);
-                    candy[i][j].start_pop_animation();  
                 }
             }
-        }
-        
+        }    
     }
 
 
@@ -716,9 +733,6 @@ public:
     ~Score_board(){
         cout<<"refreshing scores"<<endl;
     }
-
-
-
 };
 
 
