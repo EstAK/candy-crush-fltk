@@ -219,7 +219,9 @@ class Canvas{
     Candy* point_current=&current;
     Score candy_score; //By default the score begins at 0
     bool not_impossible=false;
-
+    
+    int time=0;  //Var used for timer
+    bool can_vibrate=false;
 public:
     Canvas(Point center={100,100},int wi=850,int hi=850){                           //wi and hi are not used x think we should remove them ; Vlad:Okey;
         make_board(); //Vlad: Made the board in a method so when impossible is true than the board can be remaked later.
@@ -259,22 +261,30 @@ public:
               candy[i][j].draw();
 	      if(candy[i][j].get_wall()!=true){
               break_candy(i,j,0,0,true);} //Checks all the candies all the time and breaks them if it must.
-              check_impossible(i,j);
+              check_impossible(i,j,can_vibrate);
            }
         }
-
+        
         if(not_impossible){
             not_impossible=false;
             
         }else{
             make_board();
         }
-
+        
+      if(time!=200){  //Timer set ; Vlad: pressing on a candy or when candies fall/break will restart the timer.
+          time++;
+      }else{        //restart the timer.
+          time=0;
+          can_vibrate=true;
+      }
        
       for(int i=0;i<candy.size();i++){ //Checks if there is a free place that can be filled ; Takes into consideration the walls(phyics) as well.
           for(int j=0;j<candy[0].size();j++){
               if(candy[i][j].getCenter().x==0 && candy[i][j].getCenter().y==0){
                   fall_candies(i,j);
+                  time=0; //reset the timer.
+                  can_vibrate=false; //reset the vibrate;
                   candy[i][j].start_pop_animation();
               }
           }
@@ -283,38 +293,54 @@ public:
     }
 
   
-    void check_impossible(int i,int j){
+    void check_impossible(int i,int j,bool vibrate){
         Fl_Color save=candy[i][j].getFillColor();
         if(candy[i][j].get_wall()){return;}
         candy[i][j].setFillColor(FL_WHITE); //Set it temp white(colorless) so the algo doesn't include this one when it's forshadowing this candy.
         if(i+1<candy.size() && !candy[i+1][j].get_wall()){
-            if(forshadowing_over_9000(i+1,j,save)){
+            if(forshadowing_over_9000(i+1,j,save,vibrate)){
                not_impossible=true;
+               if(vibrate){
+                   candy[i][j].start_pop_animation();
+                   can_vibrate=false;
+               } //Vibrate then turn it off.
             }
         }
 
         if(j+1<candy[0].size() && !candy[i][j+1].get_wall()){
-             if(forshadowing_over_9000(i,j+1,save)){
+             if(forshadowing_over_9000(i,j+1,save,vibrate)){
                 not_impossible=true;
+                 if(vibrate){
+                   candy[i][j].start_pop_animation();
+                   can_vibrate=false;
+               }
              }
         }
 
         if(i-1>=0 && !candy[i-1][j].get_wall()){
-            if(forshadowing_over_9000(i-1,j,save)){
+            if(forshadowing_over_9000(i-1,j,save,vibrate)){
                not_impossible=true;
+                if(vibrate){
+                   candy[i][j].start_pop_animation();
+                   can_vibrate=false;
+               }
             }
         }
 
         if(j-1>=0 && !candy[i][j-1].get_wall()){
-            if(forshadowing_over_9000(i,j-1,save)){
+            if(forshadowing_over_9000(i,j-1,save,vibrate)){
                not_impossible=true;
+                if(vibrate){
+                   candy[i][j].start_pop_animation();
+                   can_vibrate=false;
+               }
             }
         }
         
         candy[i][j].setCode(save); //Sets the color back.
     }
 
-    bool forshadowing_over_9000(int x,int y,Fl_Color color){ //Vlad: just change it's name later.... IT'S OVER 9000!!!
+    bool forshadowing_over_9000(int x,int y,Fl_Color color,bool vibrate){ //Vlad: just change it's name later.... IT'S OVER 9000!!!
        //Vlad: Prototype method; I will change break_candies in order to work with this as well when i will have the mood -_-
        Candy temp_candy=candy[x][y]; 
        temp_candy.setCode(color);
@@ -357,7 +383,35 @@ public:
         if(counter_left_right<3 && counter_up_down<3 ){ 
             return false; 
         }else{
+            if(vibrate){
+                if(counter_up_down>=3){
+                  for(int i=y-1;i>=0;i--){
+                     if(candy[x][i].getFillColor()==temp_candy.getFillColor()){
+                         candy[x][i].start_pop_animation();
+                     }else{break;}
+                  }
+                  for(int i=y+1;i<candy[0].size();i++){
+                      if(candy[x][i].getFillColor()==temp_candy.getFillColor()){
+                          candy[x][i].start_pop_animation();
+                      }else{break;}
+                  }
+                }else{
+                    for(int i=x-1;i>=0;i--){
+                        if(candy[i][y].getFillColor()==temp_candy.getFillColor()){
+                            candy[i][y].start_pop_animation();
+                        }else{break;}
+                    }
+                    for(int i=x+1;i<candy.size();i++){
+                        if(candy[i][y].getFillColor()==temp_candy.getFillColor()){
+                            candy[i][y].start_pop_animation();
+                        }else{break;}
+                    }
+                }         
+                return true;
+
+            }else{
             return true;
+            }
         }
            
     } 
@@ -434,15 +488,17 @@ public:
       for(int i=0;i<candy.size();i++){
           for(int j=0;j<candy[0].size();j++){
               if(candy[i][j].contains(mouseLoc) && current.getCenter().x==0 && current.getCenter().y==0){
-                if(candy[i][j].get_wall()==false){current=candy[i][j];x=i;y=j;} //make sure that is not a wall.
+                if(candy[i][j].get_wall()==false){current=candy[i][j];x=i;y=j;time=0;can_vibrate=false;} //make sure that is not a wall. ; Vlad:time n vibrate
               }else if(candy[i][j].contains(mouseLoc)){
                   if(candy[i][j].verify_neighbours(current)){
                       break_candy(i,j,x,y);
                       current=Candy{{0,0},0,0};x=0;y=0;
                       cout<<"Neigh"<<endl;
+                      time=0;
+                      can_vibrate=false;
                   }else{
                       cout<<"Selected new one"<<endl;
-                      if(candy[i][j].get_wall()==false){current=candy[i][j];x=i;y=j;}     
+                      if(candy[i][j].get_wall()==false){current=candy[i][j];x=i;y=j;time=0;can_vibrate=false;}   //timer n vibrate  
                   }
                }
            }
