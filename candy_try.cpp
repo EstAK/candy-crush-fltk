@@ -222,17 +222,20 @@ class Canvas{
     
     int time=0;  //Var used for timer
     bool can_vibrate=false;
+    string current_map=maps[0];
 public:
     Canvas(Point center={100,100},int wi=850,int hi=850){                           //wi and hi are not used x think we should remove them ; Vlad:Okey;
-        make_board(); //Vlad: Made the board in a method so when impossible is true than the board can be remaked later.
+        make_board(maps[0]); //Vlad: Made the board in a method so when impossible is true than the board can be remaked later.
     }
 
     
-    void make_board(){ //TODO: Finish it later.
-        read_file();
+    void make_board(string map){ //TODO: Finish it later.
+        read_file(map);
+        current_map=map;
+        
         for (int x = 0; x<9; x++){
             for (int y = 0; y<9; y++){
-                cout<<lines[x][y]<<" ";
+              
                 if (lines[y][x] == *c){
                     candy[x][y]=(Candy{{50*x+25, 50*y+25}, 40, 40, color[rand()%6]});
                 }
@@ -240,19 +243,22 @@ public:
                     candy[x][y]=(Candy{{50*x+25, 50*y+25}, 40, 40,FL_MAGENTA,FL_BLACK});
                 }
             }
-            cout<<endl;
+        
             set_the_neighbours();
             set_the_wall();
         }
     }
 
-    void read_file(){
+    void read_file(string map){
+        lines.clear();  //Clear the map so the next one can be loaded in the vector.
         string line;                        //temporary input var
-        ifstream myfile(board);
+        ifstream myfile(map);
+        current_map=map;
         while (myfile >> line) {
             lines.push_back(line);
         }
         myfile.close(); 
+        
     }
 
     void draw(){
@@ -269,7 +275,7 @@ public:
             not_impossible=false;
             
         }else{
-            make_board();
+            make_board(current_map);
         }
         
       if(time!=200){  //Timer set ; Vlad: pressing on a candy or when candies fall/break will restart the timer.
@@ -716,6 +722,11 @@ class MainWindow : public Fl_Window {
     void can_hide(){
         this->hide();
     }
+    
+    Canvas& get_canvas(){
+        return canva;
+    }
+
     MainWindow() : Fl_Window(500, 500, windowWidth, windowHeight, "Candy_Try") {
         Fl::add_timeout(1.0/refreshPerSecond, Timer_CB, this);
         resizable(this);
@@ -795,18 +806,46 @@ public:
 class Intro_Window : public Fl_Window{                                                      //Temporary class for introduction_window; To be remodeled  and completed later;
     bool start_the_game=false;
     MainWindow* mw;
-
+    int current_map=0; //int to know the pos in the maps
 
 public:
     Intro_Window() : Fl_Window(500, 500, 500, 500, "Candy Try") {
         resizable(this);
         Fl_Box* txt_display = new Widget_wrapper<Fl_Box>(70,70,300,100,"Esteban Matricule: later\nVlad Matricule: later\nCandy Try");
-        Score_board* test_button = new Score_board(0,0,120,120);            //Esteban:instead of insisting with multihtreading I think drawing a Box would be smarter
+        Score_board* test_button = new Score_board(0,0,120,120);            //Esteban:instead of insisting with clmultihtreading I think drawing a Box would be smarter
         static Fl_Button* start_game = new Fl_Button(300,350,120,120,"Start The Game");     //Button to the the game.
         start_game->callback((Fl_Callback*)start_game_candy,this);     
 
+        static Fl_Button* prev = new Fl_Button(50,370,70,70,"Prev Map");  //Buttons for the prev map and next map
+        static Fl_Button* next = new Fl_Button(120,370,70,70,"Next Map");
+        
+        prev->callback((Fl_Callback*)prev_map,this);
+        next->callback((Fl_Callback*)next_map,this);
+    }
+    
+    static void prev_map(Fl_Widget*obj,void*v){
+        Intro_Window* ptr=(Intro_Window*)v;
+        ptr->select_prev_map();
+    }
+    
+    void select_prev_map(){
+        if(current_map-1>=0){
+            current_map--;
+            mw->get_canvas().make_board(maps[current_map]);
+        }
     }
 
+    static void next_map(Fl_Widget* obj,void*v){
+      Intro_Window* ptr=(Intro_Window*)v;
+      ptr->select_next_map();
+    }
+    
+    void select_next_map(){
+      if(current_map+1<2){
+          current_map++;
+          mw->get_canvas().make_board(maps[current_map]);
+      }
+    }
 
     static void make_score_board(){
     }
