@@ -111,11 +111,11 @@ class Animation_pop{
 public:
 
     Animation_pop(Rectangle* Candy_to_animate,int animationTime = 25): animationTime{animationTime}, r{Candy_to_animate} {
-        cout<<"start of animation on "<<(Candy_to_animate->getCenter().x-25)/50<<" "<<(Candy_to_animate->getCenter().y-25)/50<<endl;
+        
     }
 
     ~ Animation_pop(){
-        cout<<"end of animation"<<(r->getCenter().x-25)/50<<" "<<(r->getCenter().y-25)/50<<endl;
+        
     }
     void draw() {
         ++time;
@@ -154,6 +154,72 @@ public:
     //Getters
     int get_score(){return current_score;}
     int get_best_score(){return best_score;}
+
+};
+
+class Objective{
+  int number_of_tries; //Vlad: there must be a max number of movements
+  string poss_objectives[3]={"Break->x->candies","Break->x->candies->color","Break x->cubs of ice"}; // Vlad: More to be added later.
+  string selected_obj;  //The obj that will be selected.
+  int number_to_break;
+  string condition; //If there is a condition (like candies need to be of a certain color or ice cubs or etc)
+  Fl_Color color[6]={FL_RED,FL_BLUE,FL_YELLOW,FL_BLACK,FL_DARK_CYAN,FL_GREEN};
+  bool obj_completed=false;
+public:
+  Objective(){
+      selected_obj=poss_objectives[rand()%3];
+      number_of_tries=25+(rand()%(40-25+1)); //Generate a number max between 25-40 mvts
+      setUp();
+  }
+  void setUp(){ //Set up the objective
+     if(selected_obj=="Break->x->candies"){
+       number_to_break=25+(rand()%(40-25+1));
+       condition="nothing";
+     }else if(selected_obj=="Break->x->candies->color"){
+         number_to_break=25+(rand()%(40-25+1));
+         condition=to_string(color[rand()%6]);
+     }else if(selected_obj=="Break x->cubs of ice"){
+         cout<<"Not implemented yet"<<endl; //Vlad: To be continued.
+     }
+    
+  }
+   
+  bool constant_check(){ //Method to check if the player has completed the obj
+      if(number_of_tries==0 && !obj_completed){
+          cout<<"Game lost"<<endl;
+          return false;
+      }else if(number_of_tries==0 && obj_completed){
+          cout<<"Game"<<endl;
+          return true;
+          // TODO: Change to the next map;
+      }else if(obj_completed){
+          cout<<"Game Won"<<endl;
+          return true;
+          //TODO: Change to the next map;
+      }
+      return false;
+  }
+
+  void mv_done(int nr,int nr_of_candies,Fl_Color candy_color=FL_WHITE){ //1 movement has been done.
+     number_of_tries-=nr;
+     if(nr!=0){cout<<number_of_tries<<" tries left"<<endl;} //Vlad: little print
+     if(condition=="nothing"){
+         number_to_break-=nr_of_candies;
+         objCompleted();
+     }else{
+          if(to_string(candy_color)==condition){
+              number_to_break-=nr_of_candies;
+              cout<<number_to_break<<" candies left to break of color "<<condition<<" left"<<endl;
+              objCompleted();
+          }
+     }
+  }
+  
+   void objCompleted(){ //Method to set the obj_completed to true if the obj has benn completed
+       if(number_to_break<=0 && number_of_tries>=0){
+           obj_completed=true;
+       }
+   }
 
 };
 
@@ -223,9 +289,12 @@ class Canvas{
     int time=0;  //Var used for timer
     bool can_vibrate=false;
     string current_map=maps[0];
+
+    Objective game_obj;
 public:
     Canvas(Point center={100,100},int wi=850,int hi=850){                           //wi and hi are not used x think we should remove them ; Vlad:Okey;
         make_board(maps[0]); //Vlad: Made the board in a method so when impossible is true than the board can be remaked later.
+        
     }
 
     
@@ -277,6 +346,8 @@ public:
         }else{
             make_board(current_map);
         }
+
+        game_obj.constant_check();  //Always checks if the obj has been completed
         
       if(time!=200){  //Timer set ; Vlad: pressing on a candy or when candies fall/break will restart the timer.
           time++;
@@ -608,13 +679,18 @@ public:
                         start_y=y;
                     }
                 }
+                if(pc){
+                            game_obj.mv_done(0,counter_left_right,temp_candy.getFillColor());} //Checks the obj because 1 mvt has been done
+                        else{
+                            game_obj.mv_done(1,counter_left_right,temp_candy.getFillColor());
+                        }
                 for(int i=start_x;i>=0;i--){  //Left
                     if(candy[i][start_y].getFillColor()!=temp_candy.getFillColor()){
                         break;
                     }else{
                         candy[i][start_y]=Candy({0,0},0,0);
                         candy_score.set_score(counter_left_right); //Temp way to increase the score; TODO: Change it later
-                        cout<<"The score is "<<candy_score.get_score()<<endl;	
+                        //cout<<"The score is "<<candy_score.get_score()<<endl;	
                     }
                 }
             }
@@ -628,13 +704,19 @@ public:
                     start_y=i;
                 }
             }
+            if(pc){
+                        game_obj.mv_done(0,counter_up_down,temp_candy.getFillColor());} //Checks the obj
+                    else{
+                        game_obj.mv_done(1,counter_up_down,temp_candy.getFillColor());
+                    }
             for(int i=start_y;i<candy[0].size();i++){  //Counts the candies under.
                 if(candy[start_x][i].getFillColor()!=temp_candy.getFillColor()){
                     break;
                 }else{
                     candy[start_x][i]=Candy({0,0},0,0);
+                    
                     candy_score.set_score(counter_up_down);
-    		        cout<<"The score is "<<candy_score.get_score()<<endl; //Temp way to increase the score; change it later
+    		        //cout<<"The score is "<<candy_score.get_score()<<endl; //Temp way to increase the score; change it later
                 }
             }
 
@@ -652,12 +734,17 @@ public:
                         start_y=j;
                     }
                 }          
-                
+                if(pc){
+                            game_obj.mv_done(0,counter_left_right2,temp_candy.getFillColor());} //Checks the obj
+                        else{
+                             game_obj.mv_done(1,counter_left_right2,temp_candy.getFillColor());
+                        }
                 for(int k=start_x;k>=0;k--){  //Left
                     if(candy[k][start_y].getFillColor()!=temp_candy2.getFillColor()){
                         break;
                     }else{
                         candy[k][start_y]=Candy({0,0},0,0);
+                        
                     }
                 }
             }
@@ -674,12 +761,18 @@ public:
                     start_y=k;
                 }
             }
+            if(pc){
+                        game_obj.mv_done(0,counter_up_down2,temp_candy.getFillColor());}//Checks the obj
+                    else{
+                        game_obj.mv_done(1,counter_up_down2,temp_candy.getFillColor());
+                    }
 
             for(int k=start_y;k<candy[0].size();k++){  //Counts the candies under.
                 if(candy[start_x][k].getFillColor()!=temp_candy2.getFillColor()){
                     break;
                 }else{
                     candy[start_x][k]=Candy({0,0},0,0);
+                    
                 }
             }
         }    
