@@ -257,7 +257,9 @@ public:
            obj_completed=true;
        }
    }
-
+   
+   int nr_breaks(){return number_to_break;}
+   int nr_tries(){return number_of_tries;}
 };
 
 class Candy:public Rectangle{
@@ -377,6 +379,8 @@ public:
             }
         } 
 
+        
+
         if(not_impossible){
             not_impossible=false;
 
@@ -384,8 +388,23 @@ public:
             make_board(current_map);
         }
 
-        game_obj.constant_check();  //Always checks if the obj has been completed
-        
+        if(game_obj.constant_check()){ //Always checks if the obj has been completed
+             game_obj=Objective(); //New obj
+             //TODO makeboard(next_map)
+ 
+        }else if(!game_obj.constant_check() && game_obj.nr_tries()==0){
+            make_board(current_map);
+            game_obj=Objective();
+        } 
+
+        string obj=to_string(game_obj.nr_breaks());
+        string tries=to_string(game_obj.nr_tries());
+
+        fl_draw(obj.c_str(),450,100); //Vlad: Text print of how many blocks it has to break;
+        fl_draw("to break",450,120); //Vlad: Make it prettier yourself :(
+        fl_draw(tries.c_str(),450,170);
+        fl_draw("tries left",450,190);
+
         if(time!=200){  //Timer set ; Vlad: pressing on a candy or when candies fall/break will restart the timer.
             time++;
         }else{          //restart the timer.
