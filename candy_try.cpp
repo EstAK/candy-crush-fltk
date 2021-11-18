@@ -15,6 +15,7 @@
 #include <fstream>
 #include "const.h"
 #include <array>
+#include<unistd.h>
 // #include <functional> //not needed for now but might become handy
 
 using namespace std;
@@ -101,21 +102,61 @@ struct Pop{
     }
 };
 
+struct Slide{
+    Slide(Rectangle* r, int x, int y){
+        r->setCenter({r->getCenter().x,r->getCenter().y});
+        fl_push_matrix();
+    }
+    ~Slide(){
+        fl_pop_matrix();
+    }
+};
 
-class Animation_pop{
 
-    int animationTime;
-    Rectangle *r;
+class Animation{
+protected:
+    Rectangle* r;
     int time{0};
+    int animation_time;
+public:
+    bool is_complete(){
+        return time>animation_time;
+    }
+
+    void set_animation_time(int t){
+        animation_time=t;
+    }
+
+    void set_rectangle(Rectangle* rect){
+        r=rect;
+    }
+};
+
+class Animation_slide: public Animation{
+    //esteban: inheriting this class from a base class having those private instances might be a good idea as they are nearly the same as in Animation_pop
+    Point initial_pos;
+    int speed = 1;
+public:
+    Animation_slide(Rectangle* candy_to_animate, int animation_time){
+        set_animation_time(animation_time);
+        set_rectangle(candy_to_animate);
+    }
+
+
+};
+
+
+class Animation_pop: public Animation{
     int spread_coeff = 10;
 public:
 
-    Animation_pop(Rectangle* Candy_to_animate,int animationTime = 25): animationTime{animationTime}, r{Candy_to_animate} {
-        
+    Animation_pop(Rectangle* candy_to_animate,int animation_time = 25){
+        set_animation_time(animation_time);
+        set_rectangle(candy_to_animate);
     }
 
     ~ Animation_pop(){
-        
+        sleep(0.5);
     }
     void draw() {
         ++time;
@@ -126,10 +167,6 @@ public:
         Pop t{r->getCenter().x-w/2, r->getCenter().y-h/2, w, h};        //WOP i still have to make it pretty
         
         r->draw();
-    }
-
-    bool isComplete() {
-        return time > animationTime;
     }
 
 };
@@ -263,7 +300,7 @@ public:
 
 
     void draw(){    //redifining rectangle animation in candy
-        if (animation_pop && animation_pop->isComplete()){
+        if (animation_pop && animation_pop->is_complete()){
             delete animation_pop;
             animation_pop = nullptr;
         }
@@ -331,42 +368,40 @@ public:
     }
 
     void draw(){
-      for(int i=0;i<candy.size();i++){
-          for(int j=0;j<candy[0].size();j++){
-              candy[i][j].draw();
-	      if(candy[i][j].get_wall()!=true){
-              break_candy(i,j,0,0,true);} //Checks all the candies all the time and breaks them if it must.
-              check_impossible(i,j,can_vibrate);
-           }
-        }
-        
+        for(int i=0;i<candy.size();i++){
+            for(int j=0;j<candy[0].size();j++){
+                candy[i][j].draw();
+                if(candy[i][j].get_wall()!=true){
+                    break_candy(i,j,0,0,true);} //Checks all the candies all the time and breaks them if it must.
+                    check_impossible(i,j,can_vibrate);
+            }
+        } 
+
         if(not_impossible){
             not_impossible=false;
-            
+
         }else{
             make_board(current_map);
         }
 
         game_obj.constant_check();  //Always checks if the obj has been completed
         
-      if(time!=200){  //Timer set ; Vlad: pressing on a candy or when candies fall/break will restart the timer.
-          time++;
-      }else{        //restart the timer.
-          time=0;
-          can_vibrate=true;
-      }
-       
-      for(int i=0;i<candy.size();i++){ //Checks if there is a free place that can be filled ; Takes into consideration the walls(phyics) as well.
-          for(int j=0;j<candy[0].size();j++){
-              if(candy[i][j].getCenter().x==0 && candy[i][j].getCenter().y==0){
-                  fall_candies(i,j);
-                  time=0; //reset the timer.
-                  can_vibrate=false; //reset the vibrate;
-                  candy[i][j].start_pop_animation();
-              }
-          }
-      }
-      
+        if(time!=200){  //Timer set ; Vlad: pressing on a candy or when candies fall/break will restart the timer.
+            time++;
+        }else{          //restart the timer.
+            time=0;
+            can_vibrate=true;
+        }
+
+        for(int i=0;i<candy.size();i++){ //Checks if there is a free place that can be filled ; Takes into consideration the walls(phyics) as well.
+            for(int j=0;j<candy[0].size();j++){
+                if(candy[i][j].getFillColor() == FL_BLACK){
+                    fall_candies(i,j);
+                    time=0; //reset the timer.
+                    can_vibrate=false; //reset the vibrate;
+                }
+            }
+        }  
     }
 
   
@@ -487,7 +522,7 @@ public:
                 return true;
 
             }else{
-            return true;
+                return true;
             }
         }
            
@@ -504,47 +539,52 @@ public:
         if(start_y-1>=0){
 
             int s_y=start_y-1;
-            if(candy[start_x][s_y].getCenter().x!=0 && candy[start_x][s_y].getCenter().y!=0 && candy[start_x][s_y].get_wall()!=true){ //If there is a candy above and is not a wall.
+            if(candy[start_x][s_y].getFillColor() != FL_BLACK && candy[start_x][s_y].get_wall()!=true){ //If there is a candy above and is not a wall.
                 Point fall{candy[start_x][s_y].getCenter().x,candy[start_x][s_y].getCenter().y+50}; //that Candy will fall down and it's place will be liberated.
-                candy[start_x][start_y]=Candy(fall,40,40); //Candy falls down
+                candy[start_x][start_y].setCenter(fall); //Candy falls down
                 candy[start_x][start_y].setCode(candy[start_x][s_y].getFillColor());
-                candy[start_x][s_y]=Candy({0,0},0,0); //Place liberated of the candy that fell Down.
+                candy[start_x][s_y].setFillColor(FL_BLACK); //Place liberated of the candy that fell Down.
                 set_the_neighbours(); //Reset the neig because new candies have been created.
                 fall_candies(start_x,s_y); //Continue the Rec.
             }else{
-                fall_candies(start_x,s_y);} //Else we will search more above.
+                fall_candies(start_x,s_y); //Else we will search more above.
+            }
 
         }else{  //We know that we reached the top we want to generate a random candy in the top but we need the position of the column first.
-            if(candy[start_x][start_y+1].getCenter().x!=0 && candy[start_x][start_y+1].getCenter().y!=0 && candy[start_x][start_y+1].get_wall()!=true){
+            if(candy[start_x][start_y+1].getFillColor() != FL_BLACK && candy[start_x][start_y+1].get_wall()!=true){
                 Point fall{candy[start_x][start_y+1].getCenter().x,candy[start_x][start_y+1].getCenter().y-50};
-                candy[start_x][start_y]=Candy(fall,40,40,color[rand()%6]);
+                candy[start_x][start_y].setCenter(fall);
+                candy[start_x][start_y].setFillColor(color[rand()%6]);
                 set_the_neighbours();
             }else if(start_x+1<candy.size() && candy[start_x+1][start_y].get_wall()!=true){
                 Point fall{candy[start_x+1][start_y].getCenter().x-50,candy[start_x+1][start_y].getCenter().y}; //Get the pos in using -50 the right-neigh position.
-                candy[start_x][start_y]=Candy(fall,40,40,color[rand()%6]);
+                candy[start_x][start_y].setCenter(fall);
+                candy[start_x][start_y].setFillColor(color[rand()%6]);
                 set_the_neighbours();
             }else if(start_x-1>=0 && candy[start_x-1][start_y].get_wall()!=true){
                 Point fall{candy[start_x-1][start_y].getCenter().x+50,candy[start_x-1][start_y].getCenter().y}; //Get the pos in adding +50 the left-neigh position.
-                candy[start_x][start_y]=Candy(fall,40,40,color[rand()%6]);
-                set_the_neighbours();}
+                candy[start_x][start_y].setCenter(fall);
+                candy[start_x][start_y].setFillColor(color[rand()%6]);
+                set_the_neighbours();
             }
+        }
            
         return 0;
     }
     
     void fall_walls(int start_x, int start_y){ //Function to make the candies fall in diag if there is a wall above.
-        if(candy[start_x-1][start_y].getCenter().x!=0 && candy[start_x-1][start_y].getCenter().y!=0){ //make the candy in the right diag fall.
+        if(candy[start_x-1][start_y].getFillColor() != FL_BLACK ){ //make the candy in the right diag fall.
             Point fall{candy[start_x][start_y].getCenter().x,candy[start_x][start_y].getCenter().y+50};
-            candy[start_x][start_y+1]=Candy(fall,40,40);
+            candy[start_x][start_y+1].setCenter(fall);
             candy[start_x][start_y+1].setCode(candy[start_x-1][start_y].getFillColor());
-            candy[start_x-1][start_y]=Candy({0,0},0,0);
+            candy[start_x-1][start_y].setFillColor(FL_BLACK);
             set_the_neighbours();
             fall_candies(start_x-1,start_y);
         }else{ //If no candy in the right diag then we take the one from the left diag
             Point fall{candy[start_x][start_y].getCenter().x,candy[start_x][start_y].getCenter().y+50};
-            candy[start_x][start_y+1]=Candy(fall,40,40);
+            candy[start_x][start_y+1].setCenter(fall);
             candy[start_x][start_y+1].setCode(candy[start_x+1][start_y].getFillColor());
-            candy[start_x+1][start_y]=Candy({0,0},0,0);
+            candy[start_x+1][start_y].setFillColor(FL_BLACK);
             set_the_neighbours();
             fall_candies(start_x+1,start_y);
         }
@@ -562,23 +602,35 @@ public:
         }
     }
     void mouseClick(Point mouseLoc){
-      for(int i=0;i<candy.size();i++){
-          for(int j=0;j<candy[0].size();j++){
-              if(candy[i][j].contains(mouseLoc) && current.getCenter().x==0 && current.getCenter().y==0){
-                if(candy[i][j].get_wall()==false){current=candy[i][j];x=i;y=j;time=0;can_vibrate=false;} //make sure that is not a wall. ; Vlad:time n vibrate
-              }else if(candy[i][j].contains(mouseLoc)){
-                  if(candy[i][j].verify_neighbours(current)){
-                      break_candy(i,j,x,y);
-                      current=Candy{{0,0},0,0};x=0;y=0;
-                      cout<<"Neigh"<<endl;
-                      time=0;
-                      can_vibrate=false;
-                  }else{
-                      cout<<"Selected new one"<<endl;
-                      if(candy[i][j].get_wall()==false){current=candy[i][j];x=i;y=j;time=0;can_vibrate=false;}   //timer n vibrate  
-                  }
-               }
-           }
+        for(int i=0;i<candy.size();i++){
+            for(int j=0;j<candy[0].size();j++){
+                if(candy[i][j].contains(mouseLoc) && current.getCenter().x==0 && current.getCenter().y==0){
+                    if(candy[i][j].get_wall()==false){  //make sure that is not a wall. ; Vlad:time n vibrate
+                        current=candy[i][j];
+                        x=i;
+                        y=j;
+                        time=0;
+                        can_vibrate=false;
+                    }
+                }else if(candy[i][j].contains(mouseLoc)){
+                    if(candy[i][j].verify_neighbours(current)){
+                        break_candy(i,j,x,y);
+                        current=Candy{{0,0},0,0};x=0;y=0;
+                        cout<<"Neigh"<<endl;
+                        time=0;
+                        can_vibrate=false;
+                    }else{
+                        cout<<"Selected new one"<<endl;
+                        if(candy[i][j].get_wall()==false){  //timer n vibrate
+                            current=candy[i][j];
+                            x=i;
+                            y=j;
+                            time=0;
+                            can_vibrate=false;
+                        }    
+                    }
+                }
+            }
         }
    }
     
@@ -668,7 +720,6 @@ public:
         //There will break all the candies in a row; First it will decide which one is better from left<->right or up<-->down in calculation the nomber of candies that will be broken.
         if(counter_left_right>counter_up_down){ //A way to know which one will have the priority.
             if(counter_left_right>=3){
-                // cout<<"------------------------------------------------------------------------------------------------------------------------------"<<endl;
                 int start_x=x;
                 int start_y=y;
                 for(int i=x+1;i<candy.size();i++){  //Counter the same candies on the right line of the same color; counter begins of 1
@@ -680,15 +731,17 @@ public:
                     }
                 }
                 if(pc){
-                            game_obj.mv_done(0,counter_left_right,temp_candy.getFillColor());} //Checks the obj because 1 mvt has been done
-                        else{
-                            game_obj.mv_done(1,counter_left_right,temp_candy.getFillColor());
-                        }
+                    game_obj.mv_done(0,counter_left_right,temp_candy.getFillColor());} //Checks the obj because 1 mvt has been done
+                else{
+                    game_obj.mv_done(1,counter_left_right,temp_candy.getFillColor());
+                }
                 for(int i=start_x;i>=0;i--){  //Left
                     if(candy[i][start_y].getFillColor()!=temp_candy.getFillColor()){
                         break;
                     }else{
-                        candy[i][start_y]=Candy({0,0},0,0);
+                        candy[i][start_y].setFillColor(FL_BLACK);
+                        candy[i][start_y].start_pop_animation();
+
                         candy_score.set_score(counter_left_right); //Temp way to increase the score; TODO: Change it later
                         //cout<<"The score is "<<candy_score.get_score()<<endl;	
                     }
@@ -705,16 +758,17 @@ public:
                 }
             }
             if(pc){
-                        game_obj.mv_done(0,counter_up_down,temp_candy.getFillColor());} //Checks the obj
-                    else{
-                        game_obj.mv_done(1,counter_up_down,temp_candy.getFillColor());
-                    }
+                game_obj.mv_done(0,counter_up_down,temp_candy.getFillColor());} //Checks the obj
+            else{
+                game_obj.mv_done(1,counter_up_down,temp_candy.getFillColor());
+            }
             for(int i=start_y;i<candy[0].size();i++){  //Counts the candies under.
                 if(candy[start_x][i].getFillColor()!=temp_candy.getFillColor()){
                     break;
                 }else{
-                    candy[start_x][i]=Candy({0,0},0,0);
-                    
+                    candy[start_x][i].setFillColor(FL_BLACK);
+                    candy[start_x][i].start_pop_animation();
+
                     candy_score.set_score(counter_up_down);
     		        //cout<<"The score is "<<candy_score.get_score()<<endl; //Temp way to increase the score; change it later
                 }
@@ -743,7 +797,9 @@ public:
                     if(candy[k][start_y].getFillColor()!=temp_candy2.getFillColor()){
                         break;
                     }else{
-                        candy[k][start_y]=Candy({0,0},0,0);
+                        candy[k][start_y].setFillColor(FL_BLACK);
+                        candy[k][start_y].start_pop_animation();
+
                         
                     }
                 }
@@ -771,7 +827,9 @@ public:
                 if(candy[start_x][k].getFillColor()!=temp_candy2.getFillColor()){
                     break;
                 }else{
-                    candy[start_x][k]=Candy({0,0},0,0);
+                    candy[start_x][k].setFillColor(FL_BLACK);
+                    candy[start_x][k].start_pop_animation();
+
                     
                 }
             }
