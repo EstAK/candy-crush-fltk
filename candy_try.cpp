@@ -399,11 +399,14 @@ public:
 
         string obj=to_string(game_obj.nr_breaks());
         string tries=to_string(game_obj.nr_tries());
+        string score=to_string(candy_score.get_score());
 
         fl_draw(obj.c_str(),450,100); //Vlad: Text print of how many blocks it has to break;
         fl_draw("to break",450,120); //Vlad: Make it prettier yourself :(
         fl_draw(tries.c_str(),450,170);
         fl_draw("tries left",450,190);
+        fl_draw(score.c_str(),450,210);
+        fl_draw("score",480,210);
 
         if(time!=200){  //Timer set ; Vlad: pressing on a candy or when candies fall/break will restart the timer.
             time++;
@@ -1047,6 +1050,7 @@ public:
 
 
 int main(int argc, char *argv[]){
+    srand(time(NULL)); //Vlad: Seed to make rand() work
     Intro_Window window;
     window.show(argc, argv);
     MainWindow mw;;
