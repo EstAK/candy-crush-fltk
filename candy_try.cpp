@@ -262,6 +262,47 @@ public:
    int nr_tries(){return number_of_tries;}
 };
 
+class Map_Editor{
+  string new_map[9][9];
+public:
+  Map_Editor(){
+      cout<<"c=candy with random color"<<endl;
+      cout<<"w=wall"<<endl;
+      cout<<"below is an example of a map"<<endl;
+      for(int i=0;i<9;i++){
+        for(int j=0;j<9;j++){
+            cout<<"c";
+        }
+        cout<<endl;
+      }
+      cout<<endl;
+      create_level();
+  }
+
+  void create_level(){
+      cout<<"Put a space after each letter"<<endl;
+      for(int i=0;i<9;i++){
+        for(int j=0;j<9;j++){
+            cin>>new_map[i][j];
+        }
+      }
+      write_the_map();
+  }
+
+  void write_the_map(){
+       ofstream fw;
+       fw.open("custom_map.txt");
+       for(int i=0;i<9;i++){
+        for(int j=0;j<9;j++){
+            fw<<new_map[i][j];
+        }
+        fw<<"\n";
+       }
+       cout<<"Map finished you can load the game"<<endl;
+    }
+
+};
+
 class Candy:public Rectangle{
     bool wall=false; //Vlad:Use this to know which rectangle(candy) is a wall, no need for a whole class with a constructor for this in my opinion.
     Animation_pop* animation_pop;           //not templating because every Candy has to have those 2 animations
@@ -340,6 +381,8 @@ public:
     void make_board(string map){ //TODO: Finish it later.
         read_file(map);
         current_map=map;
+        game_obj=Objective();
+        candy_score=Score();
         
         for (int x = 0; x<9; x++){
             for (int y = 0; y<9; y++){
@@ -347,7 +390,7 @@ public:
                 if (lines[y][x] == *c){
                     candy[x][y]=(Candy{{50*x+25, 50*y+25}, 40, 40, color[rand()%6]});
                 }
-                else{
+                else if(lines[y][x]== *w){
                     candy[x][y]=(Candy{{50*x+25, 50*y+25}, 40, 40,FL_MAGENTA,FL_BLACK});
                 }
             }
@@ -406,7 +449,7 @@ public:
         fl_draw(tries.c_str(),450,170);
         fl_draw("tries left",450,190);
         fl_draw(score.c_str(),450,210);
-        fl_draw("score",480,210);
+        fl_draw("score",450,230);
 
         if(time!=200){  //Timer set ; Vlad: pressing on a candy or when candies fall/break will restart the timer.
             time++;
@@ -426,7 +469,12 @@ public:
         }  
     }
 
-  
+    void edit_level(){
+        Map_Editor mp;
+        make_board("custom_map.txt");
+        game_obj=Objective();
+    }
+
     void check_impossible(int i,int j,bool vibrate){
         Fl_Color save=candy[i][j].getFillColor();
         if(candy[i][j].get_wall()){return;}
@@ -991,11 +1039,22 @@ public:
 
         static Fl_Button* prev = new Fl_Button(50,370,70,70,"Prev Map");  //Buttons for the prev map and next map
         static Fl_Button* next = new Fl_Button(120,370,70,70,"Next Map");
+        static Fl_Button* create_map=new Fl_Button(70,280,80,80,"Create map");
         
         prev->callback((Fl_Callback*)prev_map,this);
         next->callback((Fl_Callback*)next_map,this);
+        create_map->callback((Fl_Callback*)create,this);
+
     }
     
+    static void create(Fl_Widget* obj,void*v){
+        Intro_Window* ptr=(Intro_Window*)v;
+        ptr->create_the_map();
+    }
+    void create_the_map(){
+        mw->get_canvas().edit_level();
+    }
+
     static void prev_map(Fl_Widget*obj,void*v){
         Intro_Window* ptr=(Intro_Window*)v;
         ptr->select_prev_map();
