@@ -103,9 +103,9 @@ struct Pop{
 };
 
 struct Slide{
-    Slide(Rectangle* r, int x, int y){
-        r->setCenter({r->getCenter().x,r->getCenter().y});
+    Slide(Point p, Rectangle *r){
         fl_push_matrix();
+        r->setCenter(p);
     }
     ~Slide(){
         fl_pop_matrix();
@@ -132,16 +132,49 @@ public:
     }
 };
 
+
 class Animation_slide: public Animation{
-    //esteban: inheriting this class from a base class having those private instances might be a good idea as they are nearly the same as in Animation_pop
+    //esteban: inheriting this class from a base class having thoseg private instances might be a good idea as they are nearly the same as in Animation_pop
     Point initial_pos;
+    Point destination;
+    int distance_x = 0;
+    int distance_y = 0;
     int speed = 1;
+
 public:
-    Animation_slide(Rectangle* candy_to_animate, int animation_time){
-        set_animation_time(animation_time);
+    Animation_slide(Rectangle* candy_to_animate, Point d, int animation_time=50): 
+    initial_pos{candy_to_animate->getCenter()} , destination{d} {
+
+        cout<<"start of slide"<<endl;
+  
+        set_animation_time(animation_time*speed);
         set_rectangle(candy_to_animate);
+
+        // initializing should be done the constructor initializer but it's more readable this way
+        cout<<"x initial_pos : "<<initial_pos.x<<endl;
+        cout<<"y initial_pos : "<<initial_pos.y<<endl;
+        cout<<"x dest : "<<destination.x<<endl;
+        cout<<"y dest : "<<destination.y<<endl;
+        distance_x = (destination.x - r->getCenter().x)/animation_time; // x distance per animation frame
+        distance_y = (destination.y - r->getCenter().y)/animation_time; // y distance per animation frame
+
+        cout<<"distance x : "<<distance_x<<endl;
+        cout<<"distance y : "<<distance_y<<endl;
+
     }
 
+    ~Animation_slide(){
+        r->setCenter(initial_pos);
+        cout<<"end of slide"<<endl;
+    }
+
+    void draw(){
+        time++;
+
+        Slide s ({initial_pos.x+distance_x*time, initial_pos.y+distance_y*time}, r);
+
+        r->draw();
+    }
 
 };
 
@@ -306,11 +339,12 @@ public:
 class Candy:public Rectangle{
     bool wall=false; //Vlad:Use this to know which rectangle(candy) is a wall, no need for a whole class with a constructor for this in my opinion.
     Animation_pop* animation_pop;           //not templating because every Candy has to have those 2 animations
-    // Animation_slide* animation_slide;
+    Animation_slide* animation_slide;
 public:
     vector<Candy*> neighbours;
     Candy(){} //Dummy Constructor
-    Candy(Point center, int w, int h,Fl_Color fillColor = FL_WHITE, Fl_Color frameColor = FL_BLACK, Animation_pop* animation=nullptr): animation_pop{animation}{
+    Candy(Point center, int w, int h,Fl_Color fillColor = FL_WHITE, Fl_Color frameColor = FL_BLACK, 
+            Animation_pop* pop=nullptr, Animation_slide* slide=nullptr): animation_pop{pop}, animation_slide{slide} {
         setCenter(center);
         setWidth(w);
         setHeight(h);
@@ -333,21 +367,36 @@ public:
     void set_wall(bool wa){wall=wa;}
     bool get_wall(){return wall;}
 
-    Animation_pop* get_animation_ptr(){
-        return animation_pop;
-    }
-
     void start_pop_animation(){
         animation_pop = new Animation_pop(this);
     }
 
+    void start_slide_animation(Point dest){
+        animation_slide = new Animation_slide(this, dest);
+    }
+
+    bool is_slide_complete(){
+        // checks wheter or not the slide animaiton is complete or non existant
+        if (animation_slide){
+            return animation_slide->is_complete();
+        }else{
+            return true;
+        }
+    }
 
     void draw(){    //redifining rectangle animation in candy
         if (animation_pop && animation_pop->is_complete()){
             delete animation_pop;
             animation_pop = nullptr;
         }
-        if (animation_pop){
+        if (animation_slide && animation_slide->is_complete()){
+            delete animation_slide;
+            animation_slide = nullptr;
+        }
+
+        if (animation_slide){
+            animation_slide->draw();
+        }else if (animation_pop) {
             animation_pop->draw();
         }else{
             Rectangle::draw();
@@ -357,10 +406,11 @@ public:
 
 
 class Canvas{
+    bool has_moved=false;
     array<array<Candy,9>,9> candy;            //2d Array
     Fl_Color color[6]={FL_RED,FL_BLUE,FL_YELLOW,FL_BLACK,FL_DARK_CYAN,FL_GREEN};
     vector<string> lines;
-    Candy current{{0,0},0,0}; //stocks the current cell clicked on.
+    Candy current{{0,0},0,0}; //stocks the current cell clicked on. esteban: might cause an issue somewhere as base cas is now FL_BLACK
     int x=0;int y=0; //currents coord in the array
     Candy* point_current=&current;
     Score candy_score; //By default the score begins at 0
@@ -461,8 +511,10 @@ public:
         for(int i=0;i<candy.size();i++){ //Checks if there is a free place that can be filled ; Takes into consideration the walls(phyics) as well.
             for(int j=0;j<candy[0].size();j++){
                 if(candy[i][j].getFillColor() == FL_BLACK){
-                    fall_candies(i,j);
-                    time=0; //reset the timer.
+                    if (not has_moved || candy[i][j].is_slide_complete()){
+                        fall_candies(i,j);
+                        time=0; //reset the timer.
+                    }
                     can_vibrate=false; //reset the vibrate;
                 }
             }
@@ -672,9 +724,10 @@ public:
         }
     }
     void mouseClick(Point mouseLoc){
+        has_moved=true;
         for(int i=0;i<candy.size();i++){
             for(int j=0;j<candy[0].size();j++){
-                if(candy[i][j].contains(mouseLoc) && current.getCenter().x==0 && current.getCenter().y==0){
+                if(candy[i][j].contains(mouseLoc) && current.getFillColor() == FL_BLACK){
                     if(candy[i][j].get_wall()==false){  //make sure that is not a wall. ; Vlad:time n vibrate
                         current=candy[i][j];
                         x=i;
@@ -684,8 +737,12 @@ public:
                     }
                 }else if(candy[i][j].contains(mouseLoc)){
                     if(candy[i][j].verify_neighbours(current)){
+                        candy[x][y].start_slide_animation(candy[i][j].getCenter());
+                        candy[i][j].start_slide_animation(candy[x][y].getCenter());
                         break_candy(i,j,x,y);
-                        current=Candy{{0,0},0,0};x=0;y=0;
+                        current.setFillColor(FL_BLACK);
+                        x=0;
+                        y=0;
                         cout<<"Neigh"<<endl;
                         time=0;
                         can_vibrate=false;
