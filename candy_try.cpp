@@ -439,14 +439,30 @@ public:
     }
     bool verify_neighbours(Candy current){
         if(this->get_wall()==true){return false;}
-        if(this->get_fruit()==true){return false;}
+        
         for(auto i:neighbours){
             if(i->getCenter().x==current.getCenter().x && i->getCenter().y==current.getCenter().y){
+                if(!this->get_fruit() && !current.get_fruit()){
                 Fl_Color save=this->getFillColor();    //TODO : Add the animation code here.
                 this->setCode(i->getFillColor());
                 i->setCode(save);   
                 return true;
+                }else{
+                    if(this->get_fruit()){
+                    Fl_Color save=this->getFillColor();
+                    this->set_fruit(false);
+                    i->set_fruit(true);
+                    this->setCode(i->getFillColor());
+                    i->setCode(save);
+                    }else{
+                         Fl_Color save=this->getFillColor();
+                         this->set_fruit(true);
+                         i->set_fruit(false);
+                         this->setCode(i->getFillColor());
+                         i->setCode(save);
+                    }
                 }
+            }
         }
         return false;
     }
@@ -526,7 +542,6 @@ public:
     void make_board(string map){ //TODO: Finish it later.
         read_file(map);
         current_map=map;
-        game_obj=Objective();
         candy_score=Score();
         int fruits=0;
         bool gj=false;
@@ -548,7 +563,7 @@ public:
                 }
             }
             
-            if(gj){game_obj.fruits_on(fruits);}
+            if(gj){game_obj.fruits_on(fruits);}else{game_obj=Objective();}
             set_the_neighbours();
             set_the_wall();
         }
@@ -841,7 +856,7 @@ public:
         for(int i=0;i<candy.size();i++){
             for(int j=0;j<candy[0].size();j++){
                 if(candy[i][j].contains(mouseLoc) && current.getFillColor() == FL_BLACK){
-                    if(candy[i][j].get_wall()==false && candy[i][j].get_fruit()==false){  //make sure that is not a wall. ; Vlad:time n vibrate
+                    if(candy[i][j].get_wall()==false ){  //make sure that is not a wall. ; Vlad:time n vibrate
                         current=candy[i][j];
                         x=i;
                         y=j;
@@ -861,7 +876,7 @@ public:
                         can_vibrate=false;
                     }else{
                         cout<<"Selected new one"<<endl;
-                        if(candy[i][j].get_wall()==false && !candy[i][j].get_fruit()){  //timer n vibrate
+                        if(candy[i][j].get_wall()==false){  //timer n vibrate
                             current=candy[i][j];
                             x=i;
                             y=j;
