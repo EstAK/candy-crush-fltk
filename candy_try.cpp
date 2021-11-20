@@ -18,7 +18,15 @@
 #include<unistd.h>
 // #include <functional> //not needed for now but might become handy
 
+#if __cplusplus >= 202002L
+#include <numbers>
+using std::numbers::pi;
+#else
+const double pi=3.141592653589793238462643383279502884L;
+#endif
+
 using namespace std;
+
 
 struct Point{int x; int y;};
 
@@ -91,6 +99,66 @@ class Rectangle {
 
 };
 
+class Circle {
+  Point center;
+  int r;
+  Fl_Color fillColor, frameColor;
+ public:
+  Circle(Point center, int r,
+            Fl_Color frameColor = FL_BLACK,
+            Fl_Color fillColor = FL_WHITE);
+  void draw();
+  void setFillColor(Fl_Color newFillColor);
+  Fl_Color getFillColor() {
+    return fillColor;
+  }
+  void setFrameColor(Fl_Color newFrameColor);
+  Fl_Color getFrameColor() {
+    return frameColor;
+  }
+  bool contains(Point p);
+  Point getCenter() {
+    return center;
+  }
+};
+
+Circle::Circle(Point center, int r,
+                     Fl_Color frameColor,
+                     Fl_Color fillColor):
+  center{center}, r{r}, fillColor{fillColor}, frameColor{frameColor} {}
+
+void Circle::draw() {
+  array<Point,37> points;
+  for (int i=0;i<36;i++)
+    points[i]={static_cast<int>(center.x+r*sin(i*10*pi/180)),
+      static_cast<int>(center.y+r*cos(i*10*pi/180))};
+  points[36]=points[0];
+  fl_color(fillColor);
+  fl_begin_polygon();
+  for (auto& point : points) {
+    fl_vertex(point.x, point.y);
+  }
+  fl_end_polygon();
+  fl_color(frameColor);
+  fl_begin_line();
+  for (auto& point : points) {
+    fl_vertex(point.x, point.y);
+  }
+  fl_end_line();
+}
+
+void Circle::setFillColor(Fl_Color newFillColor) {
+  fillColor = newFillColor;
+}
+
+void Circle::setFrameColor(Fl_Color newFrameColor) {
+  frameColor = newFrameColor;
+}
+
+bool Circle::contains(Point p) {
+  return ( (p.x-center.x)*(p.x-center.x)
+          +(p.y-center.y)*(p.y-center.y)<=r*r);
+}
 
 struct Pop{
     Pop(int x, int y, int w, int h){
@@ -145,27 +213,22 @@ public:
     Animation_slide(Rectangle* candy_to_animate, Point d, int animation_time=50): 
     initial_pos{candy_to_animate->getCenter()} , destination{d} {
 
-        cout<<"start of slide"<<endl;
+       
   
         set_animation_time(animation_time*speed);
         set_rectangle(candy_to_animate);
 
         // initializing should be done the constructor initializer but it's more readable this way
-        cout<<"x initial_pos : "<<initial_pos.x<<endl;
-        cout<<"y initial_pos : "<<initial_pos.y<<endl;
-        cout<<"x dest : "<<destination.x<<endl;
-        cout<<"y dest : "<<destination.y<<endl;
+        
         distance_x = (destination.x - r->getCenter().x)/animation_time; // x distance per animation frame
         distance_y = (destination.y - r->getCenter().y)/animation_time; // y distance per animation frame
 
-        cout<<"distance x : "<<distance_x<<endl;
-        cout<<"distance y : "<<distance_y<<endl;
 
     }
 
     ~Animation_slide(){
         r->setCenter(initial_pos);
-        cout<<"end of slide"<<endl;
+        
     }
 
     void draw(){
@@ -228,10 +291,10 @@ public:
 };
 
 class Objective{
-  int number_of_tries; //Vlad: there must be a max number of movements
+  int number_of_tries=0; //Vlad: there must be a max number of movements
   string poss_objectives[3]={"Break->x->candies","Break->x->candies->color","Break x->cubs of ice"}; // Vlad: More to be added later.
   string selected_obj;  //The obj that will be selected.
-  int number_to_break;
+  int number_to_break=0;
   string condition; //If there is a condition (like candies need to be of a certain color or ice cubs or etc)
   Fl_Color color[6]={FL_RED,FL_BLUE,FL_YELLOW,FL_BLACK,FL_DARK_CYAN,FL_GREEN};
   bool obj_completed=false;
@@ -249,11 +312,26 @@ public:
          number_to_break=25+(rand()%(40-25+1));
          condition=to_string(color[rand()%6]);
      }else if(selected_obj=="Break x->cubs of ice"){
+         number_to_break=25+(rand()%(40-25+1));
          cout<<"Not implemented yet"<<endl; //Vlad: To be continued.
      }
     
   }
    
+  void fruits_on(int fruits){
+      selected_obj="fruits on";
+      number_of_tries=25+(rand()%(40-25+1));
+      number_to_break=fruits;
+  }
+
+  void inc_fruits(){
+      number_to_break++;
+  }
+
+  void dec_fruits(){
+      number_to_break--;
+  }
+
   bool constant_check(){ //Method to check if the player has completed the obj
       if(number_of_tries==0 && !obj_completed){
           cout<<"Game lost"<<endl;
@@ -276,12 +354,18 @@ public:
      if(condition=="nothing"){
          number_to_break-=nr_of_candies;
          objCompleted();
-     }else{
+     }else if(selected_obj=="Break->x->candies->color"){
           if(to_string(candy_color)==condition){
               number_to_break-=nr_of_candies;
               cout<<number_to_break<<" candies left to break of color "<<condition<<" left"<<endl;
               objCompleted();
           }
+     }
+     else if(selected_obj=="Break x->cubs of ice"){
+
+     }
+     else if(selected_obj=="fruits on"){
+         objCompleted();
      }
   }
   
@@ -340,6 +424,8 @@ class Candy:public Rectangle{
     bool wall=false; //Vlad:Use this to know which rectangle(candy) is a wall, no need for a whole class with a constructor for this in my opinion.
     Animation_pop* animation_pop;           //not templating because every Candy has to have those 2 animations
     Animation_slide* animation_slide;
+    Circle* c;
+    bool is_fruit=false;
 public:
     vector<Candy*> neighbours;
     Candy(){} //Dummy Constructor
@@ -353,6 +439,7 @@ public:
     }
     bool verify_neighbours(Candy current){
         if(this->get_wall()==true){return false;}
+        if(this->get_fruit()==true){return false;}
         for(auto i:neighbours){
             if(i->getCenter().x==current.getCenter().x && i->getCenter().y==current.getCenter().y){
                 Fl_Color save=this->getFillColor();    //TODO : Add the animation code here.
@@ -366,6 +453,8 @@ public:
 
     void set_wall(bool wa){wall=wa;}
     bool get_wall(){return wall;}
+    void set_fruit(bool fr){is_fruit=fr;}
+    bool get_fruit(){return is_fruit;}
 
     void start_pop_animation(){
         animation_pop = new Animation_pop(this);
@@ -385,6 +474,12 @@ public:
     }
 
     void draw(){    //redifining rectangle animation in candy
+        if(is_fruit){
+            c=new Circle({getCenter().x,getCenter().y},20,getFrameColor(),getFillColor());
+            c->draw();
+            return;
+        }
+
         if (animation_pop && animation_pop->is_complete()){
             delete animation_pop;
             animation_pop = nullptr;
@@ -433,6 +528,8 @@ public:
         current_map=map;
         game_obj=Objective();
         candy_score=Score();
+        int fruits=0;
+        bool gj=false;
         
         for (int x = 0; x<9; x++){
             for (int y = 0; y<9; y++){
@@ -443,8 +540,15 @@ public:
                 else if(lines[y][x]== *w){
                     candy[x][y]=(Candy{{50*x+25, 50*y+25}, 40, 40,FL_MAGENTA,FL_BLACK});
                 }
+                else if(lines[y][x]== *i){
+                    candy[x][y]=(Candy{{50*x+25, 50*y+25}, 40, 40,FL_RED});
+                    candy[x][y].set_fruit(true);
+                    fruits++;
+                    gj=true;
+                }
             }
-        
+            
+            if(gj){game_obj.fruits_on(fruits);}
             set_the_neighbours();
             set_the_wall();
         }
@@ -466,13 +570,19 @@ public:
         for(int i=0;i<candy.size();i++){
             for(int j=0;j<candy[0].size();j++){
                 candy[i][j].draw();
-                if(candy[i][j].get_wall()!=true){
+                if(candy[i][j].get_wall()!=true && candy[i][j].get_fruit()==false){
                     break_candy(i,j,0,0,true);} //Checks all the candies all the time and breaks them if it must.
                     check_impossible(i,j,can_vibrate);
             }
         } 
 
-        
+        for(int i=0;i<candy.size();i++){
+            if(candy[i][8].get_fruit()){
+                game_obj.dec_fruits();
+                candy[i][8].set_fruit(false);
+                candy[i][8].setFillColor(FL_BLACK);
+            }
+        }
 
         if(not_impossible){
             not_impossible=false;
@@ -530,8 +640,9 @@ public:
     void check_impossible(int i,int j,bool vibrate){
         Fl_Color save=candy[i][j].getFillColor();
         if(candy[i][j].get_wall()){return;}
+        if(candy[i][j].get_fruit()){return;}
         candy[i][j].setFillColor(FL_WHITE); //Set it temp white(colorless) so the algo doesn't include this one when it's forshadowing this candy.
-        if(i+1<candy.size() && !candy[i+1][j].get_wall()){
+        if(i+1<candy.size() && !candy[i+1][j].get_wall() && !candy[i+1][j].get_fruit()){
             if(forshadowing_over_9000(i+1,j,save,vibrate)){
                not_impossible=true;
                if(vibrate){
@@ -541,7 +652,7 @@ public:
             }
         }
 
-        if(j+1<candy[0].size() && !candy[i][j+1].get_wall()){
+        if(j+1<candy[0].size() && !candy[i][j+1].get_wall() && !candy[i][j+1].get_fruit()){
              if(forshadowing_over_9000(i,j+1,save,vibrate)){
                 not_impossible=true;
                  if(vibrate){
@@ -551,7 +662,7 @@ public:
              }
         }
 
-        if(i-1>=0 && !candy[i-1][j].get_wall()){
+        if(i-1>=0 && !candy[i-1][j].get_wall() && !candy[i-1][j].get_fruit()){
             if(forshadowing_over_9000(i-1,j,save,vibrate)){
                not_impossible=true;
                 if(vibrate){
@@ -561,7 +672,7 @@ public:
             }
         }
 
-        if(j-1>=0 && !candy[i][j-1].get_wall()){
+        if(j-1>=0 && !candy[i][j-1].get_wall() && !candy[i][j-1].get_fruit()){
             if(forshadowing_over_9000(i,j-1,save,vibrate)){
                not_impossible=true;
                 if(vibrate){
@@ -665,7 +776,9 @@ public:
                 Point fall{candy[start_x][s_y].getCenter().x,candy[start_x][s_y].getCenter().y+50}; //that Candy will fall down and it's place will be liberated.
                 candy[start_x][start_y].setCenter(fall); //Candy falls down
                 candy[start_x][start_y].setCode(candy[start_x][s_y].getFillColor());
+                candy[start_x][start_y].set_fruit(candy[start_x][s_y].get_fruit());
                 candy[start_x][s_y].setFillColor(FL_BLACK); //Place liberated of the candy that fell Down.
+                candy[start_x][s_y].set_fruit(false);
                 set_the_neighbours(); //Reset the neig because new candies have been created.
                 fall_candies(start_x,s_y); //Continue the Rec.
             }else{
@@ -728,7 +841,7 @@ public:
         for(int i=0;i<candy.size();i++){
             for(int j=0;j<candy[0].size();j++){
                 if(candy[i][j].contains(mouseLoc) && current.getFillColor() == FL_BLACK){
-                    if(candy[i][j].get_wall()==false){  //make sure that is not a wall. ; Vlad:time n vibrate
+                    if(candy[i][j].get_wall()==false && candy[i][j].get_fruit()==false){  //make sure that is not a wall. ; Vlad:time n vibrate
                         current=candy[i][j];
                         x=i;
                         y=j;
@@ -748,7 +861,7 @@ public:
                         can_vibrate=false;
                     }else{
                         cout<<"Selected new one"<<endl;
-                        if(candy[i][j].get_wall()==false){  //timer n vibrate
+                        if(candy[i][j].get_wall()==false && !candy[i][j].get_fruit()){  //timer n vibrate
                             current=candy[i][j];
                             x=i;
                             y=j;
@@ -771,7 +884,7 @@ public:
         int counter_up_down2=1;
 
         for(int i=x+1;i<candy.size();i++){  //Counter the same candies on the right line of the same color; counter begins of 1
-            if(candy[i][y].getFillColor()!=temp_candy.getFillColor()){
+            if(candy[i][y].getFillColor()!=temp_candy.getFillColor() || candy[i][y].get_fruit()){
                 break;
             }else{
                 counter_left_right+=1;
@@ -779,7 +892,7 @@ public:
         }
 
         for(int k=i+1;k<candy.size();k++){  //Counter the same candies on the right line of the same color; counter begins of 1 for temp_candy2
-            if(candy[k][j].getFillColor()!=temp_candy2.getFillColor()){
+            if(candy[k][j].getFillColor()!=temp_candy2.getFillColor() || candy[k][j].get_fruit()){
                 break;
             }else{
                 counter_left_right2+=1;
@@ -787,7 +900,7 @@ public:
         }
 
         for(int i=y+1;i<candy[0].size();i++){  //Counts the candies under.
-            if(candy[x][i].getFillColor()!=temp_candy.getFillColor()){
+            if(candy[x][i].getFillColor()!=temp_candy.getFillColor() || candy[x][i].get_fruit()){
                 break;
             }else{
                 counter_up_down+=1;
@@ -795,7 +908,7 @@ public:
         }
 
         for(int k=j+1;k<candy[0].size();k++){  //Counts the candies under. 2
-            if(candy[i][k].getFillColor()!=temp_candy2.getFillColor()){
+            if(candy[i][k].getFillColor()!=temp_candy2.getFillColor() || candy[i][k].get_fruit()){
                 break;
             }else{
                 counter_up_down2+=1;
@@ -803,7 +916,7 @@ public:
         }
       
         for(int i=y-1;i>=0;i--){  //Counts the candies upwards
-            if(candy[x][i].getFillColor()!=temp_candy.getFillColor()){
+            if(candy[x][i].getFillColor()!=temp_candy.getFillColor() || candy[x][i].get_fruit()){
                 break;
             }else{
                 counter_up_down+=1;
@@ -811,7 +924,7 @@ public:
         }
        
         for(int k=j-1;k>=0;k--){  //Counts the candies upwards 2
-            if(candy[i][k].getFillColor()!=temp_candy2.getFillColor()){
+            if(candy[i][k].getFillColor()!=temp_candy2.getFillColor() || candy[i][k].get_fruit()){
                 break;
             }else{
                 counter_up_down2+=1;
@@ -820,7 +933,7 @@ public:
 
 
         for(int i=x-1;i>=0;i--){  //Left
-            if(candy[i][y].getFillColor()!=temp_candy.getFillColor()){
+            if(candy[i][y].getFillColor()!=temp_candy.getFillColor() || candy[i][y].get_fruit()){
                 break;
             }else{
                 counter_left_right+=1;
@@ -828,7 +941,7 @@ public:
         }
 
         for(int k=i-1;k>=0;k--){  //Left2
-            if(candy[k][j].getFillColor()!=temp_candy2.getFillColor()){
+            if(candy[k][j].getFillColor()!=temp_candy2.getFillColor() || candy[k][j].get_fruit()){
                 break;
             }else{
                 counter_left_right2+=1;
@@ -850,7 +963,7 @@ public:
                 int start_x=x;
                 int start_y=y;
                 for(int i=x+1;i<candy.size();i++){  //Counter the same candies on the right line of the same color; counter begins of 1
-                    if(candy[i][y].getFillColor()!=temp_candy.getFillColor()){
+                    if(candy[i][y].getFillColor()!=temp_candy.getFillColor() || candy[i][y].get_fruit()){
                         break;
                     }else{
                         start_x=i;
@@ -863,7 +976,7 @@ public:
                     game_obj.mv_done(1,counter_left_right,temp_candy.getFillColor());
                 }
                 for(int i=start_x;i>=0;i--){  //Left
-                    if(candy[i][start_y].getFillColor()!=temp_candy.getFillColor()){
+                    if(candy[i][start_y].getFillColor()!=temp_candy.getFillColor() || candy[i][start_y].get_fruit()){
                         break;
                     }else{
                         candy[i][start_y].setFillColor(FL_BLACK);
@@ -877,7 +990,7 @@ public:
         }else if(counter_up_down>=3){
             int start_x=x;int start_y=y; 
             for(int i=y-1;i>=0;i--){  //Counts the candies upwards
-                if(candy[x][i].getFillColor()!=temp_candy.getFillColor()){
+                if(candy[x][i].getFillColor()!=temp_candy.getFillColor() || candy[x][i].get_fruit()){
                     break;
                 }else{
                     start_x=x;
@@ -890,7 +1003,7 @@ public:
                 game_obj.mv_done(1,counter_up_down,temp_candy.getFillColor());
             }
             for(int i=start_y;i<candy[0].size();i++){  //Counts the candies under.
-                if(candy[start_x][i].getFillColor()!=temp_candy.getFillColor()){
+                if(candy[start_x][i].getFillColor()!=temp_candy.getFillColor() || candy[start_x][i].get_fruit()){
                     break;
                 }else{
                     candy[start_x][i].setFillColor(FL_BLACK);
@@ -908,7 +1021,7 @@ public:
             if(counter_left_right2>=3){
                 int start_x=i;int start_y=j;
                 for(int k=i+1;k<candy.size();k++){  //Counter the same candies on the right line of the same color; counter begins of 1
-                    if(candy[k][j].getFillColor()!=temp_candy2.getFillColor()){
+                    if(candy[k][j].getFillColor()!=temp_candy2.getFillColor() || candy[k][j].get_fruit()){
                         break;
                     }else{
                         start_x=k;
@@ -921,7 +1034,7 @@ public:
                              game_obj.mv_done(1,counter_left_right2,temp_candy.getFillColor());
                         }
                 for(int k=start_x;k>=0;k--){  //Left
-                    if(candy[k][start_y].getFillColor()!=temp_candy2.getFillColor()){
+                    if(candy[k][start_y].getFillColor()!=temp_candy2.getFillColor() || candy[k][start_y].get_fruit()){
                         break;
                     }else{
                         candy[k][start_y].setFillColor(FL_BLACK);
@@ -937,7 +1050,7 @@ public:
             int start_y=j; 
             
             for(int k=j-1;k>=0;k--){  //Counts the candies upwards
-                if(candy[i][k].getFillColor()!=temp_candy2.getFillColor()){
+                if(candy[i][k].getFillColor()!=temp_candy2.getFillColor() || candy[i][k].get_fruit()){
                     break;
                 }else{
                     start_x=i;
@@ -951,7 +1064,7 @@ public:
                     }
 
             for(int k=start_y;k<candy[0].size();k++){  //Counts the candies under.
-                if(candy[start_x][k].getFillColor()!=temp_candy2.getFillColor()){
+                if(candy[start_x][k].getFillColor()!=temp_candy2.getFillColor() || candy[start_x][k].get_fruit()){
                     break;
                 }else{
                     candy[start_x][k].setFillColor(FL_BLACK);
@@ -1130,7 +1243,7 @@ public:
     }
     
     void select_next_map(){
-      if(current_map+1<2){
+      if(current_map+1<3){
           current_map++;
           mw->get_canvas().make_board(maps[current_map]);
       }
