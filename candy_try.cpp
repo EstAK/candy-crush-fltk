@@ -455,11 +455,8 @@ public:
                     this->setCode(i->getFillColor());
                     i->setCode(save);
                     }else{
-                         Fl_Color save=this->getFillColor();
-                         this->set_fruit(true);
-                         i->set_fruit(false);
-                         this->setCode(i->getFillColor());
-                         i->setCode(save);
+                        
+                         
                     }
                 }
             }
@@ -707,7 +704,7 @@ public:
        int counter_left_right=1; 
        int counter_up_down=1;
         for(int i=x+1;i<candy.size();i++){  //Counter the same candies on the right line of the same color; counter begins of 1
-            if(candy[i][y].getFillColor()!=temp_candy.getFillColor()){
+            if(candy[i][y].getFillColor()!=temp_candy.getFillColor() || candy[i][y].get_fruit()){
                 break;
             }else{
                 counter_left_right+=1;
@@ -716,7 +713,7 @@ public:
         
 
         for(int i=y+1;i<candy[0].size();i++){  //Counts the candies under.
-            if(candy[x][i].getFillColor()!=temp_candy.getFillColor()){
+            if(candy[x][i].getFillColor()!=temp_candy.getFillColor() || candy[x][i].get_fruit()){
                 break;
             }else{
                 counter_up_down+=1;
@@ -724,7 +721,7 @@ public:
         }
   
         for(int i=y-1;i>=0;i--){  //Counts the candies upwards
-            if(candy[x][i].getFillColor()!=temp_candy.getFillColor()){
+            if(candy[x][i].getFillColor()!=temp_candy.getFillColor() || candy[x][i].get_fruit()){
                 break;
             }else{
                 counter_up_down+=1;
@@ -732,7 +729,7 @@ public:
         }
        
         for(int i=x-1;i>=0;i--){  //Left
-            if(candy[i][y].getFillColor()!=temp_candy.getFillColor()){
+            if(candy[i][y].getFillColor()!=temp_candy.getFillColor() || candy[i][y].get_fruit()){
                 break;
             }else{
                 counter_left_right+=1;
@@ -868,6 +865,15 @@ public:
                         candy[x][y].start_slide_animation(candy[i][j].getCenter());
                         candy[i][j].start_slide_animation(candy[x][y].getCenter());
                         break_candy(i,j,x,y);
+                        if(candy[x][y].get_fruit()){
+                            if(!forshadowing_over_9000(i,j,candy[i][j].getFillColor(),false)){
+                                Fl_Color save=candy[x][y].getFillColor();
+                                candy[x][y].set_fruit(false);
+                                candy[x][y].setCode(candy[i][j].getFillColor());
+                                candy[i][j].set_fruit(true);
+                                candy[i][j].setCode(save);
+                            }
+                        }
                         current.setFillColor(FL_BLACK);
                         x=0;
                         y=0;
