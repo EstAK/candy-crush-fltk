@@ -439,6 +439,7 @@ public:
     }
     bool verify_neighbours(Candy current){
         if(this->get_wall()==true){return false;}
+        if(this->get_fruit() && current.get_fruit()){return false;}
         
         for(auto i:neighbours){
             if(i->getCenter().x==current.getCenter().x && i->getCenter().y==current.getCenter().y){
@@ -516,7 +517,7 @@ public:
 class Canvas{
     bool has_moved=false;
     array<array<Candy,9>,9> candy;            //2d Array
-    Fl_Color color[6]={FL_RED,FL_BLUE,FL_YELLOW,FL_BLACK,FL_DARK_CYAN,FL_GREEN};
+    Fl_Color color[5]={FL_RED,FL_BLUE,FL_YELLOW,FL_DARK_CYAN,FL_GREEN};
     vector<string> lines;
     Candy current{{0,0},0,0}; //stocks the current cell clicked on. esteban: might cause an issue somewhere as base cas is now FL_BLACK
     int x=0;int y=0; //currents coord in the array
@@ -547,7 +548,7 @@ public:
             for (int y = 0; y<9; y++){
               
                 if (lines[y][x] == *c){
-                    candy[x][y]=(Candy{{50*x+25, 50*y+25}, 40, 40, color[rand()%6]});
+                    candy[x][y]=(Candy{{50*x+25, 50*y+25}, 40, 40, color[rand()%5]});
                 }
                 else if(lines[y][x]== *w){
                     candy[x][y]=(Candy{{50*x+25, 50*y+25}, 40, 40,FL_MAGENTA,FL_BLACK});
@@ -559,11 +560,11 @@ public:
                     gj=true;
                 }
             }
-            
+        } 
             if(gj){game_obj.fruits_on(fruits);}else{game_obj=Objective();}
             set_the_neighbours();
             set_the_wall();
-        }
+        
     }
 
     void read_file(string map){
@@ -801,17 +802,17 @@ public:
             if(candy[start_x][start_y+1].getFillColor() != FL_BLACK && candy[start_x][start_y+1].get_wall()!=true){
                 Point fall{candy[start_x][start_y+1].getCenter().x,candy[start_x][start_y+1].getCenter().y-50};
                 candy[start_x][start_y].setCenter(fall);
-                candy[start_x][start_y].setFillColor(color[rand()%6]);
+                candy[start_x][start_y].setFillColor(color[rand()%5]);
                 set_the_neighbours();
             }else if(start_x+1<candy.size() && candy[start_x+1][start_y].get_wall()!=true){
                 Point fall{candy[start_x+1][start_y].getCenter().x-50,candy[start_x+1][start_y].getCenter().y}; //Get the pos in using -50 the right-neigh position.
                 candy[start_x][start_y].setCenter(fall);
-                candy[start_x][start_y].setFillColor(color[rand()%6]);
+                candy[start_x][start_y].setFillColor(color[rand()%5]);
                 set_the_neighbours();
             }else if(start_x-1>=0 && candy[start_x-1][start_y].get_wall()!=true){
                 Point fall{candy[start_x-1][start_y].getCenter().x+50,candy[start_x-1][start_y].getCenter().y}; //Get the pos in adding +50 the left-neigh position.
                 candy[start_x][start_y].setCenter(fall);
-                candy[start_x][start_y].setFillColor(color[rand()%6]);
+                candy[start_x][start_y].setFillColor(color[rand()%5]);
                 set_the_neighbours();
             }
         }
