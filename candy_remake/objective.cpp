@@ -1,5 +1,6 @@
 #include<iostream>
 #include"objective.h"
+#include<random>
 #include <FL/Fl.H>
 #include <FL/fl_draw.H>
 

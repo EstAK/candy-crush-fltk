@@ -6,6 +6,8 @@
 #include"objective.h"
 #include"score.h"
 #include"rectangle.h"
+#include"GameManager.h"
+#include"hint.h"
 #include <FL/Fl.H>
 #include <FL/fl_draw.H>
 #include <FL/Fl_Double_Window.H>
@@ -21,7 +23,7 @@ using namespace std;
 
 class Canvas{
     bool has_moved=false;
-    array<array<Candy,9>,9> candy;          //2d Array
+    Candy** candy=new Candy*[9];         //2d Array
     Fl_Color color[5]={FL_RED,FL_BLUE,FL_YELLOW,FL_DARK_CYAN,FL_GREEN};
     vector<string> lines;
     Candy current;; //stocks the current cell clicked on. esteban: might cause an issue somewhere as base cas is now FL_BLACK
@@ -32,7 +34,8 @@ class Canvas{
     int timer=0;  //Var used for timer
     bool can_vibrate=false;
     string current_map;
-
+    GameManager gm;
+    Hint ht;
     Objective game_obj;
 
 public:
@@ -48,11 +51,8 @@ public:
     }
     void set_the_neighbours();
     void set_the_wall();
-    void break_candies(int x,int y,int i,int j,bool pc=false);
-  int fall_candies(int,int);
-  void fall_walls(int,int);
-  bool forshadowing_over_9000(int,int,Fl_Color,bool);
-  void check_impossible(int,int,bool);
+  
+  
     
 };
 
