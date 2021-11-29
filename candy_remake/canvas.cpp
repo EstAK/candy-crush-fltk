@@ -24,7 +24,7 @@ using namespace std;
 
 Canvas::Canvas(){  
         for(int i=0;i<9;i++){
-            candy[i]=new Candy[9];
+            candy[i]=new shared_ptr<Candy>[9]();
         }                          
         make_board(maps[0]); 
         game_obj=Objective();
@@ -36,8 +36,8 @@ Canvas::~Canvas(){
 }
 
 void Canvas::make_board(string map){ //TODO: Finish it later.
-        gm.set_up(candy,candy_score,game_obj);
-        ht.set_up(candy,can_vibrate,not_impossible);  
+        
+        candy_score=Score(0);
         read_file(map);
         current_map=map;
         int fruits=0;
@@ -47,22 +47,23 @@ void Canvas::make_board(string map){ //TODO: Finish it later.
             for (int y = 0; y<9; y++){
               
                 if (lines[y][x] == *c){
-                    candy[x][y]=Candy(Point{50*x+25,50*y+25},40,40,color[rand()%5],FL_BLACK);
+                    candy[x][y]=make_shared<Candy>(Point{50*x+25,50*y+25},40,40,color[rand()%5],FL_BLACK);
                 }
                 else if(lines[y][x]== *w){
-                    candy[x][y]=Candy(Point{50*x+25, 50*y+25}, 40, 40,FL_MAGENTA,FL_BLACK);
+                    candy[x][y]=make_shared<Wall>(Point{50*x+25, 50*y+25}, 40, 40);
                 }
                 else if(lines[y][x]== *i){
-                    candy[x][y]=Candy(Point{50*x+25, 50*y+25},40, 40,FL_RED,FL_BLACK);
+                    candy[x][y]=make_shared<Candy>(Point{50*x+25, 50*y+25},40, 40,FL_RED,FL_BLACK);
                     fruits++;
-                    candy[x][y].set_fruit(true);
+                    candy[x][y]->set_fruit(true);
                     gj=true;
                 }
             }
         }    
         if(gj){game_obj.fruits_on(fruits);}else{game_obj=Objective();}
         set_the_neighbours();
-        set_the_wall();
+        gm.set_up(candy,candy_score,game_obj);
+        ht.set_up(candy,can_vibrate,not_impossible);
         
 }
 
@@ -82,18 +83,18 @@ void Canvas::read_file(string map){
 void Canvas::draw(){
          for(int i=0;i<9;i++){
             for(int j=0;j<9;j++){
-                candy[i][j].draw();
-                if(candy[i][j].get_wall()!=true && candy[i][j].get_fruit()==false){
+                candy[i][j]->draw();
+                if(candy[i][j]->get_wall()!=true && candy[i][j]->get_fruit()==false){
                     gm.break_candies(i,j,0,0,true);} //Checks all the candies all the time and breaks them if it must.
                     ht.check_impossible(i,j,can_vibrate);
             }
         } 
 
         for(int i=0;i<9;i++){
-            if(candy[i][8].get_fruit()){
+            if(candy[i][8]->get_fruit()){
                 game_obj.dec_fruits();
-                candy[i][8].set_fruit(false);
-                candy[i][8].setFillColor(FL_BLACK);
+                candy[i][8]->set_fruit(false);
+                candy[i][8]->setFillColor(FL_BLACK);
             }
         }
 
@@ -133,8 +134,8 @@ void Canvas::draw(){
 
         for(int i=0;i<9;i++){ //Checks if there is a free place that can be filled ; Takes into consideration the walls(phyics) as well.
             for(int j=0;j<9;j++){
-                if(candy[i][j].getFillColor() == FL_BLACK){
-                    if (not has_moved|| candy[i][j].is_slide_complete()){
+                if(candy[i][j]->getFillColor() == FL_BLACK){
+                    if (not has_moved|| candy[i][j]->is_slide_complete()){
                         gm.fall_candies(i,j);
                         timer=0; //reset the timer.
                     }
@@ -148,10 +149,10 @@ void Canvas::draw(){
 void Canvas::mouseMove(Point mouseLoc){
         for(int i=0;i<9;i++){
             for(int j=0;j<9;j++){
-                if(candy[i][j].contains(mouseLoc)){
-                    candy[i][j].setFrameColor(FL_RED);
+                if(candy[i][j]->contains(mouseLoc)){
+                    candy[i][j]->setFrameColor(FL_RED);
                 }else{
-                    candy[i][j].setFrameColor(FL_BLACK);
+                    candy[i][j]->setFrameColor(FL_BLACK);
                 }
             }
         }
@@ -161,27 +162,27 @@ void Canvas::mouseClick(Point mouseLoc){
         has_moved=true;
         for(int i=0;i<9;i++){
             for(int j=0;j<9;j++){
-                if(candy[i][j].contains(mouseLoc) && current.getFillColor() == FL_BLACK){
-                    if(candy[i][j].get_wall()==false ){  //make sure that is not a wall. ; Vlad:time n vibrate
+                if(candy[i][j]->contains(mouseLoc) && current->getFillColor() == FL_BLACK){
+                    if(candy[i][j]->get_wall()==false ){  //make sure that is not a wall. ; Vlad:time n vibrate
                         current=candy[i][j];
                         x=i;
                         y=j;
                         timer=0;
                         can_vibrate=false;
                     }
-                }else if(candy[i][j].contains(mouseLoc)){
-                    if(candy[i][j].verify_neighbours(current)){
+                }else if(candy[i][j]->contains(mouseLoc)){
+                    if(candy[i][j]->verify_neighbours(current)){
                         gm.break_candies(i,j,x,y);
-                         if(candy[x][y].get_fruit()){
-                            if(!ht.forshadowing_over_9000(i,j,candy[i][j].getFillColor(),false)){
-                                Fl_Color save=candy[x][y].getFillColor();
-                                candy[x][y].set_fruit(false);
-                                candy[x][y].setCode(candy[i][j].getFillColor());
-                                candy[i][j].set_fruit(true);
-                                candy[i][j].setCode(save);
+                         if(candy[x][y]->get_fruit()){
+                            if(ht.forshadowing_over_9000(i,j,candy[i][j]->getFillColor(),false)==false){
+                                Fl_Color save=candy[x][y]->getFillColor();
+                                candy[x][y]->set_fruit(false);
+                                candy[x][y]->setCode(candy[i][j]->getFillColor());
+                                candy[i][j]->set_fruit(true);
+                                candy[i][j]->setCode(save);
                             }
                         }
-                        current.setFillColor(FL_BLACK);
+                        current=make_shared<Candy>();
                         x=0;
                         y=0;
                         cout<<"Neigh"<<endl;
@@ -189,7 +190,7 @@ void Canvas::mouseClick(Point mouseLoc){
                         can_vibrate=false;
                     }else{
                         cout<<"Selected new one"<<endl;
-                        if(candy[i][j].get_wall()==false){  //timer n vibrate
+                        if(candy[i][j]->get_wall()==false){  //timer n vibrate
                             current=candy[i][j];
                             x=i;
                             y=j;
@@ -205,19 +206,10 @@ void Canvas::mouseClick(Point mouseLoc){
 void Canvas::set_the_neighbours(){
         for(int i=0;i<9;i++){
          for(int j=0;j<9;j++){
-          if(i+1<9) candy[i][j].neighbours.push_back(&candy[i+1][j]);
-          if(j+1<9) candy[i][j].neighbours.push_back(&candy[i][j+1]);
-          if(i-1>=0) candy[i][j].neighbours.push_back(&candy[i-1][j]);
-          if(j-1>=0) candy[i][j].neighbours.push_back(&candy[i][j-1]);
+          if(i+1<9) candy[i][j]->neighbours.push_back(candy[i+1][j]);
+          if(j+1<9) candy[i][j]->neighbours.push_back(candy[i][j+1]);
+          if(i-1>=0) candy[i][j]->neighbours.push_back(candy[i-1][j]);
+          if(j-1>=0) candy[i][j]->neighbours.push_back(candy[i][j-1]);
          }
         }
 }
-
-void Canvas::set_the_wall(){
-        for(int i=0;i<9;i++){
-            for(int j=0;j<9;j++){
-                if(candy[i][j].getFillColor()==248){candy[i][j].set_wall(true);}
-            }
-        }
-}
-

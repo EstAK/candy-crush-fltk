@@ -18,12 +18,12 @@ using namespace std;
 #define HINT_H_
 
 class Hint{
-   Candy **candy=new Candy*[9];
+   shared_ptr<Candy> **candy=new shared_ptr<Candy>*[9]();
    bool* can_vibrate;
    bool* not_impossible;
 public:
    Hint();
-   void set_up(Candy**,bool&, bool&);
+   void set_up(shared_ptr<Candy>**,bool&, bool&);
    bool forshadowing_over_9000(int,int,Fl_Color,bool);
    void check_impossible(int,int,bool);
 };

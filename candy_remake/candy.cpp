@@ -18,24 +18,22 @@ Candy::Candy(Point center,int w,int h,Fl_Color fillColor,Fl_Color frameColor,Ani
 
 }
 
-bool Candy::verify_neighbours(Candy current){
+bool Candy::verify_neighbours(shared_ptr<Candy> current){
         if(this->get_wall()==true){return false;}
-        if(this->get_fruit() && current.get_fruit()){return false;}
+        if(this->get_fruit() && current->get_fruit()){return false;}
         
         for(auto i:neighbours){
-            if(i->getCenter().x==current.getCenter().x && i->getCenter().y==current.getCenter().y){
-                if(!this->get_fruit() && !current.get_fruit()){
+            if(i->getCenter().x==current->getCenter().x && i->getCenter().y==current->getCenter().y){
+                if(!this->get_fruit() && !current->get_fruit()){
                 Fl_Color save=this->getFillColor();    //TODO : Add the animation code here.
                 this->setCode(i->getFillColor());
                 i->setCode(save);   
                 return true;
                 }else{
                     if(this->get_fruit()){
-                    Fl_Color save=this->getFillColor();
                     this->set_fruit(false);
                     i->set_fruit(true);
-                    this->setCode(i->getFillColor());
-                    i->setCode(save);
+                    return true;
                     }else{
                                         
                     }
@@ -45,8 +43,8 @@ bool Candy::verify_neighbours(Candy current){
         return false;
     }
 
-void Candy::set_wall(bool wa){wall=wa;}
-bool Candy::get_wall(){return wall;}
+
+bool Candy::get_wall(){return false;}
 void Candy::draw(){
     if(is_fruit){
             c=new Circle({getCenter().x,getCenter().y},20,getFrameColor(),getFillColor());
@@ -92,6 +90,8 @@ bool Candy::is_slide_complete(){
         }
     }
 
-
+bool Wall::get_wall(){
+    return true;
+}
 
 

@@ -18,7 +18,7 @@ using namespace std;
 #define GameManager_H_
 
 class GameManager{
-   Candy ** candy=new Candy*[9];
+   shared_ptr<Candy>** candy=new shared_ptr<Candy>*[9]();
    Score* candy_score{0};
    Objective* game_obj;
    bool* can_vibrate;
@@ -26,7 +26,7 @@ class GameManager{
    Fl_Color color[5]={FL_RED,FL_BLUE,FL_YELLOW,FL_DARK_CYAN,FL_GREEN};
 public:
    GameManager();
-   void set_up(Candy**,Score&,Objective&);
+   void set_up(shared_ptr<Candy>**,Score&,Objective&);
    void break_candies(int x,int y,int i,int j,bool pc=false);
    void destroy_candies(int x,int y,int counter_left_right,int counter_up_down,bool pc=false);
    int fall_candies(int,int);

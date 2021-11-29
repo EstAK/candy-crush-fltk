@@ -23,10 +23,10 @@ using namespace std;
 
 class Canvas{
     bool has_moved=false;
-    Candy** candy=new Candy*[9];         //2d Array
+    shared_ptr<Candy>**candy=new shared_ptr<Candy>*[9]();
     Fl_Color color[5]={FL_RED,FL_BLUE,FL_YELLOW,FL_DARK_CYAN,FL_GREEN};
     vector<string> lines;
-    Candy current;; //stocks the current cell clicked on. esteban: might cause an issue somewhere as base cas is now FL_BLACK
+    shared_ptr<Candy> current=make_shared<Candy>(); //stocks the current cell clicked on. esteban: might cause an issue somewhere as base cas is now FL_BLACK
     int x=0;int y=0; //currents coord in the array
     Score candy_score{0}; //By default the score begins at 0
     bool not_impossible=false;
@@ -50,7 +50,6 @@ public:
     exit(0);
     }
     void set_the_neighbours();
-    void set_the_wall();
   
   
     
