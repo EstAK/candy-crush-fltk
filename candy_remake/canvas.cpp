@@ -132,17 +132,23 @@ void Canvas::draw(){
             can_vibrate=true;
         }
 
-        for(int i=0;i<9;i++){ //Checks if there is a free place that can be filled ; Takes into consideration the walls(phyics) as well.
-            for(int j=0;j<9;j++){
+        for(int i=8;i>=0;i--){ //Checks if there is a free place that can be filled ; Takes into consideration the walls(phyics) as well.
+            for(int j=8;j>=0;j--){
                 if(candy[i][j]->getFillColor() == FL_BLACK){
-                    if (not has_moved|| candy[i][j]->is_slide_complete()){
-                        gm.fall_candies(i,j);
+                    if (not is_board_moving()){
+                        gm.fall_candies(i,j,has_moved);
                         timer=0; //reset the timer.
+                    }else{
+                        break;
                     }
                     can_vibrate=false; //reset the vibrate;
                 }
             }
+            if (is_board_moving()){
+                break;
+            }
         }  
+        gm.set_the_neighbours();
 
 } 
 
@@ -170,10 +176,13 @@ void Canvas::mouseClick(Point mouseLoc){
                         timer=0;
                         can_vibrate=false;
                     }
-                }else if(candy[i][j]->contains(mouseLoc)){
+                }else if(candy[i][j]->contains(mouseLoc) && candy[i][j]->is_slide_complete() && candy[x][y]->is_slide_complete()){
                     if(candy[i][j]->verify_neighbours(current)){
-                        gm.break_candies(i,j,x,y);
-                         if(candy[x][y]->get_fruit()){
+                        if (gm.break_candies(i,j,x,y)){
+                            candy[i][j]->start_slide_animation(candy[x][y]->getCenter());
+                            candy[x][y]->start_slide_animation(candy[i][j]->getCenter());
+                        }
+                        if(candy[x][y]->get_fruit()){
                             if(ht.forshadowing_over_9000(i,j,candy[i][j]->getFillColor(),false)==false){
                                 Fl_Color save=candy[x][y]->getFillColor();
                                 candy[x][y]->set_fruit(false);
@@ -212,4 +221,15 @@ void Canvas::set_the_neighbours(){
           if(j-1>=0) candy[i][j]->neighbours.push_back(candy[i][j-1]);
          }
         }
+}
+
+bool Canvas::is_board_moving(){
+    for (int x = 0;x<9;x++){
+        for (int y = 0;y<9;y++){
+            if (not candy[x][y]->is_slide_complete()){
+                return true;
+            }
+        }
+    }
+    return false;
 }

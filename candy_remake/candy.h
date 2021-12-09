@@ -30,7 +30,7 @@ public:
     bool verify_neighbours(shared_ptr<Candy>);
      void start_pop_animation();
 
-    void start_slide_animation(Point);
+    void start_slide_animation(Point, bool=true);
     bool is_slide_complete();
     virtual bool get_wall();
     bool get_fruit();

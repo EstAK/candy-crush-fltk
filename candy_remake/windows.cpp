@@ -1,17 +1,17 @@
-#include<iostream>
-#include"wrapper.h"
-#include"score.h"
-#include"rectangle.h"
-#include"canvas.cpp"
-#include"const.h"
+#include <iostream>
+#include "wrapper.h"
+#include "score.h"
+#include "rectangle.h"
+#include "canvas.h"
+#include "const.h"
 #include <FL/Fl.H>
 #include <FL/fl_draw.H>
 #include <FL/Fl_Double_Window.H>
 #include <FL/Fl_Window.H>
 #include <FL/Fl_Box.H>
-#include<Fl/Fl_Button.H>
-#include<Fl/Fl_Text_Display.H>
-#include<random>
+#include <Fl/Fl_Button.H>
+#include <Fl/Fl_Text_Display.H>
+#include <random>
 
 using namespace std;
 

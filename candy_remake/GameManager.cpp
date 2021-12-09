@@ -28,7 +28,7 @@ void GameManager::set_up(shared_ptr<Candy>** arr,Score& score,Objective& obj){
    
 }
 
-void GameManager::break_candies(int x,int y,int i,int j,bool pc){
+bool GameManager::break_candies(int x,int y,int i,int j,bool pc){
    shared_ptr<Candy> temp_candy=candy[x][y];  
    shared_ptr<Candy> temp_candy2=candy[i][j];
    int counter_left_right=1; 
@@ -104,18 +104,21 @@ void GameManager::break_candies(int x,int y,int i,int j,bool pc){
        //Vlad: Can you try to add a delay when you do the animations?
         if(counter_left_right<3 && counter_up_down<3 && counter_left_right2<3 && counter_up_down2<3 && !pc){ //Changes back if the movement will not result in a break but i don't know how to add a delay.
             Fl_Color save=candy[i][j]->getFillColor();  // TODO : Add The animation code here
+
             candy[i][j]->setCode(candy[x][y]->getFillColor());
             candy[x][y]->setCode(save);
 
-            
+            return false;
         }
-        
+
         destroy_candies(x,y,counter_left_right,counter_up_down,pc);
         //There will break all the candies in a row; First it will decide which one is better from left<->right or up<-->down in calculation the nomber of candies that will be broken.
         
     
         //Second candy
         destroy_candies(i,j,counter_left_right2,counter_up_down2,pc);
+
+        return true;
         
 }
 
@@ -187,51 +190,47 @@ void GameManager::destroy_candies(int x,int y,int counter_left_right,int counter
        }
 }
 
-int GameManager::fall_candies(int start_x,int start_y){ //Function by Recursion
-        if(start_y<0){
-            return 0;
-        }
-        if(candy[start_x][start_y]->get_wall()){
-            fall_walls(start_x,start_y);
-            return 0;
-        } //If it's a wall then make candies fall from the diag with fall_walls()
-        if(start_y-1>=0){
 
-            int s_y=start_y-1;
-            if(candy[start_x][s_y]->getFillColor() != FL_BLACK && candy[start_x][s_y]->get_wall()!=true){ //If there is a candy above and is not a wall.
-                Point fall{candy[start_x][s_y]->getCenter().x,candy[start_x][s_y]->getCenter().y+50}; //that Candy will fall down and it's place will be liberated.
-                candy[start_x][start_y]->setCenter(fall); //Candy falls down
-                candy[start_x][start_y]->setCode(candy[start_x][s_y]->getFillColor());
-                candy[start_x][start_y]->set_fruit(candy[start_x][s_y]->get_fruit());
-                candy[start_x][s_y]->setFillColor(FL_BLACK); //Place liberated of the candy that fell Down.
-                candy[start_x][s_y]->set_fruit(false);
-                set_the_neighbours(); //Reset the neig because new candies have been created.
-                fall_candies(start_x,s_y); //Continue the Rec.
-            }else{
-                fall_candies(start_x,s_y); //Else we will search more above.
-            }
 
-        }else{  //We know that we reached the top we want to generate a random candy in the top but we need the position of the column first.
-            if(candy[start_x][start_y+1]->getFillColor() != FL_BLACK && candy[start_x][start_y+1]->get_wall()!=true){
-                Point fall{candy[start_x][start_y+1]->getCenter().x,candy[start_x][start_y+1]->getCenter().y-50};
-                candy[start_x][start_y]->setCenter(fall);
-                candy[start_x][start_y]->setFillColor(color[rand()%5]);
-                set_the_neighbours();
-            }else if(start_x+1<9 && candy[start_x+1][start_y]->get_wall()!=true){
-                Point fall{candy[start_x+1][start_y]->getCenter().x-50,candy[start_x+1][start_y]->getCenter().y}; //Get the pos in using -50 the right-neigh position.
-                candy[start_x][start_y]->setCenter(fall);
-                candy[start_x][start_y]->setFillColor(color[rand()%5]);
-                set_the_neighbours();
-            }else if(start_x-1>=0 && candy[start_x-1][start_y]->get_wall()!=true){
-                Point fall{candy[start_x-1][start_y]->getCenter().x+50,candy[start_x-1][start_y]->getCenter().y}; //Get the pos in adding +50 the left-neigh position.
-                candy[start_x][start_y]->setCenter(fall);
-                candy[start_x][start_y]->setFillColor(color[rand()%5]);
-                set_the_neighbours();
-            }
+int GameManager::fall_candies(int x, int y, bool animate){
+    if (y==0){
+        candy[x][y]->setFillColor(color[rand()%5]);
+        Point fall = candy[x][y]->getCenter();
+        if(animate){
+            candy[x][y]->setCenter({candy[x][y]->getCenter().x, candy[x][y]->getCenter().y-50});
+            candy[x][y]->start_slide_animation(fall, false);
         }
-           
-        return 0;
+        return 1;
     }
+    if(not candy[x][y]->get_wall()){
+        Point fall = candy[x][y]->getCenter();
+        int x_fork;
+        if(not candy[x][y-1]->get_wall()){
+            candy[x][y]->setCode(candy[x][y-1]->getFillColor());
+            if (animate){
+                candy[x][y]->setCenter({candy[x][y]->getCenter().x, candy[x][y]->getCenter().y-50});
+            }
+            x_fork=x;
+        }else{
+            for (x_fork=x-1;x_fork<x+1;x_fork+=2){                                  //O(2)
+                if (not candy[x_fork][y]->get_wall() && x_fork<9 && x_fork>=0){
+                    candy[x][y]->setCode(candy[x_fork][y-1]->getFillColor());
+                    if (animate){
+                        candy[x][y]->setCenter({candy[x_fork][y-1]->getCenter().x,candy[x_fork][y-1]->getCenter().y-50});
+                    }
+                    break;
+                }  
+            }
+        }
+        if (animate){
+            candy[x][y]->start_slide_animation(fall, false);
+        }
+        fall_candies(x_fork, y-1,animate);
+        return 1;
+    }
+    return 1;
+}
+
 
 void GameManager::set_the_neighbours(){
     for(int i=0;i<9;i++){
@@ -243,21 +242,3 @@ void GameManager::set_the_neighbours(){
          }
         }
 }
-
-void GameManager::fall_walls(int start_x, int start_y){ //Function to make the candies fall in diag if there is a wall above.
-        if(candy[start_x-1][start_y]->getFillColor() != FL_BLACK ){ //make the candy in the right diag fall.
-            Point fall{candy[start_x][start_y]->getCenter().x,candy[start_x][start_y]->getCenter().y+50};
-            candy[start_x][start_y+1]->setCenter(fall);
-            candy[start_x][start_y+1]->setCode(candy[start_x-1][start_y]->getFillColor());
-            candy[start_x-1][start_y]->setFillColor(FL_BLACK);
-            set_the_neighbours();
-            fall_candies(start_x-1,start_y);
-        }else{ //If no candy in the right diag then we take the one from the left diag
-            Point fall{candy[start_x][start_y]->getCenter().x,candy[start_x][start_y]->getCenter().y+50};
-            candy[start_x][start_y+1]->setCenter(fall);
-            candy[start_x][start_y+1]->setCode(candy[start_x+1][start_y]->getFillColor());
-            candy[start_x+1][start_y]->setFillColor(FL_BLACK);
-            set_the_neighbours();
-            fall_candies(start_x+1,start_y);
-        }
-    }

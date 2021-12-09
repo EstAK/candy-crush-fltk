@@ -50,7 +50,7 @@ public:
     exit(0);
     }
     void set_the_neighbours();
-  
+  bool is_board_moving();
   
     
 };

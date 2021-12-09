@@ -77,14 +77,14 @@ void Candy::start_pop_animation(){
         animation_pop = new Animation_pop(this);
     }
 
-void Candy::start_slide_animation(Point dest){
-        animation_slide = new Animation_slide(this, dest);
-    }
+void Candy::start_slide_animation(Point dest, bool gb){
+    animation_slide = new Animation_slide(this, dest, gb);
+}
 
 bool Candy::is_slide_complete(){
-        // checks wheter or not the slide animaiton is complete or non existant
+        // checks if the slide animaiton is complete or non existant
         if (animation_slide){
-            return animation_slide->is_complete();
+            return false;
         }else{
             return true;
         }
