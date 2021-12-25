@@ -79,3 +79,4 @@ bool Rectangle::contains(Point p){
 void Rectangle::setCenter(Point p){
    center=p;
 }
+

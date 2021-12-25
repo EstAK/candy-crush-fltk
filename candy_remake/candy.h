@@ -19,19 +19,19 @@ using namespace std;
 class Candy:public Rectangle{
     bool is_fruit=false;
     Animation_pop* animation_pop;           //not templating because every Candy has to have those 2 animations
-    Animation_slide* animation_slide;
+    Animation_fall* animation_fall;
     Circle* c;
     
 public:
     vector<shared_ptr<Candy>> neighbours;
     Candy(){} //Dummy Constructor
-    Candy(Point center, int w, int h,Fl_Color fillColor = FL_WHITE, Fl_Color frameColor = FL_BLACK,Animation_pop* pop=nullptr, Animation_slide* slide=nullptr);
+    Candy(Point center, int w, int h,Fl_Color fillColor = FL_WHITE, Fl_Color frameColor = FL_BLACK,Animation_pop* pop=nullptr, Animation_fall* fall=nullptr);
     
     bool verify_neighbours(shared_ptr<Candy>);
      void start_pop_animation();
 
-    void start_slide_animation(Point, bool=true);
-    bool is_slide_complete();
+    void start_fall_animation(Point, bool=true);
+    bool is_fall_complete();
     virtual bool get_wall();
     bool get_fruit();
     void set_fruit(bool);

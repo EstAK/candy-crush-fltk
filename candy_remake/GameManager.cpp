@@ -24,8 +24,6 @@ void GameManager::set_up(shared_ptr<Candy>** arr,Score& score,Objective& obj){
     candy=arr;
     candy_score=&score;
     game_obj=&obj;
-    
-   
 }
 
 bool GameManager::break_candies(int x,int y,int i,int j,bool pc){
@@ -198,7 +196,7 @@ int GameManager::fall_candies(int x, int y, bool animate){
         Point fall = candy[x][y]->getCenter();
         if(animate){
             candy[x][y]->setCenter({candy[x][y]->getCenter().x, candy[x][y]->getCenter().y-50});
-            candy[x][y]->start_slide_animation(fall, false);
+            candy[x][y]->start_fall_animation(fall, false);
         }
         return 1;
     }
@@ -223,7 +221,7 @@ int GameManager::fall_candies(int x, int y, bool animate){
             }
         }
         if (animate){
-            candy[x][y]->start_slide_animation(fall, false);
+            candy[x][y]->start_fall_animation(fall, false);
         }
         fall_candies(x_fork, y-1,animate);
         return 1;

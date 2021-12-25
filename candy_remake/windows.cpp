@@ -52,6 +52,12 @@ class MainWindow : public Fl_Window {
             case FL_KEYDOWN:
                 canva.keyPressed(Fl::event_key());
                 return 1;
+            case FL_DRAG:
+                canva.mouseDrag(Point{Fl::event_x(), Fl::event_y()});
+                return 1;
+            case FL_RELEASE:
+                canva.mouseRelease(Point{Fl::event_x(), Fl::event_y()});
+                return 1;
         }
         return 0;
     }
