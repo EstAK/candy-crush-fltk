@@ -43,7 +43,7 @@ public:
 // int GameManager::fall_candies(int x, int y){
 //     cout<<"x: "<<x<<" y: "<<y<<endl;
 //     if (y==0){
-//         if(candy[x][y].is_slide_complete()){
+//         if(candy[x][y].is_fall_complete()){
 //             candy[x][y].setFillColor(color[rand()%5]);
 //             candy[x][y].start_fall_animation({candy[x][y].getCenter().x, candy[x][y].getCenter().y-50});
 //             candy[x][y].set_move(false);
@@ -55,7 +55,7 @@ public:
 
 //     }
 //     if(not candy[x][y].get_wall()){
-//         if(candy[x][y].is_slide_complete()){
+//         if(candy[x][y].is_fall_complete()){
 //             candy[x][y].set_move(false);
 //             candy[x][y].setFillColor(candy[x][y-1].getFillColor());
 //             candy[x][y].start_fall_animation({candy[x][y].getCenter().x, candy[x][y].getCenter().y-50});
@@ -72,9 +72,9 @@ public:
 //     if (y==0){
 //         candy[x][y].setFillColor(color[rand()%5]);
 //         Point fall = candy[x][y].getCenter();
-//         if(candy[x][y].is_slide_complete()){
+//         if(candy[x][y].is_fall_complete()){
 //             candy[x][y].setCenter({candy[x][y].getCenter().x, candy[x][y].getCenter().y-50});
-//             candy[x][y].start_slide_animation(fall, false);
+//             candy[x][y].start_fall_animation(fall, false);
 //             candy[x][y].set_move(false);
 //         }else{
 //             candy[x][y].set_move(true);
@@ -94,9 +94,9 @@ public:
 //                 }  
 //             }
 //         }
-//         if(candy[x][y].is_slide_complete()){
+//         if(candy[x][y].is_fall_complete()){
 //             candy[x][y].setCenter({candy[x][y].getCenter().x, candy[x][y].getCenter().y-50});
-//             candy[x][y].start_slide_animation(fall, false);
+//             candy[x][y].start_fall_animation(fall, false);
 //             candy[x][y].set_move(false);
 //         }else{
 //             candy[x][y].set_move(true);
@@ -111,7 +111,7 @@ public:
 //                 Point fall = candy[x_fork][y].getCenter();
 //                 candy[x_fork][y].setCenter(candy[x_fork][y-1].getCenter());
 //                 candy[x_fork][y].setCode(candy[x_fork][y-1].getFillColor());
-//                 candy[x_fork][y].start_slide_animation(fall, false);
+//                 candy[x_fork][y].start_fall_animation(fall, false);
 //                 return 1;
 //             }
 //             return 1;
@@ -127,9 +127,9 @@ public:
 //     if (y==0){
 //         candy[x][y].setFillColor(color[rand()%5]);
 //         Point fall = candy[x][y].getCenter();
-//         if(candy[x][y].is_slide_complete()){
+//         if(candy[x][y].is_fall_complete()){
 //             candy[x][y].setCenter({candy[x][y].getCenter().x, candy[x][y].getCenter().y-50});
-//             candy[x][y].start_slide_animation(fall, false);
+//             candy[x][y].start_fall_animation(fall, false);
 //             candy[x][y].set_move(false);
 //         }else{
 //             candy[x][y].set_move(true);
@@ -153,8 +153,8 @@ public:
 //                 }  
 //             }
 //         }
-//         if(candy[x][y].is_slide_complete()){
-//             candy[x][y].start_slide_animation(fall, false);
+//         if(candy[x][y].is_fall_complete()){
+//             candy[x][y].start_fall_animation(fall, false);
 //             candy[x][y].set_move(false);
 //         }else{
 //             // candy[x][y].set_move(true);

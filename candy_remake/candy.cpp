@@ -18,7 +18,7 @@ Item::Item(Point center,int w,int h,Fl_Color fillColor,Fl_Color frameColor):Rect
 
 }
 
-Candy::Candy(Point center,int w,int h,Fl_Color fillColor,Fl_Color frameColor,Animation_pop* pop, Animation_slide* slide):Item(center,w,h,fillColor,frameColor),animation_pop(pop),animation_slide(slide){
+Candy::Candy(Point center,int w,int h,Fl_Color fillColor,Fl_Color frameColor,Animation_pop* pop, Animation_fall* fall):Item(center,w,h,fillColor,frameColor),animation_pop(pop),animation_fall(fall){
 
 }
 
@@ -60,13 +60,13 @@ void Candy::draw(){
             delete animation_pop;
             animation_pop = nullptr;
         }
-        if (animation_slide && animation_slide->is_complete()){
-            delete animation_slide;
-            animation_slide = nullptr;
+        if (animation_fall && animation_fall->is_complete()){
+            delete animation_fall;
+            animation_fall = nullptr;
         }
 
-        if (animation_slide){
-            animation_slide->draw();
+        if (animation_fall){
+            animation_fall->draw();
         }else if (animation_pop) {
             animation_pop->draw();
         }else{
@@ -80,8 +80,8 @@ void Candy::start_pop_animation(){
         animation_pop = new Animation_pop(this);
     }
 
-void Candy::start_slide_animation(Point dest, bool gb){
-    animation_slide = new Animation_slide(this, dest, gb);
+void Candy::start_fall_animation(Point dest, bool gb){
+    animation_fall = new Animation_fall(this, dest, gb);
 }
 
 bool Candy::get_fruit(){
@@ -92,9 +92,9 @@ void Candy::set_fruit(bool newFruit){
     is_fruit=newFruit;
 }
 
-bool Candy::is_slide_complete(){
-        // checks if the slide animaiton is complete or non existant
-        if (animation_slide){
+bool Candy::is_fall_complete(){
+        // checks if the fall animaiton is complete or non existant
+        if (animation_fall){
             return false;
         }else{
             return true;

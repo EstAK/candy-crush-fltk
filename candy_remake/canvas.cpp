@@ -176,11 +176,11 @@ void Canvas::mouseClick(Point mouseLoc){
                         timer=0;
                         can_vibrate=false;
                     }
-                }else if(candy[i][j]->contains(mouseLoc) && candy[i][j]->is_slide_complete() && candy[x][y]->is_slide_complete()){
+                }else if(candy[i][j]->contains(mouseLoc) && candy[i][j]->is_fall_complete() && candy[x][y]->is_fall_complete()){
                     if(candy[i][j]->verify_neighbours(current)){
                         if (gm.break_candies(i,j,x,y)){
-                            candy[i][j]->start_slide_animation(candy[x][y]->getCenter());
-                            candy[x][y]->start_slide_animation(candy[i][j]->getCenter());
+                            candy[i][j]->start_fall_animation(candy[x][y]->getCenter());
+                            candy[x][y]->start_fall_animation(candy[i][j]->getCenter());
                         }
                         if(candy[x][y]->get_fruit()){
                             if(ht.forshadowing_over_9000(i,j,candy[i][j]->getFillColor(),false)==false){
@@ -212,6 +212,57 @@ void Canvas::mouseClick(Point mouseLoc){
         }
 }
 
+void Canvas::mouseDrag(Point mouseLoc){
+    cout<<current->getCenter().x<<endl;
+    if (has_released){
+        for(int i=0;i<9;i++){       //not optimised better do do double while to make it stop cleanly when match found in so it doesn't go through every cell
+            for(int j=0;j<9;j++){
+                if(candy[i][j]->contains(mouseLoc)){
+                    current = candy[i][j];
+                    curr_pos = current->getCenter();
+                    has_released = false;
+                    return;
+                }
+            }
+        }
+    }else{
+        if (abs(mouseLoc.x - curr_pos.x) > abs(mouseLoc.y - curr_pos.y)){
+            if (abs(mouseLoc.x - curr_pos.x) <= 50){
+                current->setCenter({mouseLoc.x, curr_pos.y});
+            }else{
+                current->setCenter({curr_pos.x+50*((mouseLoc.x - curr_pos.x)/abs(mouseLoc.x - curr_pos.x)), curr_pos.y});
+            }
+        }else{
+            if (abs(mouseLoc.y - curr_pos.y) <= 50){
+                current->setCenter({curr_pos.x, mouseLoc.y});
+            }else{
+                current->setCenter({curr_pos.x, curr_pos.y+50*((mouseLoc.y - curr_pos.y)/abs(mouseLoc.y - curr_pos.y))});
+            }
+        }
+    }
+}
+
+void Canvas::mouseRelease(Point mouseLoc){
+    // not proper OOP but will work for now
+    timer=0;
+    can_vibrate=false;
+    has_released = true;
+    current->setCenter(curr_pos);
+    for(int i=0;i<9;i++){
+            for(int j=0;j<9;j++){
+                if (candy[i][j]->contains(mouseLoc) && ! candy[i][j]->get_wall() && current->verify_neighbours(candy[i][j])){
+                    if (gm.break_candies(i,j,x,y)){
+                        current->start_fall_animation(candy[i][j]->getCenter());
+                        candy[i][j]->start_fall_animation(current->getCenter());
+                        return;
+                    }
+                }
+            }
+        }
+
+}
+
+
 void Canvas::set_the_neighbours(){
         for(int i=0;i<9;i++){
          for(int j=0;j<9;j++){
@@ -226,7 +277,7 @@ void Canvas::set_the_neighbours(){
 bool Canvas::is_board_moving(){
     for (int x = 0;x<9;x++){
         for (int y = 0;y<9;y++){
-            if (not candy[x][y]->is_slide_complete()){
+            if (not candy[x][y]->is_fall_complete()){
                 return true;
             }
         }

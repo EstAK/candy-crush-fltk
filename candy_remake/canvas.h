@@ -37,6 +37,8 @@ class Canvas{
     GameManager gm;
     Hint ht;
     Objective game_obj;
+    bool has_released = true;
+    Point curr_pos;
 
 public:
    Canvas(); 
@@ -45,6 +47,10 @@ public:
    void read_file(string ); 
    void draw();
    void mouseMove(Point);
+   //works in pair
+   void mouseDrag(Point);
+   void mouseRelease(Point);
+   //end of drag pair
    void mouseClick(Point);
    void keyPressed(int keyCode){
     exit(0);
