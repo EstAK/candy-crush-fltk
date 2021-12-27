@@ -16,34 +16,55 @@
 
 using namespace std;
 
-class Candy:public Rectangle{
+
+class Item:public Rectangle{ 
+    
+    public:
+        Item(){}
+        Item(Point center, int w, int h,Fl_Color fillColor = FL_WHITE, Fl_Color frameColor = FL_BLACK);
+       
+        virtual bool verify_neighbours(shared_ptr<Item>){return false;}
+        virtual void start_pop_animation(){}
+
+        virtual void start_slide_animation(Point, bool=true){}
+        virtual bool is_slide_complete(){return true;}
+        virtual bool get_wall(){return false;}
+        virtual bool get_fruit(){return false;}
+        virtual void set_fruit(bool){}
+        virtual void set_neigh(shared_ptr<Item>){}
+        virtual void draw(){}
+};
+
+class Candy:public Item{
     bool is_fruit=false;
     Animation_pop* animation_pop;           //not templating because every Candy has to have those 2 animations
-    Animation_fall* animation_fall;
+    Animation_slide* animation_slide;
+    vector<shared_ptr<Item>> neighbours;
     Circle* c;
-    
+       
 public:
-    vector<shared_ptr<Candy>> neighbours;
-    Candy(){} //Dummy Constructor
-    Candy(Point center, int w, int h,Fl_Color fillColor = FL_WHITE, Fl_Color frameColor = FL_BLACK,Animation_pop* pop=nullptr, Animation_fall* fall=nullptr);
     
-    bool verify_neighbours(shared_ptr<Candy>);
-     void start_pop_animation();
+    Candy(){} //Dummy Constructor
+    Candy(Point center, int w, int h,Fl_Color fillColor = FL_WHITE, Fl_Color frameColor = FL_BLACK,Animation_pop* pop=nullptr, Animation_slide* slide=nullptr);
+    
+    bool verify_neighbours(shared_ptr<Item>);
+    void start_pop_animation();
 
-    void start_fall_animation(Point, bool=true);
-    bool is_fall_complete();
-    virtual bool get_wall();
+    void start_slide_animation(Point, bool=true);
+    bool is_slide_complete();
     bool get_fruit();
     void set_fruit(bool);
-
+    void set_neigh(shared_ptr<Item>);
+    
     void draw();
 }; 
 
-class Wall:public Candy{
+class Wall:public Item{
 public:
     Wall(){}
-    Wall(Point center,int w,int h,Fl_Color fillColor=FL_MAGENTA,Fl_Color frameColor=FL_BLACK):Candy(center,w,h,fillColor,frameColor){}
+    Wall(Point center,int w,int h,Fl_Color fillColor=FL_MAGENTA,Fl_Color frameColor=FL_BLACK):Item(center,w,h,fillColor,frameColor){}
     bool get_wall();
+    void draw();
 
 };
 

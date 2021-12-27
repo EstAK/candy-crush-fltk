@@ -16,11 +16,11 @@ using namespace std;
 
 Hint::Hint(){
     for(int i=0;i<9;i++){
-        candy[i]=new shared_ptr<Candy>[9]();
+        candy[i]=new shared_ptr<Item>[9]();
     }
 }
 
-void Hint::set_up(shared_ptr<Candy>** arr,bool& can_vib,bool& not_imp){
+void Hint::set_up(shared_ptr<Item>** arr,bool& can_vib,bool& not_imp){
     candy=arr;
     can_vibrate=&can_vib;
     not_impossible=&not_imp;
@@ -76,7 +76,7 @@ void Hint::check_impossible(int i,int j,bool vibrate){
 
 bool Hint::forshadowing_over_9000(int x,int y,Fl_Color color,bool vibrate){ //Vlad: just change it's name later.... IT'S OVER 9000!!!
        //Vlad: Prototype method; I will change break_candies in order to work with this as well when i will have the mood -_-
-       shared_ptr<Candy> temp_candy=candy[x][y];
+       shared_ptr<Item> temp_candy=candy[x][y];
        Fl_Color save=candy[x][y]->getFillColor(); 
        temp_candy->setCode(color);
        int counter_left_right=1; 

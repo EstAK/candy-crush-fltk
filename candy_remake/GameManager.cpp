@@ -16,19 +16,21 @@ using namespace std;
 
 GameManager::GameManager(){
     for(int i=0;i<9;i++){
-        candy[i]=new shared_ptr<Candy>[9]();
+        candy[i]=new shared_ptr<Item>[9]();
     }
 }
 
-void GameManager::set_up(shared_ptr<Candy>** arr,Score& score,Objective& obj){
+void GameManager::set_up(shared_ptr<Item>** arr,Score& score,Objective& obj){
     candy=arr;
     candy_score=&score;
     game_obj=&obj;
+    
+   
 }
 
 bool GameManager::break_candies(int x,int y,int i,int j,bool pc){
-   shared_ptr<Candy> temp_candy=candy[x][y];  
-   shared_ptr<Candy> temp_candy2=candy[i][j];
+   shared_ptr<Item> temp_candy=candy[x][y];  
+   shared_ptr<Item> temp_candy2=candy[i][j];
    int counter_left_right=1; 
    int counter_up_down=1;
    int counter_left_right2=1;
@@ -122,7 +124,7 @@ bool GameManager::break_candies(int x,int y,int i,int j,bool pc){
 
 
 void GameManager::destroy_candies(int x,int y,int counter_left_right,int counter_up_down,bool pc){
-    shared_ptr<Candy> temp_candy=candy[x][y];
+    shared_ptr<Item> temp_candy=candy[x][y];
     vector<Point> coord;
     if(counter_left_right>counter_up_down){ //A way to know which one will have the priority.
             if(counter_left_right>=3){
@@ -196,14 +198,14 @@ int GameManager::fall_candies(int x, int y, bool animate){
         Point fall = candy[x][y]->getCenter();
         if(animate){
             candy[x][y]->setCenter({candy[x][y]->getCenter().x, candy[x][y]->getCenter().y-50});
-            candy[x][y]->start_fall_animation(fall, false);
+            candy[x][y]->start_slide_animation(fall, false);
         }
         return 1;
     }
-    if(not candy[x][y]->get_wall()){
+    if(!candy[x][y]->get_wall()){
         Point fall = candy[x][y]->getCenter();
         int x_fork;
-        if(not candy[x][y-1]->get_wall()){
+        if(!candy[x][y-1]->get_wall()){
             candy[x][y]->setCode(candy[x][y-1]->getFillColor());
             if (animate){
                 candy[x][y]->setCenter({candy[x][y]->getCenter().x, candy[x][y]->getCenter().y-50});
@@ -221,7 +223,7 @@ int GameManager::fall_candies(int x, int y, bool animate){
             }
         }
         if (animate){
-            candy[x][y]->start_fall_animation(fall, false);
+            candy[x][y]->start_slide_animation(fall, false);
         }
         fall_candies(x_fork, y-1,animate);
         return 1;
@@ -233,10 +235,10 @@ int GameManager::fall_candies(int x, int y, bool animate){
 void GameManager::set_the_neighbours(){
     for(int i=0;i<9;i++){
          for(int j=0;j<9;j++){
-          if(i+1<9) candy[i][j]->neighbours.push_back(candy[i+1][j]);
-          if(j+1<9) candy[i][j]->neighbours.push_back(candy[i][j+1]);
-          if(i-1>=0) candy[i][j]->neighbours.push_back(candy[i-1][j]);
-          if(j-1>=0) candy[i][j]->neighbours.push_back(candy[i][j-1]);
+          if(i+1<9) candy[i][j]->set_neigh(candy[i+1][j]);
+          if(j+1<9) candy[i][j]->set_neigh(candy[i][j+1]);
+          if(i-1>=0) candy[i][j]->set_neigh(candy[i-1][j]);
+          if(j-1>=0) candy[i][j]->set_neigh(candy[i][j-1]);
          }
         }
 }

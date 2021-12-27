@@ -24,13 +24,8 @@ struct Pop{
     ~Pop();
 };
 
-struct Fall{
-    Fall(Point , Rectangle *);
-    ~Fall();
-};
-
 struct Slide{
-    Slide(Point);
+    Slide(Point , Rectangle *);
     ~Slide();
 };
 
@@ -47,7 +42,7 @@ public:
 };
 
 
-class Animation_fall: public Animation{
+class Animation_slide: public Animation{
     //esteban: inheriting this class from a base class having thoseg private instances might be a good idea as they are nearly the same as in Animation_pop
     Point initial_pos;
     Point destination;
@@ -57,9 +52,9 @@ class Animation_fall: public Animation{
     int speed = 1;
 
 public:
-    Animation_fall(Rectangle* candy_to_animate, Point d, bool gb, int animation_time=50);
+    Animation_slide(Rectangle* candy_to_animate, Point d, bool gb, int animation_time=50);
 
-    ~Animation_fall();
+    ~Animation_slide();
 
     void draw();
 

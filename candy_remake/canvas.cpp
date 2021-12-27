@@ -24,7 +24,7 @@ using namespace std;
 
 Canvas::Canvas(){  
         for(int i=0;i<9;i++){
-            candy[i]=new shared_ptr<Candy>[9]();
+            candy[i]=new shared_ptr<Item>[9]();
         }                          
         make_board(maps[0]); 
         game_obj=Objective();
@@ -46,14 +46,14 @@ void Canvas::make_board(string map){ //TODO: Finish it later.
         for (int x = 0; x<9; x++){
             for (int y = 0; y<9; y++){
               
-                if (lines[y][x] == *C){
+                if (lines[y][x] == *c){
                     candy[x][y]=make_shared<Candy>(Point{50*x+25,50*y+25},40,40,color[rand()%5],FL_BLACK);
                 }
-                else if(lines[y][x]== *W){
+                else if(lines[y][x]== *w){
                     candy[x][y]=make_shared<Wall>(Point{50*x+25, 50*y+25}, 40, 40);
                 }
-                else if(lines[y][x]== *I){
-                    candy[x][y]=make_shared<Candy>(Point{50*x+25, 50*y+25},40, 40,FL_RED,FL_BLACK);
+                else if(lines[y][x]== *i){
+                    candy[x][y]=make_shared<Candy>(Point{50*x+25, 50*y+25},10,FL_RED,FL_BLACK);
                     fruits++;
                     candy[x][y]->set_fruit(true);
                     gj=true;
@@ -176,11 +176,11 @@ void Canvas::mouseClick(Point mouseLoc){
                         timer=0;
                         can_vibrate=false;
                     }
-                }else if(candy[i][j]->contains(mouseLoc) && candy[i][j]->is_fall_complete() && candy[x][y]->is_fall_complete()){
+                }else if(candy[i][j]->contains(mouseLoc) && candy[i][j]->is_slide_complete() && candy[x][y]->is_slide_complete()){
                     if(candy[i][j]->verify_neighbours(current)){
                         if (gm.break_candies(i,j,x,y)){
-                            candy[i][j]->start_fall_animation(candy[x][y]->getCenter());
-                            candy[x][y]->start_fall_animation(candy[i][j]->getCenter());
+                            candy[i][j]->start_slide_animation(candy[x][y]->getCenter());
+                            candy[x][y]->start_slide_animation(candy[i][j]->getCenter());
                         }
                         if(candy[x][y]->get_fruit()){
                             if(ht.forshadowing_over_9000(i,j,candy[i][j]->getFillColor(),false)==false){
@@ -212,50 +212,13 @@ void Canvas::mouseClick(Point mouseLoc){
         }
 }
 
-void Canvas::mouseDrag(Point mouseLoc){
-    cout<<current->getCenter().x<<endl;
-    if (has_released){
-        for(int i=0;i<9;i++){       //not optimised better do do double while to make it stop cleanly when match found in so it doesn't go through every cell
-            for(int j=0;j<9;j++){
-                if(candy[i][j]->contains(mouseLoc)){
-                    current = candy[i][j];
-                    has_released = false;
-                    return;
-                }
-            }
-        }
-    }else{
-        //do the slide idk what
-    }
-}
-
-void Canvas::mouseRelease(Point mouseLoc){
-    // not proper OOP but will work for now
-    timer=0;
-    can_vibrate=false;
-    for(int i=0;i<9;i++){
-            for(int j=0;j<9;j++){
-                if (candy[i][j]->contains(mouseLoc) && ! candy[i][j]->get_wall() && current->verify_neighbours(candy[i][j])){
-                    if (gm.break_candies(i,j,x,y)){
-                        current->start_fall_animation(candy[i][j]->getCenter());
-                        candy[i][j]->start_fall_animation(current->getCenter());
-                    }
-                }
-            }
-        }
-
-    has_released = true;
-
-}
-
-
 void Canvas::set_the_neighbours(){
         for(int i=0;i<9;i++){
          for(int j=0;j<9;j++){
-          if(i+1<9) candy[i][j]->neighbours.push_back(candy[i+1][j]);
-          if(j+1<9) candy[i][j]->neighbours.push_back(candy[i][j+1]);
-          if(i-1>=0) candy[i][j]->neighbours.push_back(candy[i-1][j]);
-          if(j-1>=0) candy[i][j]->neighbours.push_back(candy[i][j-1]);
+          if(i+1<9) candy[i][j]->set_neigh(candy[i+1][j]);
+          if(j+1<9) candy[i][j]->set_neigh(candy[i][j+1]);
+          if(i-1>=0) candy[i][j]->set_neigh(candy[i-1][j]);
+          if(j-1>=0) candy[i][j]->set_neigh(candy[i][j-1]);
          }
         }
 }
@@ -263,7 +226,7 @@ void Canvas::set_the_neighbours(){
 bool Canvas::is_board_moving(){
     for (int x = 0;x<9;x++){
         for (int y = 0;y<9;y++){
-            if (not candy[x][y]->is_fall_complete()){
+            if (not candy[x][y]->is_slide_complete()){
                 return true;
             }
         }

@@ -23,10 +23,10 @@ using namespace std;
 
 class Canvas{
     bool has_moved=false;
-    shared_ptr<Candy>**candy=new shared_ptr<Candy>*[9]();
+    shared_ptr<Item>**candy=new shared_ptr<Item>*[9]();
     Fl_Color color[5]={FL_RED,FL_BLUE,FL_YELLOW,FL_DARK_CYAN,FL_GREEN};
     vector<string> lines;
-    shared_ptr<Candy> current=make_shared<Candy>(); //stocks the current cell clicked on. esteban: might cause an issue somewhere as base cas is now FL_BLACK
+    shared_ptr<Item> current=make_shared<Item>(); //stocks the current cell clicked on. esteban: might cause an issue somewhere as base cas is now FL_BLACK
     int x=0;int y=0; //currents coord in the array
     Score candy_score{0}; //By default the score begins at 0
     bool not_impossible=false;
@@ -37,7 +37,6 @@ class Canvas{
     GameManager gm;
     Hint ht;
     Objective game_obj;
-    bool has_released = true;
 
 public:
    Canvas(); 
@@ -47,9 +46,6 @@ public:
    void draw();
    void mouseMove(Point);
    void mouseClick(Point);
-   void mouseDrag(Point);
-   // void mouseRelease(int keyCode);
-   void mouseRelease(Point);
    void keyPressed(int keyCode){
     exit(0);
     }

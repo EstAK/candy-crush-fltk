@@ -9,7 +9,7 @@
 #include <iostream>
 #include <array>
 #include<unistd.h>
-#include <ostream>
+
 
 
 using namespace std;
@@ -18,6 +18,13 @@ using namespace std;
 #define RECTANGLE_H_
 
 struct Point{int x; int y;};
+
+//class declaration Esteban: the code is becoming a total clusterfuck
+//we should move it to separate files because I don't even where to put     
+//new classes without causing a billion class not found because written 
+//before but cannot write before otherwise code goes full kamikaze mode
+
+//Vlad: Roger Roger
 
 class Rectangle {
   Point center;

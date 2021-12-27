@@ -33,14 +33,14 @@ Pop::~Pop(){
     fl_pop_matrix();
 }
 
-//Fall Struct
+//Slide Struct
 
-Fall::Fall(Point p, Rectangle *r){
+Slide::Slide(Point p, Rectangle *r){
         fl_push_matrix();
         r->setCenter(p);
     }
 
-Fall::~Fall(){
+Slide::~Slide(){
     fl_pop_matrix();
 }
 
@@ -56,9 +56,9 @@ bool Animation::is_complete(){
         return time>animation_time;
     }
 
-//Fall Animation
+//Slide Animation
 
-Animation_fall::Animation_fall(Rectangle* candy_to_animate, Point d, bool gb, int animation_time): 
+Animation_slide::Animation_slide(Rectangle* candy_to_animate, Point d, bool gb, int animation_time): 
     Animation{candy_to_animate, animation_time} ,go_back{gb} ,initial_pos{candy_to_animate->getCenter()} , destination{d}{
 
         distance_x = (destination.x - r->getCenter().x)/animation_time; // x distance per animation frame
@@ -67,7 +67,7 @@ Animation_fall::Animation_fall(Rectangle* candy_to_animate, Point d, bool gb, in
     }
 
 
-Animation_fall::~Animation_fall(){
+Animation_slide::~Animation_slide(){
         if (go_back){
             r->setCenter(initial_pos);
         }else{
@@ -76,10 +76,10 @@ Animation_fall::~Animation_fall(){
         
 }
 
-void Animation_fall::draw(){
+void Animation_slide::draw(){
         time++;
 
-        Fall s ({initial_pos.x+distance_x*time, initial_pos.y+distance_y*time}, r);
+        Slide s ({initial_pos.x+distance_x*time, initial_pos.y+distance_y*time}, r);
 
         r->draw();
     }
