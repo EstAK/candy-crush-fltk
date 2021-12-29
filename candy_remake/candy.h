@@ -24,6 +24,7 @@ class Item:public Rectangle{
         Item(Point center, int w, int h,Fl_Color fillColor = FL_WHITE, Fl_Color frameColor = FL_BLACK);
        
         virtual bool verify_neighbours(shared_ptr<Item>){return false;}
+        virtual void update_frosted_neighbours(){}
         virtual void start_pop_animation(){}
 
         virtual void start_fall_animation(Point, bool=true){}
@@ -54,6 +55,7 @@ public:
     Candy(Point center, int w, int h,Fl_Color fillColor = FL_WHITE, Fl_Color frameColor = FL_BLACK,Animation_pop* pop=nullptr, Animation_fall* fall=nullptr);
     
     bool verify_neighbours(shared_ptr<Item>);
+    void update_frosted_neighbours();
     void start_pop_animation();
 
     void start_fall_animation(Point, bool=true);

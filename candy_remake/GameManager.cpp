@@ -153,7 +153,13 @@ void GameManager::destroy_candies(int x,int y,int counter_left_right,int counter
                     }
                 }
                 for(auto c:coord){
+                    if (! candy[c.x][c.y]->has_frosting()){
                     candy[c.x][c.y]->setFillColor(FL_BLACK);
+                    candy[c.x][c.y]->update_frosted_neighbours();
+
+                }else{
+                    candy[c.x][c.y]->set_layers_of_frosting(candy[c.x][c.y]->get_layers_of_frosting()-1);
+                }
                     candy[c.x][c.y]->start_pop_animation();
                 }
                 
@@ -184,7 +190,13 @@ void GameManager::destroy_candies(int x,int y,int counter_left_right,int counter
                 }
             }
             for(auto c:coord){
-                candy[c.x][c.y]->setFillColor(FL_BLACK);
+                if (! candy[c.x][c.y]->has_frosting()){
+                    candy[c.x][c.y]->setFillColor(FL_BLACK);
+                    candy[c.x][c.y]->update_frosted_neighbours();
+
+                }else{
+                    candy[c.x][c.y]->set_layers_of_frosting(candy[c.x][c.y]->get_layers_of_frosting()-1);
+                }
                 candy[c.x][c.y]->start_pop_animation();
             }
        }

@@ -259,6 +259,9 @@ void Canvas::mouseRelease(Point mouseLoc){
     can_vibrate=false;
     has_released = true;
     current->setCenter(curr_pos);
+    if (current->has_frosting()){
+        return;
+    }
     for(int i=0;i<9;i++){
             for(int j=0;j<9;j++){
                 if (candy[i][j]->contains(mouseLoc) && ! candy[i][j]->get_wall() && ! candy[i][j]->has_frosting() && current->verify_neighbours(candy[i][j])){
