@@ -33,10 +33,16 @@ class Item:public Rectangle{
         virtual void set_fruit(bool){}
         virtual void set_neigh(shared_ptr<Item>){}
         virtual void draw(){}
+
+        virtual bool has_frosting(){return false;}
+        virtual int get_layers_of_frosting(){return 0;}
+        virtual void set_layers_of_frosting(int){}
+
 };
 
 class Candy:public Item{
     bool is_fruit=false;
+    int layers = 0;
     Animation_pop* animation_pop;           //not templating because every Candy has to have those 2 animations
     Animation_fall* animation_fall;
     vector<shared_ptr<Item>> neighbours;
@@ -56,6 +62,10 @@ public:
     void set_fruit(bool);
     void set_neigh(shared_ptr<Item>);
     
+    bool has_frosting();
+    void set_layers_of_frosting(int);
+    int get_layers_of_frosting();
+
     void draw();
 }; 
 

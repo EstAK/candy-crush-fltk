@@ -57,6 +57,9 @@ void Canvas::make_board(string map){ //TODO: Finish it later.
                     fruits++;
                     candy[x][y]->set_fruit(true);
                     gj=true;
+                }else if(isdigit(lines[y][x])){
+                    candy[x][y]=make_shared<Candy>(Point{50*x+25, 50*y+25},40, 40,FL_CYAN,FL_CYAN);
+                    candy[x][y]->set_layers_of_frosting(lines[y][x]);
                 }
             }
         }    
@@ -158,73 +161,81 @@ void Canvas::mouseMove(Point mouseLoc){
                 if(candy[i][j]->contains(mouseLoc)){
                     candy[i][j]->setFrameColor(FL_RED);
                 }else{
-                    candy[i][j]->setFrameColor(FL_BLACK);
+                    if (candy[i][j]->has_frosting()){
+                        candy[i][j]->setFrameColor(FL_CYAN);
+                    }else{
+                        candy[i][j]->setFrameColor(FL_BLACK);
+                    }
                 }
             }
         }
 }
 
 void Canvas::mouseClick(Point mouseLoc){
-        has_moved=true;
-        for(int i=0;i<9;i++){
-            for(int j=0;j<9;j++){
-                if(candy[i][j]->contains(mouseLoc) && current->getFillColor() == FL_BLACK){
-                    if(candy[i][j]->get_wall()==false ){  //make sure that is not a wall. ; Vlad:time n vibrate
-                        current=candy[i][j];
-                        x=i;
-                        y=j;
-                        timer=0;
-                        can_vibrate=false;
-                    }
-                }else if(candy[i][j]->contains(mouseLoc) && candy[i][j]->is_fall_complete() && candy[x][y]->is_fall_complete()){
-                    if(candy[i][j]->verify_neighbours(current)){
-                        if (gm.break_candies(i,j,x,y)){
-                            candy[i][j]->start_fall_animation(candy[x][y]->getCenter());
-                            candy[x][y]->start_fall_animation(candy[i][j]->getCenter());
-                        }
-                        if(candy[x][y]->get_fruit()){
-                            if(ht.forshadowing_over_9000(i,j,candy[i][j]->getFillColor(),false)==false){
-                                Fl_Color save=candy[x][y]->getFillColor();
-                                candy[x][y]->set_fruit(false);
-                                candy[x][y]->setCode(candy[i][j]->getFillColor());
-                                candy[i][j]->set_fruit(true);
-                                candy[i][j]->setCode(save);
-                            }
-                        }
-                        current=make_shared<Candy>();
-                        x=0;
-                        y=0;
-                        cout<<"Neigh"<<endl;
-                        timer=0;
-                        can_vibrate=false;
-                    }else{
-                        cout<<"Selected new one"<<endl;
-                        if(candy[i][j]->get_wall()==false){  //timer n vibrate
-                            current=candy[i][j];
-                            x=i;
-                            y=j;
-                            timer=0;
-                            can_vibrate=false;
-                        }    
-                    }
-                }
-            }
-        }
+        // has_moved=true;
+        // for(int i=0;i<9;i++){
+        //     for(int j=0;j<9;j++){
+        //         if(candy[i][j]->contains(mouseLoc) && current->getFillColor() == FL_BLACK){
+        //             if(candy[i][j]->get_wall()==false ){  //make sure that is not a wall. ; Vlad:time n vibrate
+        //                 current=candy[i][j];
+        //                 x=i;
+        //                 y=j;
+        //                 timer=0;
+        //                 can_vibrate=false;
+        //             }
+        //         }else if(candy[i][j]->contains(mouseLoc) && candy[i][j]->is_fall_complete() && candy[x][y]->is_fall_complete()){
+        //             if(candy[i][j]->verify_neighbours(current)){
+        //                 if (gm.break_candies(i,j,x,y)){
+        //                     candy[i][j]->start_fall_animation(candy[x][y]->getCenter());
+        //                     candy[x][y]->start_fall_animation(candy[i][j]->getCenter());
+        //                 }
+        //                 if(candy[x][y]->get_fruit()){
+        //                     if(ht.forshadowing_over_9000(i,j,candy[i][j]->getFillColor(),false)==false){
+        //                         Fl_Color save=candy[x][y]->getFillColor();
+        //                         candy[x][y]->set_fruit(false);
+        //                         candy[x][y]->setCode(candy[i][j]->getFillColor());
+        //                         candy[i][j]->set_fruit(true);
+        //                         candy[i][j]->setCode(save);
+        //                     }
+        //                 }
+        //                 current=make_shared<Candy>();
+        //                 x=0;
+        //                 y=0;
+        //                 cout<<"Neigh"<<endl;
+        //                 timer=0;
+        //                 can_vibrate=false;
+        //             }else{
+        //                 cout<<"Selected new one"<<endl;
+        //                 if(candy[i][j]->get_wall()==false){  //timer n vibrate
+        //                     current=candy[i][j];
+        //                     x=i;
+        //                     y=j;
+        //                     timer=0;
+        //                     can_vibrate=false;
+        //                 }    
+        //             }
+        //         }
+        //     }
+        // }
 }
 
 void Canvas::mouseDrag(Point mouseLoc){
-    cout<<current->getCenter().x<<endl;
+    has_moved = true;
     if (has_released){
         for(int i=0;i<9;i++){       //not optimised better do do double while to make it stop cleanly when match found in so it doesn't go through every cell
             for(int j=0;j<9;j++){
                 if(candy[i][j]->contains(mouseLoc)){
                     current = candy[i][j];
                     curr_pos = current->getCenter();
+                    x = i;
+                    y = j;
                     has_released = false;
                     return;
                 }
             }
         }
+    }else if(current->get_wall() || current->has_frosting()){
+        return;
     }else{
         if (abs(mouseLoc.x - curr_pos.x) > abs(mouseLoc.y - curr_pos.y)){
             if (abs(mouseLoc.x - curr_pos.x) <= 50){
@@ -250,7 +261,8 @@ void Canvas::mouseRelease(Point mouseLoc){
     current->setCenter(curr_pos);
     for(int i=0;i<9;i++){
             for(int j=0;j<9;j++){
-                if (candy[i][j]->contains(mouseLoc) && ! candy[i][j]->get_wall() && current->verify_neighbours(candy[i][j])){
+                if (candy[i][j]->contains(mouseLoc) && ! candy[i][j]->get_wall() && ! candy[i][j]->has_frosting() && current->verify_neighbours(candy[i][j])){
+
                     if (gm.break_candies(i,j,x,y)){
                         current->start_fall_animation(candy[i][j]->getCenter());
                         candy[i][j]->start_fall_animation(current->getCenter());

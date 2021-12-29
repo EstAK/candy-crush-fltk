@@ -23,29 +23,33 @@ Candy::Candy(Point center,int w,int h,Fl_Color fillColor,Fl_Color frameColor,Ani
 }
 
 bool Candy::verify_neighbours(shared_ptr<Item> current){
-        if(this->get_wall()==true){return false;}
-        if(this->get_fruit() && current->get_fruit()){return false;}
-        
-        for(auto i:neighbours){
-            if(i->getCenter().x==current->getCenter().x && i->getCenter().y==current->getCenter().y){
-                if(!this->get_fruit() && !current->get_fruit()){
+    if(this->get_wall()==true){
+        return false;
+    }
+    if(this->get_fruit() && current->get_fruit()){
+        return false;
+    }
+    
+    for(auto i:neighbours){
+        if(i->getCenter().x==current->getCenter().x && i->getCenter().y==current->getCenter().y){
+            if(!this->get_fruit() && !current->get_fruit()){
                 Fl_Color save=this->getFillColor();    //TODO : Add the animation code here.
                 this->setCode(i->getFillColor());
                 i->setCode(save);   
                 return true;
-                }else{
-                    if(this->get_fruit()){
+            }else{
+                if(this->get_fruit()){
                     this->set_fruit(false);
                     i->set_fruit(true);
                     return true;
-                    }else{
-                                        
-                    }
+                }else{
+                                    
                 }
             }
         }
-        return false;
     }
+    return false;
+}
 
 
 
@@ -101,6 +105,17 @@ bool Candy::is_fall_complete(){
         }
     }
 
+void Candy::set_layers_of_frosting(int new_layers){
+    layers = new_layers;
+}
+
+int Candy::get_layers_of_frosting(){
+    return layers;
+}
+
+bool Candy::has_frosting(){
+    return get_layers_of_frosting() > 0;
+}
 
 void Candy::set_neigh(shared_ptr<Item> neigh){
     neighbours.push_back(neigh);
