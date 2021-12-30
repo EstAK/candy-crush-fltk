@@ -52,8 +52,9 @@ bool Candy::verify_neighbours(shared_ptr<Item> current){
 }
 
 void Candy::update_frosted_neighbours(){
-    for(auto n: neighbours){
-        if (n->has_frosting()){
+    for(auto n: this->neighbours){
+        if (n->has_frosting() && n->getFillColor() != this->getFillColor() ){
+            cout<<"UwU"<<endl;
             n->set_layers_of_frosting(n->get_layers_of_frosting()-1);
         }
     }
@@ -120,9 +121,7 @@ bool Candy::is_fall_complete(){
 
 void Candy::set_layers_of_frosting(int new_layers){
     layers = new_layers;
-    if (layers == 0){
-        this->setFrameColor(FL_BLACK);
-    }
+    cout<<this->get_layers_of_frosting()<<endl;
 }
 
 int Candy::get_layers_of_frosting(){

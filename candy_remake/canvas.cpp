@@ -59,7 +59,7 @@ void Canvas::make_board(string map){ //TODO: Finish it later.
                     gj=true;
                 }else if(isdigit(lines[y][x])){
                     candy[x][y]=make_shared<Candy>(Point{50*x+25, 50*y+25},40, 40,FL_CYAN,FL_CYAN);
-                    candy[x][y]->set_layers_of_frosting(lines[y][x]);
+                    candy[x][y]->set_layers_of_frosting(lines[y][x] - '0');
                 }
             }
         }    
@@ -220,15 +220,18 @@ void Canvas::mouseClick(Point mouseLoc){
 }
 
 void Canvas::mouseDrag(Point mouseLoc){
-    has_moved = true;
     if (has_released){
         for(int i=0;i<9;i++){       //not optimised better do do double while to make it stop cleanly when match found in so it doesn't go through every cell
             for(int j=0;j<9;j++){
                 if(candy[i][j]->contains(mouseLoc)){
+                    has_moved = true;
+                    gm.set_moved_state(true);
                     current = candy[i][j];
                     curr_pos = current->getCenter();
+
                     x = i;
                     y = j;
+                    
                     has_released = false;
                     return;
                 }
@@ -241,6 +244,7 @@ void Canvas::mouseDrag(Point mouseLoc){
             if (abs(mouseLoc.x - curr_pos.x) <= 50){
                 current->setCenter({mouseLoc.x, curr_pos.y});
             }else{
+                current->setCenter({curr_pos.x+50*((mouseLoc.x - curr_pos.x)/abs(mouseLoc.x - curr_pos.x)), curr_pos.y});
                 current->setCenter({curr_pos.x+50*((mouseLoc.x - curr_pos.x)/abs(mouseLoc.x - curr_pos.x)), curr_pos.y});
             }
         }else{
@@ -256,37 +260,37 @@ void Canvas::mouseDrag(Point mouseLoc){
 void Canvas::mouseRelease(Point mouseLoc){
     // not proper OOP but will work for now
     timer=0;
-    can_vibrate=false;
+    can_vibrate = false;
     has_released = true;
     current->setCenter(curr_pos);
+    
     if (current->has_frosting()){
         return;
     }
-    for(int i=0;i<9;i++){
-            for(int j=0;j<9;j++){
-                if (candy[i][j]->contains(mouseLoc) && ! candy[i][j]->get_wall() && ! candy[i][j]->has_frosting() && current->verify_neighbours(candy[i][j])){
 
-                    if (gm.break_candies(i,j,x,y)){
-                        current->start_fall_animation(candy[i][j]->getCenter());
-                        candy[i][j]->start_fall_animation(current->getCenter());
-                        return;
-                    }
+    for(int i=0;i<9;i++){
+        for(int j=0;j<9;j++){
+            if (candy[i][j]->contains(mouseLoc) && ! candy[i][j]->get_wall() && ! candy[i][j]->has_frosting() && current->verify_neighbours(candy[i][j])){
+                if (gm.break_candies(i,j,x,y)){
+                    current->start_fall_animation(candy[i][j]->getCenter());
+                    candy[i][j]->start_fall_animation(current->getCenter());
+                    return;
                 }
             }
         }
-
+    }
 }
 
 
 void Canvas::set_the_neighbours(){
-        for(int i=0;i<9;i++){
-         for(int j=0;j<9;j++){
-          if(i+1<9) candy[i][j]->set_neigh(candy[i+1][j]);
-          if(j+1<9) candy[i][j]->set_neigh(candy[i][j+1]);
-          if(i-1>=0) candy[i][j]->set_neigh(candy[i-1][j]);
-          if(j-1>=0) candy[i][j]->set_neigh(candy[i][j-1]);
-         }
+    for(int i=0;i<9;i++){
+        for(int j=0;j<9;j++){
+            if(i+1<9) candy[i][j]->set_neigh(candy[i+1][j]);
+            if(j+1<9) candy[i][j]->set_neigh(candy[i][j+1]);
+            if(i-1>=0) candy[i][j]->set_neigh(candy[i-1][j]);
+            if(j-1>=0) candy[i][j]->set_neigh(candy[i][j-1]);
         }
+    }
 }
 
 bool Canvas::is_board_moving(){

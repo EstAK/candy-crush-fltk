@@ -127,79 +127,86 @@ void GameManager::destroy_candies(int x,int y,int counter_left_right,int counter
     shared_ptr<Item> temp_candy=candy[x][y];
     vector<Point> coord;
     if(counter_left_right>counter_up_down){ //A way to know which one will have the priority.
-            if(counter_left_right>=3){
-                int start_x=x;
-                int start_y=y;
-                for(int i=x+1;i<9;i++){  //Counter the same candies on the right line of the same color; counter begins of 1
-                    if(candy[i][y]->getFillColor()!=temp_candy->getFillColor() || candy[i][y]->get_fruit()){
-                        break;
-                    }else{
-                        start_x=i;
-                        start_y=y;
-                    }
-                }
-                if(pc){
-                    game_obj->mv_done(0,counter_left_right,temp_candy->getFillColor());} //Checks the obj because 1 mvt has been done
-                else{
-                    game_obj->mv_done(1,counter_left_right,temp_candy->getFillColor());
-                }
-                for(int i=start_x;i>=0;i--){  //Left
-                    if(candy[i][start_y]->getFillColor()!=temp_candy->getFillColor() || candy[i][start_y]->get_fruit()){
-                        break;
-                    }else{
-                        coord.push_back(Point{i,start_y});
-                        candy_score->set_score(counter_left_right); //Temp way to increase the score; TODO: Change it later
-                        //cout<<"The score is "<<candy_score.get_score()<<endl;	
-                    }
-                }
-                for(auto c:coord){
-                    if (! candy[c.x][c.y]->has_frosting()){
-                    candy[c.x][c.y]->setFillColor(FL_BLACK);
-                    candy[c.x][c.y]->update_frosted_neighbours();
-
-                }else{
-                    candy[c.x][c.y]->set_layers_of_frosting(candy[c.x][c.y]->get_layers_of_frosting()-1);
-                }
-                    candy[c.x][c.y]->start_pop_animation();
-                }
-                
-            }
-        }else if(counter_up_down>=3){
-            int start_x=x;int start_y=y; 
-            for(int i=y-1;i>=0;i--){  //Counts the candies upwards
-                if(candy[x][i]->getFillColor()!=temp_candy->getFillColor() || candy[x][i]->get_fruit()){
+        if(counter_left_right>=3){
+            int start_x=x;
+            int start_y=y;
+            for(int i=x+1;i<9;i++){  //Counter the same candies on the right line of the same color; counter begins of 1
+                if(candy[i][y]->getFillColor()!=temp_candy->getFillColor() || candy[i][y]->get_fruit()){
                     break;
                 }else{
-                    start_x=x;
-                    start_y=i;
+                    start_x=i;
+                    start_y=y;
                 }
             }
             if(pc){
-                game_obj->mv_done(0,counter_up_down,temp_candy->getFillColor());} //Checks the obj
+                game_obj->mv_done(0,counter_left_right,temp_candy->getFillColor());} //Checks the obj because 1 mvt has been done
             else{
-                game_obj->mv_done(1,counter_up_down,temp_candy->getFillColor());
+                game_obj->mv_done(1,counter_left_right,temp_candy->getFillColor());
             }
-            for(int i=start_y;i<9;i++){  //Counts the candies under.
-                if(candy[start_x][i]->getFillColor()!=temp_candy->getFillColor() || candy[start_x][i]->get_fruit()){
+            for(int i=start_x;i>=0;i--){  //Left
+                if(candy[i][start_y]->getFillColor()!=temp_candy->getFillColor() || candy[i][start_y]->get_fruit()){
                     break;
                 }else{
-                    coord.push_back(Point{start_x,i});
-
-                    candy_score->set_score(counter_up_down);
-    		        //cout<<"The score is "<<candy_score.get_score()<<endl; //Temp way to increase the score; change it later
+                    coord.push_back(Point{i,start_y});
+                    candy_score->set_score(counter_left_right); //Temp way to increase the score; TODO: Change it later
+                    //cout<<"The score is "<<candy_score.get_score()<<endl;	
                 }
             }
             for(auto c:coord){
-                if (! candy[c.x][c.y]->has_frosting()){
-                    candy[c.x][c.y]->setFillColor(FL_BLACK);
-                    candy[c.x][c.y]->update_frosted_neighbours();
 
+                if (! candy[c.x][c.y]->has_frosting()){
+                    if(has_moved){
+                        candy[c.x][c.y]->update_frosted_neighbours();
+                    }
+                    candy[c.x][c.y]->setFillColor(FL_BLACK);
                 }else{
-                    candy[c.x][c.y]->set_layers_of_frosting(candy[c.x][c.y]->get_layers_of_frosting()-1);
+                    if (has_moved){
+                        candy[c.x][c.y]->set_layers_of_frosting(candy[c.x][c.y]->get_layers_of_frosting()-1);
+                    }
                 }
                 candy[c.x][c.y]->start_pop_animation();
             }
-       }
+            
+        }
+    }else if(counter_up_down>=3){
+        int start_x=x;int start_y=y; 
+        for(int i=y-1;i>=0;i--){  //Counts the candies upwards
+            if(candy[x][i]->getFillColor()!=temp_candy->getFillColor() || candy[x][i]->get_fruit()){
+                break;
+            }else{
+                start_x=x;
+                start_y=i;
+            }
+        }
+        if(pc){
+            game_obj->mv_done(0,counter_up_down,temp_candy->getFillColor());} //Checks the obj
+        else{
+            game_obj->mv_done(1,counter_up_down,temp_candy->getFillColor());
+        }
+        for(int i=start_y;i<9;i++){  //Counts the candies under.
+            if(candy[start_x][i]->getFillColor()!=temp_candy->getFillColor() || candy[start_x][i]->get_fruit()){
+                break;
+            }else{
+                coord.push_back(Point{start_x,i});
+
+                candy_score->set_score(counter_up_down);
+		        //cout<<"The score is "<<candy_score.get_score()<<endl; //Temp way to increase the score; change it later
+            }
+        }
+        for(auto c:coord){
+            if (! candy[c.x][c.y]->has_frosting()){
+                if (has_moved){
+                    candy[c.x][c.y]->update_frosted_neighbours();
+                }
+                candy[c.x][c.y]->setFillColor(FL_BLACK);
+            }else{
+                if (has_moved){
+                    candy[c.x][c.y]->set_layers_of_frosting(candy[c.x][c.y]->get_layers_of_frosting()-1);
+                }
+            }
+            candy[c.x][c.y]->start_pop_animation();
+        }
+   }
 }
 
 
@@ -253,4 +260,8 @@ void GameManager::set_the_neighbours(){
           if(j-1>=0) candy[i][j]->set_neigh(candy[i][j-1]);
          }
         }
+}
+
+void GameManager::set_moved_state(bool b){
+    has_moved = b;
 }

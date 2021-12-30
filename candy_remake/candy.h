@@ -16,6 +16,11 @@
 
 using namespace std;
 
+/*
+Item  --> Rectangle --> Candy
+     \
+       --> Circle --> Fruit 
+*/
 
 class Item:public Rectangle{ 
     
