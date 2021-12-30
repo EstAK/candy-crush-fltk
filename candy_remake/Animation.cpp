@@ -7,6 +7,7 @@
 #include"score.h"
 #include<math.h>
 #include"rectangle.h"
+#include "circle.h"
 #include"Animation.h"
 #include <FL/Fl.H>
 #include <FL/fl_draw.H>
@@ -35,14 +36,19 @@ Pop::~Pop(){
 
 //Fall Struct
 
-Fall::Fall(Point p, Rectangle *r){
+template<typename Form>
+Fall<Form>::Fall(Point p, Form *r){
         fl_push_matrix();
         r->setCenter(p);
     }
 
-Fall::~Fall(){
+template<typename Form>
+Fall<Form>::~Fall(){
     fl_pop_matrix();
 }
+
+template class Fall<Rectangle>;
+template class Fall<Circle>;
 
 /*
 Class
@@ -50,56 +56,70 @@ Class
 
 //Animations parent class
 
-Animation::Animation(Rectangle* candy_to_animate, int animation_time): r{candy_to_animate}, animation_time{animation_time} {}
+template<typename Form>
+Animation<Form>::Animation(Form* candy_to_animate, int animation_time): r{candy_to_animate}, animation_time{animation_time} {}
 
-bool Animation::is_complete(){
+template<typename Form>
+bool Animation<Form>::is_complete(){
         return time>animation_time;
     }
 
+template class Animation<Rectangle>;
+template class Animation<Circle>;
+
 //fall Animation
 
-Animation_fall::Animation_fall(Rectangle* candy_to_animate, Point d, bool gb, int animation_time): 
-    Animation{candy_to_animate, animation_time} ,go_back{gb} ,initial_pos{candy_to_animate->getCenter()} , destination{d}{
+template<typename Form>
+Animation_fall<Form>::Animation_fall(Form* candy_to_animate, Point d, bool gb, int animation_time): 
+    Animation<Form>{candy_to_animate, animation_time} ,go_back{gb} ,initial_pos{candy_to_animate->getCenter()} , destination{d}{
 
-        distance_x = (destination.x - r->getCenter().x)/animation_time; // x distance per animation frame
-        distance_y = (destination.y - r->getCenter().y)/animation_time; // y distance per animation frame
+        distance_x = (destination.x - this->r->getCenter().x)/animation_time; // x distance per animation frame
+        distance_y = (destination.y - this->r->getCenter().y)/animation_time; // y distance per animation frame
 
     }
 
-
-Animation_fall::~Animation_fall(){
+template<typename Form>
+Animation_fall<Form>::~Animation_fall(){
         if (go_back){
-            r->setCenter(initial_pos);
+            this->r->setCenter(initial_pos);
         }else{
-            r->setCenter(destination);
+            this->r->setCenter(destination);
         }
         
 }
 
-void Animation_fall::draw(){
-        time++;
+template<typename Form>
+void Animation_fall<Form>::draw(){
+        this->time++;
 
-        Fall s ({initial_pos.x+distance_x*time, initial_pos.y+distance_y*time}, r);
+        Fall<Form> s ({initial_pos.x+distance_x*this->time, initial_pos.y+distance_y*this->time}, this->r);
 
-        r->draw();
+        this->r->draw();
     }
+
+template class Animation_fall<Rectangle>;
+template class Animation_fall<Circle>;
 
 //Pop animation
 
-Animation_pop::Animation_pop(Rectangle* candy_to_animate,int animation_time): Animation{candy_to_animate, animation_time}{}
+template<typename Form>
+Animation_pop<Form>::Animation_pop(Form* candy_to_animate,int animation_time): Animation<Form>{candy_to_animate, animation_time}{}
 
-Animation_pop::~Animation_pop(){
+template<typename Form>
+Animation_pop<Form>::~Animation_pop(){
     sleep(0.5);
 }
 
-void Animation_pop::draw(){
-    ++time;
+template<typename Form>
+void Animation_pop<Form>::draw(){
+    this->time++;
         
-    int w = log(r->getWidth()*time)*spread_coeff;
-    int h = log(r->getHeight()*time)*spread_coeff;
+    int w = log(this->r->getWidth()*this->time)*spread_coeff;
+    int h = log(this->r->getHeight()*this->time)*spread_coeff;
 
-    Pop t{r->getCenter().x-w/2, r->getCenter().y-h/2, w, h};        //WOP i still have to make it pretty
+    Pop t{this->r->getCenter().x-w/2, this->r->getCenter().y-h/2, w, h};        //WOP i still have to make it pretty
         
-    r->draw();
+    this->r->draw();
 }
 
+template class Animation_pop<Rectangle>;

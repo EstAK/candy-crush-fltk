@@ -67,6 +67,10 @@ Point Circle::getCenter(){
     return center;
 }
 
+void Circle::setCenter(Point p){
+  center = p;
+}
+
 Fl_Color Circle::getFillColor(){
     return frameColor;
 }

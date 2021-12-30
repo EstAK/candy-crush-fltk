@@ -24,25 +24,27 @@ struct Pop{
     ~Pop();
 };
 
+template<typename Form>
 struct Fall{
-    Fall(Point , Rectangle *);
+    Fall(Point , Form*);
     ~Fall();
 };
 
-
+template<typename Form>
 class Animation{
 protected:
-    Rectangle* r;
+    Form* r;
     int time{0};
     int animation_time;
 public:
-    Animation(Rectangle* candy_to_animate, int animation_time=50);
+    Animation(Form* candy_to_animate, int animation_time=50);
 
     bool is_complete();
 };
 
 
-class Animation_fall: public Animation{
+template<typename Form>
+class Animation_fall: public Animation<Form>{
     //esteban: inheriting this class from a base class having thoseg private instances might be a good idea as they are nearly the same as in Animation_pop
     Point initial_pos;
     Point destination;
@@ -52,7 +54,7 @@ class Animation_fall: public Animation{
     int speed = 1;
 
 public:
-    Animation_fall(Rectangle* candy_to_animate, Point d, bool gb, int animation_time=50);
+    Animation_fall(Form* candy_to_animate, Point d, bool gb, int animation_time=50);
 
     ~Animation_fall();
 
@@ -60,12 +62,12 @@ public:
 
 };
 
-
-class Animation_pop: public Animation{
+template<typename Form>
+class Animation_pop: public Animation<Form>{
     int spread_coeff = 10;
 public:
 
-    Animation_pop(Rectangle* candy_to_animate,int animation_time = 25);
+    Animation_pop(Form* candy_to_animate,int animation_time = 25);
 
     ~ Animation_pop();
     void draw();

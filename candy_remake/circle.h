@@ -33,6 +33,7 @@ class Circle {
   void setFrameColor(Fl_Color);
   bool contains(Point);
   Point getCenter();
+  void setCenter(Point);
 };
 
 #endif

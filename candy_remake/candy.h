@@ -44,15 +44,16 @@ class Item:public Rectangle{
 class Candy:public Item{
     bool is_fruit=false;
     int layers = 0;
-    Animation_pop* animation_pop;           //not templating because every Candy has to have those 2 animations
-    Animation_fall* animation_fall;
+    Animation_pop<Rectangle>* animation_pop = nullptr;           //not templating because every Candy has to have those 2 animations
+    Animation_fall<Rectangle>* animation_fall_rectangle = nullptr;
+    Animation_fall<Circle>* animation_fall_circle = nullptr;
     vector<shared_ptr<Item>> neighbours;
     Circle* c;
        
 public:
     
     Candy(){} //Dummy Constructor
-    Candy(Point center, int w, int h,Fl_Color fillColor = FL_WHITE, Fl_Color frameColor = FL_BLACK,Animation_pop* pop=nullptr, Animation_fall* fall=nullptr);
+    Candy(Point center, int w, int h,Fl_Color fillColor = FL_WHITE, Fl_Color frameColor = FL_BLACK);
     
     bool verify_neighbours(shared_ptr<Item>);
     void update_frosted_neighbours();
