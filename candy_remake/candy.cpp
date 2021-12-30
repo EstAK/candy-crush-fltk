@@ -54,7 +54,6 @@ bool Candy::verify_neighbours(shared_ptr<Item> current){
 void Candy::update_frosted_neighbours(){
     for(auto n: this->neighbours){
         if (n->has_frosting() && n->getFillColor() != this->getFillColor() ){
-            cout<<"UwU"<<endl;
             n->set_layers_of_frosting(n->get_layers_of_frosting()-1);
         }
     }
