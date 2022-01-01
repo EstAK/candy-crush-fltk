@@ -16,58 +16,67 @@
 
 using namespace std;
 
-/*
-Item  --> Rectangle --> Candy
-     \
-       --> Circle --> Fruit 
-*/
+class Item{ 
+protected:
+    vector<shared_ptr<Item>> neighbours;
+public:
+    Item(){}
+   
+    virtual Point getCenter(){return {};};
+    virtual void setCenter(Point){};
+    virtual Fl_Color getFillColor(){return FL_WHITE;};
+    virtual void setFillColor(Fl_Color color){};
+    virtual void setCode(int){};
+    virtual void setFrameColor(Fl_Color color){};
+    virtual bool contains(Point p){return false;};
 
-class Item:public Rectangle{ 
-    
-    public:
-        Item(){}
-        Item(Point center, int w, int h,Fl_Color fillColor = FL_WHITE, Fl_Color frameColor = FL_BLACK);
-       
-        virtual bool verify_neighbours(shared_ptr<Item>){return false;}
-        virtual void update_frosted_neighbours(){}
-        virtual void start_pop_animation(){}
+    virtual bool verify_neighbours(shared_ptr<Item>){return false;}
+    virtual void update_frosted_neighbours(){}
+    virtual void start_pop_animation(){}
 
-        virtual void start_fall_animation(Point, bool=true){}
-        virtual bool is_fall_complete(){return true;}
-        virtual bool get_wall(){return false;}
-        virtual bool get_fruit(){return false;}
-        virtual void set_fruit(bool){}
-        virtual void set_neigh(shared_ptr<Item>){}
-        virtual void draw(){}
+    virtual void start_fall_animation(Point, bool=true){}
+    virtual bool is_fall_complete(){return true;}
+    virtual bool get_wall(){return false;}
+    virtual bool is_ingredient(){return false;}
+    virtual void set_fruit(bool){}
+    virtual void set_neigh(shared_ptr<Item>){}
+    virtual void draw(){}
 
-        virtual bool has_frosting(){return false;}
-        virtual int get_layers_of_frosting(){return 0;}
-        virtual void set_layers_of_frosting(int){}
+    virtual bool has_frosting(){return false;}
+    virtual int get_layers_of_frosting(){return 0;}
+    virtual void set_layers_of_frosting(int){}
 
 };
 
-class Candy:public Item{
-    bool is_fruit=false;
+class Candy:public Item, public Rectangle{
     int layers = 0;
     Animation_pop<Rectangle>* animation_pop = nullptr;           //not templating because every Candy has to have those 2 animations
-    Animation_fall<Rectangle>* animation_fall_rectangle = nullptr;
-    Animation_fall<Circle>* animation_fall_circle = nullptr;
-    vector<shared_ptr<Item>> neighbours;
-    Circle* c;
+    Animation_fall<Rectangle>* animation_fall = nullptr;
        
 public:
     
     Candy(){} //Dummy Constructor
     Candy(Point center, int w, int h,Fl_Color fillColor = FL_WHITE, Fl_Color frameColor = FL_BLACK);
     
+    // polymorphism of rectangle methods
+    Point getCenter(){return Rectangle::getCenter();};
+    void setCenter(Point p){Rectangle::setCenter(p);}
+    Fl_Color getFillColor(){return Rectangle::getFillColor();};
+    void setCode(int code){Rectangle::setCode(code);};
+    void setFillColor(Fl_Color color){Rectangle::setFillColor(color);};
+    void setFrameColor(Fl_Color color){Rectangle::setFrameColor(color);};
+    bool contains(Point p){return Rectangle::contains(p);};
+    // end of rectangle polymorphism
+
+    bool is_ingredient(){return false;} // object type
+
     bool verify_neighbours(shared_ptr<Item>);
     void update_frosted_neighbours();
     void start_pop_animation();
 
     void start_fall_animation(Point, bool=true);
     bool is_fall_complete();
-    bool get_fruit();
-    void set_fruit(bool);
+    // void set_fruit(bool);
     void set_neigh(shared_ptr<Item>);
     
     bool has_frosting();
@@ -77,14 +86,33 @@ public:
     void draw();
 }; 
 
-class Wall:public Item{
+class Wall:public Item, public Rectangle{
 public:
     Wall(){}
-    Wall(Point center,int w,int h,Fl_Color fillColor=FL_MAGENTA,Fl_Color frameColor=FL_BLACK):Item(center,w,h,fillColor,frameColor){}
+    Wall(Point, int, int, Fl_Color=FL_MAGENTA, Fl_Color=FL_BLACK);
+
+    // rectangle polymorhism
+    Point getCenter(){return Rectangle::getCenter();};
+    void setCenter(Point p){Rectangle::setCenter(p);}
+    Fl_Color getFillColor(){return Rectangle::getFillColor();};
+    void setCode(int code){Rectangle::setCode(code);};
+    void setFillColor(Fl_Color color){Rectangle::setFillColor(color);};
+    void setFrameColor(Fl_Color color){Rectangle::setFrameColor(color);};
+    bool contains(Point p){return Rectangle::contains(p);};
+    // rectangle polymorphism
+
+    bool is_ingredient(){return false;} // object type
+
     bool get_wall();
     void draw();
 
 };
 
+
+class Ingredient:public Item, public Circle{
+public:
+    Ingredient(){}
+    Ingredient(Point center, int radius, Fl_Color fillColor=FL_MAGENTA, Fl_Color frameColor=FL_BLACK){}
+};
 
 #endif

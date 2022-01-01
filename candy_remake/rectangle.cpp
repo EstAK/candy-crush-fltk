@@ -13,9 +13,7 @@
 
 using namespace std;
 
-Rectangle::Rectangle(Point center,int w, int h,Fl_Color fillColor=FL_WHITE,Fl_Color frameColor=FL_BLACK):center(center),w(w),h(h),fillColor(fillColor),frameColor(frameColor){
-
-}
+Rectangle::Rectangle(Point center,int w, int h,Fl_Color fillColor=FL_WHITE,Fl_Color frameColor=FL_BLACK): center(center),w(w),h(h),fillColor(fillColor),frameColor(frameColor) {}
 
 Fl_Color Rectangle::getFillColor(){
     return fillColor;

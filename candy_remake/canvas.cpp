@@ -53,12 +53,11 @@ void Canvas::make_board(string map){ //TODO: Finish it later.
                     candy[x][y]=make_shared<Wall>(Point{50*x+25, 50*y+25}, 40, 40);
                 }
                 else if(lines[y][x]== *i){
-                    candy[x][y]=make_shared<Candy>(Point{50*x+25, 50*y+25},10,FL_RED,FL_BLACK);
+                    candy[x][y]=make_shared<Ingredient>(Point{50*x+25, 50*y+25},10,FL_RED,FL_BLACK);
                     fruits++;
-                    candy[x][y]->set_fruit(true);
                     gj=true;
                 }else if(isdigit(lines[y][x])){
-                    candy[x][y]=make_shared<Candy>(Point{50*x+25, 50*y+25},40, 40,FL_CYAN,FL_CYAN);
+                    candy[x][y]=make_shared<Candy>(Point{50*x+25, 50*y+25},40, 40,color[rand()%5],FL_CYAN);
                     candy[x][y]->set_layers_of_frosting(lines[y][x] - '0');
                 }
             }
@@ -87,14 +86,15 @@ void Canvas::draw(){
          for(int i=0;i<9;i++){
             for(int j=0;j<9;j++){
                 candy[i][j]->draw();
-                if(candy[i][j]->get_wall()!=true && candy[i][j]->get_fruit()==false){
-                    gm.break_candies(i,j,0,0,true);} //Checks all the candies all the time and breaks them if it must.
-                    ht.check_impossible(i,j,can_vibrate);
+                if(candy[i][j]->get_wall()!=true && candy[i][j]->is_ingredient()==false){
+                    gm.break_candies(i,j,0,0,true); //Checks all the candies all the time and breaks them if it must.
+                } 
+                ht.check_impossible(i,j,can_vibrate);
             }
         } 
 
         for(int i=0;i<9;i++){
-            if(candy[i][8]->get_fruit()){
+            if(candy[i][8]->is_ingredient()){
                 game_obj.dec_fruits();
                 candy[i][8]->set_fruit(false);
                 candy[i][8]->setFillColor(FL_BLACK);
@@ -159,6 +159,7 @@ void Canvas::mouseMove(Point mouseLoc){
         for(int i=0;i<9;i++){
             for(int j=0;j<9;j++){
                 if(candy[i][j]->contains(mouseLoc)){
+                    cout<<"here "<<i<<" "<<j<<endl;
                     candy[i][j]->setFrameColor(FL_RED);
                 }else{
                     if (candy[i][j]->has_frosting()){

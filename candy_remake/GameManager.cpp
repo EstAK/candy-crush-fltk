@@ -37,7 +37,7 @@ bool GameManager::break_candies(int x,int y,int i,int j,bool pc){
    int counter_up_down2=1;
 
         for(int i=x+1;i<9;i++){  //Counter the same candies on the right line of the same color; counter begins of 1
-            if(candy[i][y]->getFillColor()!=temp_candy->getFillColor() || candy[i][y]->get_fruit()){
+            if(candy[i][y]->getFillColor()!=temp_candy->getFillColor() || candy[i][y]->is_ingredient()){
                 break;
             }else{
                 counter_left_right+=1;
@@ -45,7 +45,7 @@ bool GameManager::break_candies(int x,int y,int i,int j,bool pc){
         }
 
         for(int k=i+1;k<9;k++){  //Counter the same candies on the right line of the same color; counter begins of 1 for temp_candy2
-            if(candy[k][j]->getFillColor()!=temp_candy2->getFillColor() || candy[k][j]->get_fruit()){
+            if(candy[k][j]->getFillColor()!=temp_candy2->getFillColor() || candy[k][j]->is_ingredient()){
                 break;
             }else{
                 counter_left_right2+=1;
@@ -53,7 +53,7 @@ bool GameManager::break_candies(int x,int y,int i,int j,bool pc){
         }
 
         for(int i=y+1;i<9;i++){  //Counts the candies under.
-            if(candy[x][i]->getFillColor()!=temp_candy->getFillColor() || candy[x][i]->get_fruit()){
+            if(candy[x][i]->getFillColor()!=temp_candy->getFillColor() || candy[x][i]->is_ingredient()){
                 break;
             }else{
                 counter_up_down+=1;
@@ -61,7 +61,7 @@ bool GameManager::break_candies(int x,int y,int i,int j,bool pc){
         }
 
         for(int k=j+1;k<9;k++){  //Counts the candies under. 2
-            if(candy[i][k]->getFillColor()!=temp_candy2->getFillColor() || candy[i][k]->get_fruit()){
+            if(candy[i][k]->getFillColor()!=temp_candy2->getFillColor() || candy[i][k]->is_ingredient()){
                 break;
             }else{
                 counter_up_down2+=1;
@@ -69,7 +69,7 @@ bool GameManager::break_candies(int x,int y,int i,int j,bool pc){
         }
       
         for(int i=y-1;i>=0;i--){  //Counts the candies upwards
-            if(candy[x][i]->getFillColor()!=temp_candy->getFillColor() || candy[x][i]->get_fruit()){
+            if(candy[x][i]->getFillColor()!=temp_candy->getFillColor() || candy[x][i]->is_ingredient()){
                 break;
             }else{
                 counter_up_down+=1;
@@ -77,7 +77,7 @@ bool GameManager::break_candies(int x,int y,int i,int j,bool pc){
         }
        
         for(int k=j-1;k>=0;k--){  //Counts the candies upwards 2
-            if(candy[i][k]->getFillColor()!=temp_candy2->getFillColor() || candy[i][k]->get_fruit()){
+            if(candy[i][k]->getFillColor()!=temp_candy2->getFillColor() || candy[i][k]->is_ingredient()){
                 break;
             }else{
                 counter_up_down2+=1;
@@ -86,7 +86,7 @@ bool GameManager::break_candies(int x,int y,int i,int j,bool pc){
 
 
         for(int i=x-1;i>=0;i--){  //Left
-            if(candy[i][y]->getFillColor()!=temp_candy->getFillColor() || candy[i][y]->get_fruit()){
+            if(candy[i][y]->getFillColor()!=temp_candy->getFillColor() || candy[i][y]->is_ingredient()){
                 break;
             }else{
                 counter_left_right+=1;
@@ -94,7 +94,7 @@ bool GameManager::break_candies(int x,int y,int i,int j,bool pc){
         }
 
         for(int k=i-1;k>=0;k--){  //Left2
-            if(candy[k][j]->getFillColor()!=temp_candy2->getFillColor() || candy[k][j]->get_fruit()){
+            if(candy[k][j]->getFillColor()!=temp_candy2->getFillColor() || candy[k][j]->is_ingredient()){
                 break;
             }else{
                 counter_left_right2+=1;
@@ -131,7 +131,7 @@ void GameManager::destroy_candies(int x,int y,int counter_left_right,int counter
             int start_x=x;
             int start_y=y;
             for(int i=x+1;i<9;i++){  //Counter the same candies on the right line of the same color; counter begins of 1
-                if(candy[i][y]->getFillColor()!=temp_candy->getFillColor() || candy[i][y]->get_fruit()){
+                if(candy[i][y]->getFillColor()!=temp_candy->getFillColor() || candy[i][y]->is_ingredient()){
                     break;
                 }else{
                     start_x=i;
@@ -144,7 +144,7 @@ void GameManager::destroy_candies(int x,int y,int counter_left_right,int counter
                 game_obj->mv_done(1,counter_left_right,temp_candy->getFillColor());
             }
             for(int i=start_x;i>=0;i--){  //Left
-                if(candy[i][start_y]->getFillColor()!=temp_candy->getFillColor() || candy[i][start_y]->get_fruit()){
+                if(candy[i][start_y]->getFillColor()!=temp_candy->getFillColor() || candy[i][start_y]->is_ingredient()){
                     break;
                 }else{
                     coord.push_back(Point{i,start_y});
@@ -171,7 +171,7 @@ void GameManager::destroy_candies(int x,int y,int counter_left_right,int counter
     }else if(counter_up_down>=3){
         int start_x=x;int start_y=y; 
         for(int i=y-1;i>=0;i--){  //Counts the candies upwards
-            if(candy[x][i]->getFillColor()!=temp_candy->getFillColor() || candy[x][i]->get_fruit()){
+            if(candy[x][i]->getFillColor()!=temp_candy->getFillColor() || candy[x][i]->is_ingredient()){
                 break;
             }else{
                 start_x=x;
@@ -184,7 +184,7 @@ void GameManager::destroy_candies(int x,int y,int counter_left_right,int counter
             game_obj->mv_done(1,counter_up_down,temp_candy->getFillColor());
         }
         for(int i=start_y;i<9;i++){  //Counts the candies under.
-            if(candy[start_x][i]->getFillColor()!=temp_candy->getFillColor() || candy[start_x][i]->get_fruit()){
+            if(candy[start_x][i]->getFillColor()!=temp_candy->getFillColor() || candy[start_x][i]->is_ingredient()){
                 break;
             }else{
                 coord.push_back(Point{start_x,i});
