@@ -16,7 +16,7 @@ using namespace std;
 
 
 
-Candy::Candy(Point center,int w,int h,Fl_Color fillColor,Fl_Color frameColor):Rectangle(center,w,h,fillColor,frameColor){}
+Candy::Candy(Point center,int w,int h,Fl_Color fillColor,Fl_Color frameColor):Item(),Rectangle(center,w,h,fillColor,frameColor){}
 
 bool Candy::verify_neighbours(shared_ptr<Item> current){
     if(this->get_wall()==true){
@@ -108,7 +108,7 @@ void Candy::set_neigh(shared_ptr<Item> neigh){
     neighbours.push_back(neigh);
 }
 
-Wall::Wall(Point center, int w, int h, Fl_Color fillColor, Fl_Color frameColor): Rectangle(center,w,h,fillColor,frameColor){}
+Wall::Wall(Point center, int w, int h, Fl_Color fillColor, Fl_Color frameColor):Item(),Rectangle(center,w,h,fillColor,frameColor){}
 
 bool Wall::get_wall(){
     return true;

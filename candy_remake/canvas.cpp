@@ -53,7 +53,7 @@ void Canvas::make_board(string map){ //TODO: Finish it later.
                     candy[x][y]=make_shared<Wall>(Point{50*x+25, 50*y+25}, 40, 40);
                 }
                 else if(lines[y][x]== *i){
-                    candy[x][y]=make_shared<Ingredient>(Point{50*x+25, 50*y+25},10,FL_RED,FL_BLACK);
+                    candy[x][y]=make_shared<Ingredient>(Point{50*x+25, 50*y+25},20,FL_RED,FL_BLACK);
                     fruits++;
                     gj=true;
                 }else if(isdigit(lines[y][x])){
@@ -159,7 +159,7 @@ void Canvas::mouseMove(Point mouseLoc){
         for(int i=0;i<9;i++){
             for(int j=0;j<9;j++){
                 if(candy[i][j]->contains(mouseLoc)){
-                    cout<<"here "<<i<<" "<<j<<endl;
+                    //cout<<"here "<<i<<" "<<j<<endl;
                     candy[i][j]->setFrameColor(FL_RED);
                 }else{
                     if (candy[i][j]->has_frosting()){

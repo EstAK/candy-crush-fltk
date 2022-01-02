@@ -22,13 +22,13 @@ protected:
 public:
     Item(){}
    
-    virtual Point getCenter(){return {};};
-    virtual void setCenter(Point){};
-    virtual Fl_Color getFillColor(){return FL_WHITE;};
-    virtual void setFillColor(Fl_Color color){};
-    virtual void setCode(int){};
-    virtual void setFrameColor(Fl_Color color){};
-    virtual bool contains(Point p){return false;};
+    virtual Point getCenter(){return Point{0,0};}
+    virtual void setCenter(Point p){}
+    virtual Fl_Color getFillColor(){return FL_WHITE;}
+    virtual void setFillColor(Fl_Color color){}
+    virtual void setCode(Fl_Color code){}
+    virtual void setFrameColor(Fl_Color color){}
+    virtual bool contains(Point p){return false;}
 
     virtual bool verify_neighbours(shared_ptr<Item>){return false;}
     virtual void update_frosted_neighbours(){}
@@ -59,16 +59,16 @@ public:
     Candy(Point center, int w, int h,Fl_Color fillColor = FL_WHITE, Fl_Color frameColor = FL_BLACK);
     
     // polymorphism of rectangle methods
-    Point getCenter(){return Rectangle::getCenter();};
+    Point getCenter(){return Rectangle::getCenter();}
     void setCenter(Point p){Rectangle::setCenter(p);}
-    Fl_Color getFillColor(){return Rectangle::getFillColor();};
-    void setCode(int code){Rectangle::setCode(code);};
-    void setFillColor(Fl_Color color){Rectangle::setFillColor(color);};
-    void setFrameColor(Fl_Color color){Rectangle::setFrameColor(color);};
-    bool contains(Point p){return Rectangle::contains(p);};
+    Fl_Color getFillColor(){return Rectangle::getFillColor();}
+    void setCode(Fl_Color code){Rectangle::setCode(code);}
+    void setFillColor(Fl_Color color){Rectangle::setFillColor(color);}
+    void setFrameColor(Fl_Color color){Rectangle::setFrameColor(color);}
+    bool contains(Point p){return Rectangle::contains(p);}
     // end of rectangle polymorphism
 
-    bool is_ingredient(){return false;} // object type
+   
 
     bool verify_neighbours(shared_ptr<Item>);
     void update_frosted_neighbours();
@@ -92,16 +92,15 @@ public:
     Wall(Point, int, int, Fl_Color=FL_MAGENTA, Fl_Color=FL_BLACK);
 
     // rectangle polymorhism
-    Point getCenter(){return Rectangle::getCenter();};
+    Point getCenter(){return Rectangle::getCenter();}
     void setCenter(Point p){Rectangle::setCenter(p);}
-    Fl_Color getFillColor(){return Rectangle::getFillColor();};
-    void setCode(int code){Rectangle::setCode(code);};
-    void setFillColor(Fl_Color color){Rectangle::setFillColor(color);};
-    void setFrameColor(Fl_Color color){Rectangle::setFrameColor(color);};
-    bool contains(Point p){return Rectangle::contains(p);};
+    Fl_Color getFillColor(){return Rectangle::getFillColor();}
+    void setCode(Fl_Color code){Rectangle::setCode(code);}
+    void setFillColor(Fl_Color color){Rectangle::setFillColor(color);}
+    void setFrameColor(Fl_Color color){Rectangle::setFrameColor(color);}
+    bool contains(Point p){return Rectangle::contains(p);}
     // rectangle polymorphism
 
-    bool is_ingredient(){return false;} // object type
 
     bool get_wall();
     void draw();
@@ -112,7 +111,13 @@ public:
 class Ingredient:public Item, public Circle{
 public:
     Ingredient(){}
-    Ingredient(Point center, int radius, Fl_Color fillColor=FL_MAGENTA, Fl_Color frameColor=FL_BLACK){}
+    Ingredient(Point center, int radius, Fl_Color fillColor=FL_RED, Fl_Color frameColor=FL_BLACK):Item(),Circle(center,radius,frameColor,fillColor){}
+
+    void draw(){
+        Circle::draw();
+    }
+
+    bool is_ingredient(){return true;}
 };
 
 #endif
