@@ -57,6 +57,7 @@ public:
     }
     void set_the_neighbours();
   bool is_board_moving();
+  bool special_neigh(int,int);
   
     
 };

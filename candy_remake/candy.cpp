@@ -27,9 +27,16 @@ bool Candy::verify_neighbours(shared_ptr<Item> current){
         return false;
     }
 
-    // if(this->is_special_candy() || current->is_special_candy() ){
-    //     return false;
-    // }
+     if(this->is_special_candy() || current->is_special_candy() ){
+        for(auto i:neighbours){
+            if(i->getCenter().x==current->getCenter().x && i->getCenter().y==current->getCenter().y){
+                if(!this->is_ingredient() && !current->is_ingredient()){
+                    return true;
+                }
+            
+            }
+        }
+     }
     
     for(auto i:neighbours){
         if(i->getCenter().x==current->getCenter().x && i->getCenter().y==current->getCenter().y){

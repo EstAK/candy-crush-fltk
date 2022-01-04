@@ -275,18 +275,42 @@ void Canvas::mouseRelease(Point mouseLoc){
 
     for(int i=0;i<9;i++){
         for(int j=0;j<9;j++){
+            
+            
+            
             if (candy[i][j]->contains(mouseLoc) && ! candy[i][j]->get_wall() && ! candy[i][j]->has_frosting() && current->verify_neighbours(candy[i][j])){
-                if (gm.break_candies(x,y,i,j)){
-                    set_the_neighbours();
-                    current->start_fall_animation(candy[i][j]->getCenter());
-                    candy[i][j]->start_fall_animation(current->getCenter());
-                    return;
+                if(current->is_special_candy() || candy[i][j]->is_special_candy()){
+                  special_neigh(i,j);
+                }else{
+                    if (gm.break_candies(x,y,i,j)){
+                         set_the_neighbours();
+                         current->start_fall_animation(candy[i][j]->getCenter());
+                        candy[i][j]->start_fall_animation(current->getCenter());
+                        return;
+                    }
                 }
             }
+            
         }
     }
 }
 
+
+bool Canvas::special_neigh(int i,int j){
+    
+    shared_ptr<Item> save2=candy[x][y];
+    Point save=Point{current->getCenter().x,current->getCenter().y};
+    current->setCenter(Point{candy[i][j]->getCenter().x,candy[i][j]->getCenter().y});
+    candy[i][j]->setCenter(save);
+    candy[x][y]=candy[i][j];
+    candy[i][j]=save2;
+    gm.break_candies(x,y,i,j);
+
+    return true;
+        
+    
+    
+}
 
 void Canvas::set_the_neighbours(){
     for(int i=0;i<9;i++){

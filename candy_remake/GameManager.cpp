@@ -29,7 +29,7 @@ void GameManager::set_up(shared_ptr<Item>** arr,Score& score,Objective& obj){
 }
 
 bool GameManager::break_candies(int x,int y,int i,int j,bool pc){
-
+    
     if (candy[x][y]->is_striped() && candy[i][j]->is_striped()){
         cout<<"doing something"<<endl;
         candy[x][y]->set_direction(horizontal);
@@ -114,7 +114,22 @@ bool GameManager::break_candies(int x,int y,int i,int j,bool pc){
             counter_left_right2+=1;
         }
     }
-   
+    
+
+    if(candy[x][y]->is_special_candy() || candy[i][j]->is_special_candy()){
+        if(counter_left_right<3 && counter_up_down<3 && counter_left_right2<3 && counter_up_down2<3 && !pc){
+            shared_ptr<Item> save2=candy[x][y];
+            Point save=Point{candy[x][y]->getCenter().x,candy[x][y]->getCenter().y};
+            candy[x][y]->setCenter(Point{candy[i][j]->getCenter().x,candy[i][j]->getCenter().y});
+            candy[i][j]->setCenter(save);
+            candy[x][y]=candy[i][j];
+            candy[i][j]=save2; 
+           return false;
+        }else{
+           destroy_candies(x,y,counter_left_right,counter_up_down);
+           destroy_candies(i,j,counter_left_right2,counter_up_down2);
+        }
+    }
    //Vlad: Can you try to add a delay when you do the animations?
     if(counter_left_right<3 && counter_up_down<3 && counter_left_right2<3 && counter_up_down2<3 && !pc){ //Changes back if the movement will not result in a break but i don't know how to add a delay.
         Fl_Color save=candy[i][j]->getFillColor();  // TODO : Add The animation code here
@@ -169,7 +184,7 @@ void GameManager::destroy_candies(int x,int y,int counter_left_right,int counter
                 }
             }
             for(auto c:coord){
-                if (! candy[c.x][c.y]->has_frosting()){
+                if (!candy[c.x][c.y]->has_frosting()){
                     if (candy[c.x][c.y]->is_striped()){
                         cout<<"found a striped candy horizontaly"<<endl;
                         break_striped(c.x, c.y);
@@ -213,10 +228,8 @@ void GameManager::destroy_candies(int x,int y,int counter_left_right,int counter
             game_obj->mv_done(1,counter_up_down,temp_candy->getFillColor());
         }
         for(int i=start_y;i<9;i++){  //Counts the candies under.
-            if (candy[start_x][i]->is_striped()){
-
-
-            }else if(candy[start_x][i]->getFillColor()!=temp_candy->getFillColor() || candy[start_x][i]->is_ingredient()){
+            
+            if(candy[start_x][i]->getFillColor()!=temp_candy->getFillColor() || candy[start_x][i]->is_ingredient()){
                 break;
             }else{
                 coord.push_back(Point{start_x,i});
@@ -226,7 +239,7 @@ void GameManager::destroy_candies(int x,int y,int counter_left_right,int counter
             }
         }
         for(auto c:coord){
-            if (! candy[c.x][c.y]->has_frosting()){
+            if (!candy[c.x][c.y]->has_frosting()){
                 if (candy[c.x][c.y]->is_striped()){
                     cout<<"found a striped candy verticaly"<<endl;
                     break_striped(c.x, c.y);
@@ -332,7 +345,7 @@ void GameManager::break_row(int x, int y){
             break;
         }
     }
-    for(int i=x-1;i>0;i--){
+    for(int i=x-1;i>=0;i--){
         if(!candy[i][y]->get_wall()){   //left
             // if(candy[i][y]->is_striped()){  //copy pasted 4 times might be a good idea to make it a standalone function
             //     break_striped(x, i);
@@ -378,6 +391,7 @@ void GameManager::break_striped(int x, int y){
     if (candy[x][y]->get_direction() == horizontal){
         break_row(x, y);
     }else{
+        cout<<candy[x][y]->get_direction()<<endl;
         break_column(x, y);
     }
     candy[x][y] = make_shared<Candy>(candy[x][y]->getCenter(), 40, 40);

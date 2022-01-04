@@ -38,6 +38,7 @@ public:
    void set_moved_state(bool);
    void break_striped(int, int);
    void break_wrapped(int, int);
+   
 };
 
 
