@@ -26,14 +26,16 @@ struct Point{int x; int y;};
 
 //Vlad: Roger Roger
 
+
 class Rectangle {
   Point center;
   int w, h;
   Fl_Color fillColor, frameColor;
+  Fl_Boxtype type;
  public:
   
   Rectangle(){}
-  Rectangle(Point,int,int,Fl_Color,Fl_Color);
+  Rectangle(Point,int,int,Fl_Color,Fl_Color, Fl_Boxtype);
   Fl_Color getFillColor();
   Fl_Color getFrameColor();
 
@@ -49,6 +51,8 @@ class Rectangle {
   void setFillColor(Fl_Color);
   void setFrameColor(Fl_Color);
   bool contains(Point);
+  void set_box_type(Fl_Boxtype);
+  Fl_Boxtype get_box_type();
 
 };
 

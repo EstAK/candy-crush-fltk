@@ -25,6 +25,8 @@ class GameManager{
    bool* not_impossible;
    Fl_Color color[5]={FL_RED,FL_BLUE,FL_YELLOW,FL_DARK_CYAN,FL_GREEN};
    bool has_moved=false;
+   void break_row(int, int);
+   void break_column(int, int);
 public:
    GameManager();
    void set_up(shared_ptr<Item>**,Score&,Objective&);
@@ -34,7 +36,8 @@ public:
    void fall_walls(int,int);  
    void set_the_neighbours();
    void set_moved_state(bool);
-
+   void break_striped(int, int);
+   void break_wrapped(int, int);
 };
 
 

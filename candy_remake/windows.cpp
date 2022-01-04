@@ -119,7 +119,7 @@ public:
     }
     
     void select_next_map(){
-      if(current_map+1<3){
+      if(current_map+1<4){
           current_map++;
           mw->get_canvas().make_board(maps[current_map]);
       }

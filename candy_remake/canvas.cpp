@@ -45,7 +45,7 @@ void Canvas::make_board(string map){ //TODO: Finish it later.
         
         for (int x = 0; x<9; x++){
             for (int y = 0; y<9; y++){
-              
+                // should be replace by a switch
                 if (lines[y][x] == *c){
                     candy[x][y]=make_shared<Candy>(Point{50*x+25,50*y+25},40,40,color[rand()%5],FL_BLACK);
                 }
@@ -53,12 +53,15 @@ void Canvas::make_board(string map){ //TODO: Finish it later.
                     candy[x][y]=make_shared<Wall>(Point{50*x+25, 50*y+25}, 40, 40);
                 }
                 else if(lines[y][x]== *i){
-                    candy[x][y]=make_shared<Ingredient>(Point{50*x+25, 50*y+25},20,FL_RED,FL_BLACK);
+                    candy[x][y]=make_shared<Ingredient>(Point{50*x+25, 50*y+25},20);
                     fruits++;
                     gj=true;
                 }else if(isdigit(lines[y][x])){
                     candy[x][y]=make_shared<Candy>(Point{50*x+25, 50*y+25},40, 40,color[rand()%5],FL_CYAN);
                     candy[x][y]->set_layers_of_frosting(lines[y][x] - '0');
+                }else if(lines[y][x] == 'S'){
+                    candy[x][y]=make_shared<Striped_candy>(Point{50*x+25, 50*y+25},40, 40,color[rand()%5],FL_CYAN);
+                    candy[x][y]->set_direction(horizontal);
                 }
             }
         }    
@@ -88,18 +91,19 @@ void Canvas::draw(){
                 candy[i][j]->draw();
                 if(candy[i][j]->get_wall()!=true && candy[i][j]->is_ingredient()==false){
                     gm.break_candies(i,j,0,0,true); //Checks all the candies all the time and breaks them if it must.
+                    set_the_neighbours();
                 } 
                 ht.check_impossible(i,j,can_vibrate);
             }
         } 
 
-        for(int i=0;i<9;i++){
-            if(candy[i][8]->is_ingredient()){
-                game_obj.dec_fruits();
-                candy[i][8]->set_fruit(false);
-                candy[i][8]->setFillColor(FL_BLACK);
-            }
-        }
+        // for(int i=0;i<9;i++){
+        //     if(candy[i][8]->is_ingredient()){
+        //         game_obj.dec_fruits();
+        //         candy[i][8]->set_fruit(false);
+        //         candy[i][8]->setFillColor(FL_BLACK);
+        //     }
+        // }
 
         if(not_impossible){
             not_impossible=false;
@@ -272,7 +276,8 @@ void Canvas::mouseRelease(Point mouseLoc){
     for(int i=0;i<9;i++){
         for(int j=0;j<9;j++){
             if (candy[i][j]->contains(mouseLoc) && ! candy[i][j]->get_wall() && ! candy[i][j]->has_frosting() && current->verify_neighbours(candy[i][j])){
-                if (gm.break_candies(i,j,x,y)){
+                if (gm.break_candies(x,y,i,j)){
+                    set_the_neighbours();
                     current->start_fall_animation(candy[i][j]->getCenter());
                     candy[i][j]->start_fall_animation(current->getCenter());
                     return;

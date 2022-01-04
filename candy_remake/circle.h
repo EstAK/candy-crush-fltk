@@ -34,6 +34,7 @@ class Circle {
   bool contains(Point);
   Point getCenter();
   void setCenter(Point);
+  void setCode(Fl_Color);
 };
 
 #endif

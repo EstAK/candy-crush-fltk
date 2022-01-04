@@ -74,3 +74,7 @@ void Circle::setCenter(Point p){
 Fl_Color Circle::getFillColor(){
     return frameColor;
 }
+
+void Circle::setCode(Fl_Color color){
+  fillColor = color;
+}

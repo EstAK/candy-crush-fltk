@@ -16,7 +16,8 @@ using namespace std;
 
 
 
-Candy::Candy(Point center,int w,int h,Fl_Color fillColor,Fl_Color frameColor):Item(),Rectangle(center,w,h,fillColor,frameColor){}
+
+Candy::Candy(Point center,int w,int h,Fl_Color fillColor,Fl_Color frameColor, Fl_Boxtype box_type):Item(),Rectangle(center,w,h,fillColor,frameColor, box_type){}
 
 bool Candy::verify_neighbours(shared_ptr<Item> current){
     if(this->get_wall()==true){
@@ -25,11 +26,15 @@ bool Candy::verify_neighbours(shared_ptr<Item> current){
     if(this->is_ingredient() && current->is_ingredient()){
         return false;
     }
+
+    // if(this->is_special_candy() || current->is_special_candy() ){
+    //     return false;
+    // }
     
     for(auto i:neighbours){
         if(i->getCenter().x==current->getCenter().x && i->getCenter().y==current->getCenter().y){
             if(!this->is_ingredient() && !current->is_ingredient()){
-                Fl_Color save=this->getFillColor();    //TODO : Add the animation code here.
+                Fl_Color save=this->getFillColor();
                 this->setCode(i->getFillColor());
                 i->setCode(save);   
                 return true;
@@ -56,22 +61,22 @@ void Candy::update_frosted_neighbours(){
 }
 
 void Candy::draw(){
-        if (animation_pop && animation_pop->is_complete()){
-            delete animation_pop;
-            animation_pop = nullptr;
-        }
-        if (animation_fall && animation_fall->is_complete()){
-            delete animation_fall;
-            animation_fall = nullptr;
-        }
+    if (animation_pop && animation_pop->is_complete()){
+        delete animation_pop;
+        animation_pop = nullptr;
+    }
+    if (animation_fall && animation_fall->is_complete()){
+        delete animation_fall;
+        animation_fall = nullptr;
+    }
 
-        if (animation_fall){
-            animation_fall->draw();
-        }else if (animation_pop) {
-            animation_pop->draw();
-        }else{
-            Rectangle::draw();
-        }
+    if (animation_fall){
+        animation_fall->draw();
+    }else if (animation_pop) {
+        animation_pop->draw();
+    }else{
+        Rectangle::draw();
+    }
 }
 
 void Candy::start_pop_animation(){
@@ -108,7 +113,30 @@ void Candy::set_neigh(shared_ptr<Item> neigh){
     neighbours.push_back(neigh);
 }
 
-Wall::Wall(Point center, int w, int h, Fl_Color fillColor, Fl_Color frameColor):Item(),Rectangle(center,w,h,fillColor,frameColor){}
+bool Candy::is_neighbour(shared_ptr<Item> item){
+    for (auto n: neighbours){
+        if (n == item){
+            return true;
+        }
+    }
+    return false;
+}
+
+//Striped_candy
+Striped_candy::Striped_candy(Point center, int w, int h, Fl_Color fillColor, Fl_Color frameColor, Fl_Boxtype box_type): Candy(center, w, h, fillColor, frameColor, box_type){}
+
+void Striped_candy::set_direction(Direction d){
+    stripes_direction = d;
+}
+
+Direction Striped_candy::get_direction(){
+    return stripes_direction;
+}
+
+//end of Striped_candy
+
+
+Wall::Wall(Point center, int w, int h, Fl_Color fillColor, Fl_Color frameColor):Item(),Rectangle(center,w,h,fillColor,frameColor, FL_FLAT_BOX){}
 
 bool Wall::get_wall(){
     return true;
@@ -116,4 +144,23 @@ bool Wall::get_wall(){
 
 void Wall::draw(){
     Rectangle::draw();
+}
+
+Ingredient::Ingredient(Point center, int radius, Fl_Color fillColor, Fl_Color frameColor):Item(),Circle(center,radius,frameColor,fillColor){}
+
+void Ingredient::draw(){
+    if (animation_fall && animation_fall->is_complete()){
+        delete animation_fall;
+        animation_fall = nullptr;
+    }
+
+    if (animation_fall){
+        animation_fall->draw();
+    }else{
+        Circle::draw();
+    }
+}
+
+void Ingredient::start_fall_animation(Point dest, bool gb){
+    animation_fall = new Animation_fall<Circle>(this, dest, gb);
 }

@@ -13,7 +13,7 @@
 
 using namespace std;
 
-Rectangle::Rectangle(Point center,int w, int h,Fl_Color fillColor=FL_WHITE,Fl_Color frameColor=FL_BLACK): center(center),w(w),h(h),fillColor(fillColor),frameColor(frameColor) {}
+Rectangle::Rectangle(Point center,int w, int h,Fl_Color fillColor=FL_WHITE,Fl_Color frameColor=FL_BLACK, Fl_Boxtype type=FL_FLAT_BOX): center(center),w(w),h(h),fillColor(fillColor),frameColor(frameColor), type(type) {}
 
 Fl_Color Rectangle::getFillColor(){
     return fillColor;
@@ -53,8 +53,10 @@ void Rectangle::setCode(Fl_Color code){
 }
 
 void Rectangle::draw(){
-     fl_draw_box(FL_FLAT_BOX, center.x-w/2, center.y-h/2, w, h, fillColor);
-     fl_draw_box(FL_BORDER_FRAME, center.x-w/2, center.y-h/2, w, h, frameColor);
+     fl_draw_box(type, center.x-w/2, center.y-h/2, w, h, fillColor);
+     if (type == FL_FLAT_BOX){
+        fl_draw_box(FL_BORDER_FRAME, center.x-w/2, center.y-h/2, w, h, frameColor);
+     }
 }
 
 void Rectangle::setFillColor(Fl_Color fill){
@@ -76,4 +78,12 @@ bool Rectangle::contains(Point p){
 
 void Rectangle::setCenter(Point p){
    center=p;
+}
+
+void Rectangle::set_box_type(Fl_Boxtype box){
+    type = box;
+}
+
+Fl_Boxtype Rectangle::get_box_type(){
+    return type;
 }
