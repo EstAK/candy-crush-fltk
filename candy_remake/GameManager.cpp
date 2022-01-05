@@ -30,7 +30,8 @@ void GameManager::set_up(shared_ptr<Item>** arr,Score& score,Objective& obj){
 
 bool GameManager::break_candies(int x,int y,int i,int j,bool pc){
     
-    if (candy[x][y]->is_striped() && candy[i][j]->is_striped()){
+    
+    if (candy[x][y]->is_striped() && candy[i][j]->is_striped() && candy[x][y]->getCenter()!=candy[i][j]->getCenter()){
         cout<<"doing something"<<endl;
         candy[x][y]->set_direction(horizontal);
         candy[i][j]->set_direction(vertical);
@@ -49,7 +50,8 @@ bool GameManager::break_candies(int x,int y,int i,int j,bool pc){
         }
         return true;
     }
-
+    
+    
     shared_ptr<Item> temp_candy=candy[x][y];  
     shared_ptr<Item> temp_candy2=candy[i][j];
     int counter_left_right=1; 
@@ -139,6 +141,7 @@ bool GameManager::break_candies(int x,int y,int i,int j,bool pc){
         }else{
            destroy_candies(x,y,counter_left_right,counter_up_down);
            destroy_candies(i,j,counter_left_right2,counter_up_down2);
+           return true;
         }
     }
    //Vlad: Can you try to add a delay when you do the animations?
@@ -207,7 +210,8 @@ void GameManager::destroy_candies(int x,int y,int counter_left_right,int counter
                         if (counter_left_right == 4 && c.x == x && c.y == y){
                             candy[c.x][c.y] = make_shared<Striped_candy>(candy[c.x][c.y]->getCenter(), 40, 40, candy[c.x][c.y]->getFillColor());
                             candy[c.x][c.y]->set_direction(vertical);
-                        }else if(counter_left_right == 5 && c.x == x && c.y == y){
+                            can_change_color = false;
+                        }else if(counter_left_right >= 5 && c.x == x && c.y == y){
                             candy[c.x][c.y] = make_shared<Bomb_candy>(candy[c.x][c.y]->getCenter(), 40, 40);
                             can_change_color = false;
                         }
@@ -267,7 +271,7 @@ void GameManager::destroy_candies(int x,int y,int counter_left_right,int counter
                         candy[c.x][c.y] = make_shared<Striped_candy>(candy[c.x][c.y]->getCenter(), 40, 40, candy[c.x][c.y]->getFillColor());
                         candy[c.x][c.y]->set_direction(horizontal);
                         can_change_color = false;
-                    }else if(counter_left_right == 5 && c.x == x && c.y == y){
+                    }else if(counter_up_down >= 5 && c.x == x && c.y == y){
                         candy[c.x][c.y] = make_shared<Bomb_candy>(candy[c.x][c.y]->getCenter(), 40, 40);
                         can_change_color = false;
                     }
@@ -355,9 +359,9 @@ void GameManager::set_moved_state(bool b){
 void GameManager::break_row(int x, int y){
     for(int i=x+1;i<9;i++){ //right
         if(!candy[i][y]->get_wall()){
-            if(candy[i][y]->is_striped()){  //copy pasted 4 times might be a good idea to make it a standalone function
+             if(candy[i][y]->is_striped()){  //copy pasted 4 times might be a good idea to make it a standalone function
                 break_striped(x, i);
-            }
+             }
             candy[i][y]->setFillColor(FL_BLACK);
             candy[i][y]->update_frosted_neighbours();
             candy[i][y]->start_pop_animation();
@@ -367,9 +371,9 @@ void GameManager::break_row(int x, int y){
     }
     for(int i=x-1;i>=0;i--){
         if(!candy[i][y]->get_wall()){   //left
-            if(candy[i][y]->is_striped()){  //copy pasted 4 times might be a good idea to make it a standalone function
-                break_striped(x, i);
-            }
+             if(candy[i][y]->is_striped()){  //copy pasted 4 times might be a good idea to make it a standalone function
+                 break_striped(x, i);
+             }
             candy[i][y]->setFillColor(FL_BLACK);
             candy[i][y]->update_frosted_neighbours();
             candy[i][y]->start_pop_animation();
@@ -411,7 +415,7 @@ void GameManager::break_striped(int x, int y){
     if (candy[x][y]->get_direction() == horizontal){
         break_row(x, y);
     }else{
-        cout<<candy[x][y]->get_direction()<<endl;
+        cout<<candy[x][y]->get_direction()<<" here "<<endl;
         break_column(x, y);
     }
     candy[x][y] = make_shared<Candy>(candy[x][y]->getCenter(), 40, 40);

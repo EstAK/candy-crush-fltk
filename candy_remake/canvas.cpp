@@ -129,8 +129,8 @@ void Canvas::draw(){
         string tries=to_string(game_obj.nr_tries());
         string score=to_string(candy_score.get_score());
 
-        fl_draw(obj.c_str(),450,100);   //Vlad: Text print of how many blocks it has to break;
-        fl_draw("to break",450,120);    //Vlad: Make it prettier yourself :(
+        fl_draw(obj.c_str(),450,100); //Vlad: Text print of how many blocks it has to break;
+        fl_draw("to break",450,120); //Vlad: Make it prettier yourself :(
         fl_draw(tries.c_str(),450,170);
         fl_draw("tries left",450,190);
         fl_draw(score.c_str(),450,210);
@@ -280,14 +280,20 @@ void Canvas::mouseRelease(Point mouseLoc){
     for(int i=0;i<9;i++){
         for(int j=0;j<9;j++){
             
+            
+            
             if (candy[i][j]->contains(mouseLoc) && ! candy[i][j]->get_wall() && ! candy[i][j]->has_frosting() && current->verify_neighbours(candy[i][j])){
                 if(current->is_special_candy() || candy[i][j]->is_special_candy()){
-                    special_neigh(i,j);
+                  special_neigh(i,j);
+                  return;
                 }else{
                     if (gm.break_candies(x,y,i,j)){
-                        set_the_neighbours();
-                        current->start_fall_animation(candy[i][j]->getCenter());
+                         set_the_neighbours();
+                         current->start_fall_animation(candy[i][j]->getCenter());
                         candy[i][j]->start_fall_animation(current->getCenter());
+                        current=make_shared<Candy>();
+                        x=0;
+                        y=0;
                         return;
                     }
                 }
@@ -295,6 +301,9 @@ void Canvas::mouseRelease(Point mouseLoc){
             
         }
     }
+     current=make_shared<Candy>();
+     x=0;
+     y=0;
 }
 
 
@@ -306,9 +315,17 @@ bool Canvas::special_neigh(int i,int j){
     candy[i][j]->setCenter(save);
     candy[x][y]=candy[i][j];
     candy[i][j]=save2;
-    gm.break_candies(x,y,i,j);
+    if (gm.break_candies(x,y,i,j)){
+        set_the_neighbours();
+        current->start_fall_animation(candy[i][j]->getCenter());
+        candy[i][j]->start_fall_animation(current->getCenter());
+        current=make_shared<Candy>();
+        x=0;y=0;
+        return true;
+    }
+    
 
-    return true;
+    return false;
         
     
     

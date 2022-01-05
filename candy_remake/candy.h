@@ -119,6 +119,7 @@ public:
     Striped_candy(){}
     Striped_candy(Point, int, int, Fl_Color=FL_MAGENTA, Fl_Color=FL_BLACK, Fl_Boxtype=FL_DIAMOND_BOX);
 
+
     void set_direction(Direction);
     Direction get_direction();
 

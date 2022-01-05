@@ -17,7 +17,15 @@ using namespace std;
 #ifndef RECTANGLE_H_
 #define RECTANGLE_H_
 
-struct Point{int x; int y;};
+struct Point{
+  int x; int y;
+  bool operator!=(const Point& e){
+    if(this->x==e.x && this->y==e.y){
+        return false;
+      }
+    return true;
+    }
+  };
 
 //class declaration Esteban: the code is becoming a total clusterfuck
 //we should move it to separate files because I don't even where to put     
