@@ -54,6 +54,10 @@ public:
     virtual bool is_striped(){return false;}
     virtual bool is_special_candy(){return false;}
     virtual bool is_neighbour(shared_ptr<Item>){return false;}
+    virtual bool is_wrapped(){return false;}
+    virtual bool is_bomb(){return false;}
+    virtual void set_color_to_break(Fl_Color){}
+    virtual Fl_Color get_color_to_break(){return FL_BLACK;}
 
 };
 
@@ -98,26 +102,49 @@ public:
     bool is_neighbour(shared_ptr<Item>);
 }; 
 
-class Striped_candy: public Candy{
+class Special_candy: public Candy{
+
+public:
+    Special_candy(){}
+    Special_candy(Point, int, int, Fl_Color=FL_MAGENTA, Fl_Color=FL_BLACK, Fl_Boxtype=FL_DIAMOND_BOX);
+
+    bool is_special_candy(){return true;}
+};
+
+class Striped_candy: public Special_candy{
     Direction stripes_direction;
     // 0 : horizontal --
     // 1 : vertical |
 public:
     Striped_candy(){}
     Striped_candy(Point, int, int, Fl_Color=FL_MAGENTA, Fl_Color=FL_BLACK, Fl_Boxtype=FL_DIAMOND_BOX);
+
     void set_direction(Direction);
     Direction get_direction();
+
     bool is_striped(){return true;}
-    bool is_special_candy(){return true;}
 };
 
-class Wraped_candy: public Candy{
+class Wrapped_candy: public Special_candy{
 
 public:
-    Wraped_candy(){}
-    Wraped_candy(Point, int, int, Fl_Color=FL_MAGENTA, Fl_Color=FL_BLACK, Fl_Boxtype=FL_PLASTIC_UP_BOX);
+    Wrapped_candy(){}
+    Wrapped_candy(Point, int, int, Fl_Color=FL_MAGENTA, Fl_Color=FL_BLACK, Fl_Boxtype=FL_PLASTIC_UP_BOX);
+
+    bool is_wrapped(){return true;}
 };
 
+class Bomb_candy: public Special_candy{
+    Fl_Color color_to_break = FL_BLACK;
+public:
+    Bomb_candy(){}
+    Bomb_candy(Point, int, int, Fl_Color=FL_DARK_GREEN, Fl_Color=FL_BLACK, Fl_Boxtype=FL_ROUNDED_BOX);
+
+    void set_color_to_break(Fl_Color);
+    Fl_Color get_color_to_break();
+
+    bool is_bomb(){return true;}
+};
 
 class Wall:public Item, public Rectangle{
 public:

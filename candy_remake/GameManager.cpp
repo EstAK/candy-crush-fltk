@@ -37,6 +37,17 @@ bool GameManager::break_candies(int x,int y,int i,int j,bool pc){
         break_striped(x,y);
         break_striped(i,j);
         return true;
+    }else if(candy[x][y]->is_striped() && candy[i][j]->is_striped()){
+
+    }else if(!pc && candy[x][y]->is_bomb() || candy[i][j]->is_bomb()){
+        if (candy[x][y]->is_bomb()){
+            candy[x][y]->set_color_to_break(candy[i][j]->getFillColor());
+            break_bomb(x, y);
+        }else{
+            candy[i][j]->set_color_to_break(candy[x][y]->getFillColor());
+            break_bomb(i, j);
+        }
+        return true;
     }
 
     shared_ptr<Item> temp_candy=candy[x][y];  
@@ -189,14 +200,18 @@ void GameManager::destroy_candies(int x,int y,int counter_left_right,int counter
                         cout<<"found a striped candy horizontaly"<<endl;
                         break_striped(c.x, c.y);
                         return;
+                    }else if(candy[c.x][c.y]->is_wrapped()){
+                        break_wrapped(c.x, c.y);
                     }
                     if(has_moved){
                         if (counter_left_right == 4 && c.x == x && c.y == y){
                             candy[c.x][c.y] = make_shared<Striped_candy>(candy[c.x][c.y]->getCenter(), 40, 40, candy[c.x][c.y]->getFillColor());
                             candy[c.x][c.y]->set_direction(vertical);
+                        }else if(counter_left_right == 5 && c.x == x && c.y == y){
+                            candy[c.x][c.y] = make_shared<Bomb_candy>(candy[c.x][c.y]->getCenter(), 40, 40);
                             can_change_color = false;
                         }
-                        candy[c.x][c.y]->update_frosted_neighbours();
+                        
                     }
                     if (can_change_color){
                         candy[c.x][c.y]->setFillColor(FL_BLACK);
@@ -244,11 +259,16 @@ void GameManager::destroy_candies(int x,int y,int counter_left_right,int counter
                     cout<<"found a striped candy verticaly"<<endl;
                     break_striped(c.x, c.y);
                     return;
+                }else if(candy[c.x][c.y]->is_wrapped()){
+                    break_wrapped(c.x, c.y);
                 }
                 if (has_moved){
                     if (counter_up_down == 4 && c.x == x && c.y == y){
                         candy[c.x][c.y] = make_shared<Striped_candy>(candy[c.x][c.y]->getCenter(), 40, 40, candy[c.x][c.y]->getFillColor());
                         candy[c.x][c.y]->set_direction(horizontal);
+                        can_change_color = false;
+                    }else if(counter_left_right == 5 && c.x == x && c.y == y){
+                        candy[c.x][c.y] = make_shared<Bomb_candy>(candy[c.x][c.y]->getCenter(), 40, 40);
                         can_change_color = false;
                     }
                     candy[c.x][c.y]->update_frosted_neighbours();
@@ -335,9 +355,9 @@ void GameManager::set_moved_state(bool b){
 void GameManager::break_row(int x, int y){
     for(int i=x+1;i<9;i++){ //right
         if(!candy[i][y]->get_wall()){
-            // if(candy[i][y]->is_striped()){  //copy pasted 4 times might be a good idea to make it a standalone function
-            //     break_striped(x, i);
-            // }
+            if(candy[i][y]->is_striped()){  //copy pasted 4 times might be a good idea to make it a standalone function
+                break_striped(x, i);
+            }
             candy[i][y]->setFillColor(FL_BLACK);
             candy[i][y]->update_frosted_neighbours();
             candy[i][y]->start_pop_animation();
@@ -347,9 +367,9 @@ void GameManager::break_row(int x, int y){
     }
     for(int i=x-1;i>=0;i--){
         if(!candy[i][y]->get_wall()){   //left
-            // if(candy[i][y]->is_striped()){  //copy pasted 4 times might be a good idea to make it a standalone function
-            //     break_striped(x, i);
-            // }
+            if(candy[i][y]->is_striped()){  //copy pasted 4 times might be a good idea to make it a standalone function
+                break_striped(x, i);
+            }
             candy[i][y]->setFillColor(FL_BLACK);
             candy[i][y]->update_frosted_neighbours();
             candy[i][y]->start_pop_animation();
@@ -362,9 +382,9 @@ void GameManager::break_row(int x, int y){
 void GameManager::break_column(int x, int y){
     for(int i=y+1;i<9;i++){   //down
         if(!candy[x][i]->get_wall() && !candy[x][i]->is_ingredient()){
-            // if(candy[x][i]->is_striped()){  //copy pasted 4 times might be a good idea to make it a standalone function
-            //     break_striped(x, i);
-            // }
+            if(candy[x][i]->is_striped()){  //copy pasted 4 times might be a good idea to make it a standalone function
+                break_striped(x, i);
+            }
             candy[x][i]->setFillColor(FL_BLACK);
             candy[x][i]->update_frosted_neighbours();
             candy[x][i]->start_pop_animation();
@@ -399,9 +419,10 @@ void GameManager::break_striped(int x, int y){
 
 
 void GameManager::break_wrapped(int x, int y){
-    for(int i=x-1;i<x+1;i++){
-        for(int j=y-1;j<y+1;j++){
-            if (!candy[i][j]->get_wall()){
+    candy[x][y] = make_shared<Candy>(candy[x][y]->getCenter(), 40, 40);
+    for(int i=x-1;i<=x+1;i++){
+        for(int j=y-1;j<=y+1;j++){
+            if (i>=0 && i<9 && j>=0 && j<9 && !candy[i][j]->get_wall() && !candy[i][j]->is_ingredient()){
                 candy[i][j]->setFillColor(FL_BLACK);
                 candy[i][j]->start_pop_animation();
             }
@@ -409,3 +430,18 @@ void GameManager::break_wrapped(int x, int y){
     }
 }
 
+void GameManager::break_bomb(int x, int y){
+    for(int i=0;i<9;i++){
+        for(int j=0;j<9;j++){
+            if (candy[i][j]->getFillColor() == candy[x][y]->get_color_to_break()){
+                if (candy[i][j]->is_striped()){
+                    break_striped(i, j);
+                }else if(candy[i][j]->is_wrapped()){
+                    break_wrapped(i, j);
+                }else{
+                    candy[i][j]->setFillColor(FL_BLACK);
+                }
+            }
+        }
+    }
+}

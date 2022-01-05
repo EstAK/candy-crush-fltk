@@ -33,17 +33,17 @@ bool Candy::verify_neighbours(shared_ptr<Item> current){
                 if(!this->is_ingredient() && !current->is_ingredient()){
                     return true;
                 }
-            
+
             }
         }
      }
-    
+
     for(auto i:neighbours){
         if(i->getCenter().x==current->getCenter().x && i->getCenter().y==current->getCenter().y){
             if(!this->is_ingredient() && !current->is_ingredient()){
                 Fl_Color save=this->getFillColor();
                 this->setCode(i->getFillColor());
-                i->setCode(save);   
+                i->setCode(save);
                 return true;
             }else{
                 if(this->is_ingredient()){
@@ -51,7 +51,7 @@ bool Candy::verify_neighbours(shared_ptr<Item> current){
                     i->set_fruit(true);
                     return true;
                 }else{
-                                    
+
                 }
             }
         }
@@ -129,8 +129,13 @@ bool Candy::is_neighbour(shared_ptr<Item> item){
     return false;
 }
 
+//Special_Candy
+Special_candy::Special_candy(Point center, int w, int h, Fl_Color fillColor, Fl_Color frameColor, Fl_Boxtype box_type): 
+        Candy(center, w, h, fillColor, frameColor, box_type) {}
+
 //Striped_candy
-Striped_candy::Striped_candy(Point center, int w, int h, Fl_Color fillColor, Fl_Color frameColor, Fl_Boxtype box_type): Candy(center, w, h, fillColor, frameColor, box_type){}
+Striped_candy::Striped_candy(Point center, int w, int h, Fl_Color fillColor, Fl_Color frameColor, Fl_Boxtype box_type):
+        Special_candy(center, w, h, fillColor, frameColor, box_type){}
 
 void Striped_candy::set_direction(Direction d){
     stripes_direction = d;
@@ -140,14 +145,30 @@ Direction Striped_candy::get_direction(){
     return stripes_direction;
 }
 
-//end of Striped_candy
 
+//Wrapped_candy
 
+Wrapped_candy::Wrapped_candy(Point center, int w, int h, Fl_Color fillColor, Fl_Color frameColor, Fl_Boxtype box):Special_candy(center, w, h, fillColor, frameColor, box){}
+
+//Bomb_candy
+
+Bomb_candy::Bomb_candy(Point center, int w, int h, Fl_Color fillColor, Fl_Color frameColor, Fl_Boxtype box):Special_candy(center, w, h, fillColor, frameColor, box){}
+
+void Bomb_candy::set_color_to_break(Fl_Color color){
+    color_to_break = color;
+}
+
+Fl_Color Bomb_candy::get_color_to_break(){
+    return color_to_break;
+}
+
+//Wall class
 Wall::Wall(Point center, int w, int h, Fl_Color fillColor, Fl_Color frameColor):Item(),Rectangle(center,w,h,fillColor,frameColor, FL_FLAT_BOX){}
 
 bool Wall::get_wall(){
     return true;
 }
+
 
 void Wall::draw(){
     Rectangle::draw();

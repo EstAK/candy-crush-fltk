@@ -62,6 +62,10 @@ void Canvas::make_board(string map){ //TODO: Finish it later.
                 }else if(lines[y][x] == 'S'){
                     candy[x][y]=make_shared<Striped_candy>(Point{50*x+25, 50*y+25},40, 40,color[rand()%5],FL_CYAN);
                     candy[x][y]->set_direction(horizontal);
+                }else if(lines[y][x] == 'w'){
+                    candy[x][y]=make_shared<Wrapped_candy>(Point{50*x+25, 50*y+25}, 40, 40);
+                }else if(lines[y][x] == 'B'){
+                    candy[x][y]=make_shared<Bomb_candy>(Point{50*x+25, 50*y+25}, 40, 40);
                 }
             }
         }    
@@ -125,8 +129,8 @@ void Canvas::draw(){
         string tries=to_string(game_obj.nr_tries());
         string score=to_string(candy_score.get_score());
 
-        fl_draw(obj.c_str(),450,100); //Vlad: Text print of how many blocks it has to break;
-        fl_draw("to break",450,120); //Vlad: Make it prettier yourself :(
+        fl_draw(obj.c_str(),450,100);   //Vlad: Text print of how many blocks it has to break;
+        fl_draw("to break",450,120);    //Vlad: Make it prettier yourself :(
         fl_draw(tries.c_str(),450,170);
         fl_draw("tries left",450,190);
         fl_draw(score.c_str(),450,210);
@@ -276,15 +280,13 @@ void Canvas::mouseRelease(Point mouseLoc){
     for(int i=0;i<9;i++){
         for(int j=0;j<9;j++){
             
-            
-            
             if (candy[i][j]->contains(mouseLoc) && ! candy[i][j]->get_wall() && ! candy[i][j]->has_frosting() && current->verify_neighbours(candy[i][j])){
                 if(current->is_special_candy() || candy[i][j]->is_special_candy()){
-                  special_neigh(i,j);
+                    special_neigh(i,j);
                 }else{
                     if (gm.break_candies(x,y,i,j)){
-                         set_the_neighbours();
-                         current->start_fall_animation(candy[i][j]->getCenter());
+                        set_the_neighbours();
+                        current->start_fall_animation(candy[i][j]->getCenter());
                         candy[i][j]->start_fall_animation(current->getCenter());
                         return;
                     }
