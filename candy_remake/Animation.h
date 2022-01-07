@@ -51,10 +51,10 @@ class Animation_fall: public Animation<Form>{
     bool go_back;
     int distance_x = 0;
     int distance_y = 0;
-    int speed = 1;
+    const static int speed = 1.5;
 
 public:
-    Animation_fall(Form* candy_to_animate, Point d, bool gb, int animation_time=50);
+    Animation_fall(Form* candy_to_animate, Point d, bool gb, int animation_time=50/speed);
 
     ~Animation_fall();
 
