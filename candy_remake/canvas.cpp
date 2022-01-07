@@ -204,7 +204,9 @@ void Canvas::save_the_map(){
     for(int i=0;i<9;i++){
         char l[9];
         for(int j=0;j<9;j++){
-            if(candy[j][i]->get_box_type()==FL_FLAT_BOX){      
+            if(candy[j][i]->get_wall()){
+               l[j]='W';
+            }else if(candy[j][i]->get_box_type()==FL_FLAT_BOX){      
               l[j]='C';       
             }else if(candy[j][i]->get_box_type()==FL_DIAMOND_BOX){
                l[j]='S';
@@ -212,8 +214,6 @@ void Canvas::save_the_map(){
                l[j]='B';
             }else if(candy[j][i]->get_box_type()==FL_PLASTIC_UP_BOX){
                l[j]='w';
-            }else if(candy[j][i]->get_wall()){
-               l[j]='W';
             }
         }
         for(int k=0;k<strlen(l);k++){
