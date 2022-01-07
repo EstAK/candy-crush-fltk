@@ -58,11 +58,18 @@ public:
     virtual bool is_bomb(){return false;}
     virtual void set_color_to_break(Fl_Color){}
     virtual Fl_Color get_color_to_break(){return FL_BLACK;}
+    virtual int current_box(){
+        return 0;
+    }
+    virtual void inc_box(){
+    }
+    
 
 };
 
 class Candy:public Item, public Rectangle{
     int layers = 0;
+    int box=0;
     Animation_pop<Rectangle>* animation_pop = nullptr;
     Animation_fall<Rectangle>* animation_fall = nullptr;
        
@@ -100,7 +107,24 @@ public:
     void draw();
     bool is_special_candy(){return false;}
     bool is_neighbour(shared_ptr<Item>);
-}; 
+    int current_box(){
+        return box;
+    }
+    void inc_box(){
+        box++;
+        
+    }
+};
+
+class Edit_Candy:public Candy{
+public:
+   using Candy::Candy;
+   void draw(){
+       Rectangle::draw();
+       
+   }
+   
+};
 
 class Special_candy: public Candy{
 
@@ -157,6 +181,7 @@ public:
     void setCode(Fl_Color code){Rectangle::setCode(code);}
     void setFillColor(Fl_Color color){Rectangle::setFillColor(color);}
     void setFrameColor(Fl_Color color){Rectangle::setFrameColor(color);}
+    bool contains(Point p){return Rectangle::contains(p);}
     // rectangle polymorphism
 
     bool get_wall();

@@ -29,6 +29,9 @@ void GameManager::set_up(shared_ptr<Item>** arr,Score& score,Objective& obj){
 }
 
 bool GameManager::break_candies(int x,int y,int i,int j,bool pc){
+    if(candy[x][y]->getFillColor()==255){
+        return false;
+    }
     
     if (candy[x][y]->getCenter() == candy[i][j]->getCenter()){
         // this situation shouldn't be able to happen but better be safe

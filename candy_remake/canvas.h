@@ -32,12 +32,17 @@ class Canvas{
     
     int timer=0;  //Var used for timer
     bool can_vibrate=false;
+    bool editing=false;
+    bool done=true;
+    string selected="";
     string current_map;
     GameManager gm;
     Hint ht;
     Objective game_obj;
     bool has_released = true;
     Point curr_pos;
+    vector<Fl_Boxtype> boxes={FL_FLAT_BOX,FL_ROUNDED_BOX,FL_DIAMOND_BOX,FL_PLASTIC_UP_BOX};
+    
 
 public:
    Canvas(); 
@@ -57,6 +62,8 @@ public:
     void set_the_neighbours();
   bool is_board_moving();
   bool special_neigh(int,int);
+  void edit_level();
+  void save_the_map();
   
     
 };

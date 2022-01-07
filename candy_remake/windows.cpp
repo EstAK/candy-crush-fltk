@@ -98,7 +98,7 @@ public:
         ptr->create_the_map();
     }
     void create_the_map(){
-        //mw->get_canvas().edit_level();
+        mw->get_canvas().edit_level();
     }
 
     static void prev_map(Fl_Widget*obj,void*v){
@@ -119,7 +119,7 @@ public:
     }
     
     void select_next_map(){
-      if(current_map+1<4){
+      if(current_map+1<5){
           current_map++;
           mw->get_canvas().make_board(maps[current_map]);
       }

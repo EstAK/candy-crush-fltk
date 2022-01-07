@@ -10,6 +10,7 @@
 #include"const.h"
 #include"canvas.h"
 #include"GameManager.h"
+#include<cstring>
 #include"hint.h"
 #include<random>
 #include <FL/Fl.H>
@@ -25,11 +26,14 @@ using namespace std;
 Canvas::Canvas(){  
         for(int i=0;i<9;i++){
             candy[i]=new shared_ptr<Item>[9]();
-        }                          
+        }                  
         make_board(maps[0]); 
         game_obj=Objective();
-        candy_score=Score(0);      
+        candy_score=Score(0); 
+         
 }
+
+
 
 Canvas::~Canvas(){
     
@@ -42,6 +46,8 @@ void Canvas::make_board(string map){ //TODO: Finish it later.
         current_map=map;
         int fruits=0;
         bool gj=false;
+        
+        
         
         for (int x = 0; x<9; x++){
             for (int y = 0; y<9; y++){
@@ -66,6 +72,8 @@ void Canvas::make_board(string map){ //TODO: Finish it later.
                     candy[x][y]=make_shared<Wrapped_candy>(Point{50*x+25, 50*y+25}, 40, 40);
                 }else if(lines[y][x] == 'B'){
                     candy[x][y]=make_shared<Bomb_candy>(Point{50*x+25, 50*y+25}, 40, 40, FL_DARK_GREEN);
+                }else{
+                    candy[x][y]=make_shared<Edit_Candy>(Point{50*x+25, 50*y+25}, 40, 40);
                 }
             }
         }    
@@ -76,6 +84,12 @@ void Canvas::make_board(string map){ //TODO: Finish it later.
         
 }
 
+void Canvas::edit_level(){
+    cout<<"Yoo"<<endl;
+    editing=true;
+    make_board("edit_board.txt");
+   
+}
 
 void Canvas::read_file(string map){
         lines.clear();  //Clear the map so the next one can be loaded in the vector.
@@ -90,6 +104,25 @@ void Canvas::read_file(string map){
 }
 
 void Canvas::draw(){
+         if(editing){
+             done=true;
+             for(int i=0;i<9;i++){
+                for(int j=0;j<9;j++){
+                candy[i][j]->draw();
+                    if(candy[i][j]->getFillColor()==255){
+                        done=false;
+                    }
+                }
+            }
+            
+            if(done){
+                save_the_map();     
+                editing=false;
+                make_board(maps[0]);
+            }
+            return;
+         }
+
          for(int i=0;i<9;i++){
             for(int j=0;j<9;j++){
                 candy[i][j]->draw();
@@ -161,7 +194,36 @@ void Canvas::draw(){
         }  
         gm.set_the_neighbours();
 
+        
 } 
+
+void Canvas::save_the_map(){
+    fstream file("boards/edited_level.txt", ios::out);
+    
+
+    for(int i=0;i<9;i++){
+        char l[9];
+        for(int j=0;j<9;j++){
+            if(candy[j][i]->get_box_type()==FL_FLAT_BOX){      
+              l[j]='C';       
+            }else if(candy[j][i]->get_box_type()==FL_DIAMOND_BOX){
+               l[j]='S';
+            }else if(candy[j][i]->get_box_type()==FL_ROUNDED_BOX){
+               l[j]='B';
+            }else if(candy[j][i]->get_box_type()==FL_PLASTIC_UP_BOX){
+               l[j]='w';
+            }else if(candy[j][i]->get_wall()){
+               l[j]='W';
+            }
+        }
+        for(int k=0;k<strlen(l);k++){
+            file.put(l[k]);
+            cout<<l[k]<<" ";
+        }cout<<endl;
+        file.put('\n');
+    }
+    file.close();
+}
 
 void Canvas::mouseMove(Point mouseLoc){
         for(int i=0;i<9;i++){
@@ -181,54 +243,34 @@ void Canvas::mouseMove(Point mouseLoc){
 }
 
 void Canvas::mouseClick(Point mouseLoc){
-        // has_moved=true;
-        // for(int i=0;i<9;i++){
-        //     for(int j=0;j<9;j++){
-        //         if(candy[i][j]->contains(mouseLoc) && current->getFillColor() == FL_BLACK){
-        //             if(candy[i][j]->get_wall()==false ){  //make sure that is not a wall. ; Vlad:time n vibrate
-        //                 current=candy[i][j];
-        //                 x=i;
-        //                 y=j;
-        //                 timer=0;
-        //                 can_vibrate=false;
-        //             }
-        //         }else if(candy[i][j]->contains(mouseLoc) && candy[i][j]->is_fall_complete() && candy[x][y]->is_fall_complete()){
-        //             if(candy[i][j]->verify_neighbours(current)){
-        //                 if (gm.break_candies(i,j,x,y)){
-        //                     candy[i][j]->start_fall_animation(candy[x][y]->getCenter());
-        //                     candy[x][y]->start_fall_animation(candy[i][j]->getCenter());
-        //                 }
-        //                 if(candy[x][y]->get_fruit()){
-        //                     if(ht.forshadowing_over_9000(i,j,candy[i][j]->getFillColor(),false)==false){
-        //                         Fl_Color save=candy[x][y]->getFillColor();
-        //                         candy[x][y]->set_fruit(false);
-        //                         candy[x][y]->setCode(candy[i][j]->getFillColor());
-        //                         candy[i][j]->set_fruit(true);
-        //                         candy[i][j]->setCode(save);
-        //                     }
-        //                 }
-        //                 current=make_shared<Candy>();
-        //                 x=0;
-        //                 y=0;
-        //                 cout<<"Neigh"<<endl;
-        //                 timer=0;
-        //                 can_vibrate=false;
-        //             }else{
-        //                 cout<<"Selected new one"<<endl;
-        //                 if(candy[i][j]->get_wall()==false){  //timer n vibrate
-        //                     current=candy[i][j];
-        //                     x=i;
-        //                     y=j;
-        //                     timer=0;
-        //                     can_vibrate=false;
-        //                 }    
-        //             }
-        //         }
-        //     }
-        // }
+    if(editing){
+        for(int i=0;i<9;i++){
+            for(int j=0;j<9;j++){
+                if(candy[i][j]->contains(mouseLoc)){
+                    if(candy[i][j]->getFillColor()==255 || candy[i][j]->get_wall()){
+                        candy[i][j]=make_shared<Candy>(candy[i][j]->getCenter(),40,40,COLORS[rand()%5]);
+                        candy[i][j]->inc_box();
+                    }else{
+                         if(candy[i][j]->current_box()==4){
+                             candy[i][j]=make_shared<Wall>(candy[i][j]->getCenter(),40,40);
+                         }
+                         candy[i][j]->set_box_type(boxes[candy[i][j]->current_box()]);
+                         candy[i][j]->inc_box();
+                         
+                    }
+                }
+            }
+        }
+    }
 }
 
+
+
 void Canvas::mouseDrag(Point mouseLoc){
+    if(editing){
+        return;
+    }
+
     if(is_board_moving()){
         return;
     }
@@ -271,6 +313,11 @@ void Canvas::mouseDrag(Point mouseLoc){
 }
 
 void Canvas::mouseRelease(Point mouseLoc){
+
+    if(editing){
+        return;
+    }
+
     // not proper OOP but will work for now
     timer=0;
     can_vibrate = false;

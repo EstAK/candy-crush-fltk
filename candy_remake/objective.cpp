@@ -18,10 +18,7 @@ void Objective::setUp(){
        condition="nothing";
      }else if(selected_obj=="Break->x->candies->color"){
          number_to_break=25+(rand()%(40-25+1));
-         condition=to_string(colors[rand()%6]);
-     }else if(selected_obj=="Break x->cubs of ice"){
-         number_to_break=25+(rand()%(40-25+1));
-         cout<<"Not implemented yet"<<endl; //Vlad: To be continued.
+         condition=to_string(colors[rand()%5]);
      }
 }
 
@@ -67,9 +64,6 @@ void Objective::mv_done(int nr,int nr_of_candies,Fl_Color candy_color=FL_WHITE){
               cout<<number_to_break<<" candies left to break of color "<<condition<<" left"<<endl;
               objCompleted();
           }
-     }
-     else if(selected_obj=="Break x->cubs of ice"){
-
      }
      else if(selected_obj=="fruits on"){
          objCompleted();
