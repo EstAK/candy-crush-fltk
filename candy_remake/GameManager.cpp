@@ -168,7 +168,7 @@ bool GameManager::break_candies(int x,int y,int i,int j,bool pc){
     }
     
 
-    if(candy[x][y]->is_special_candy() || candy[i][j]->is_special_candy()){
+    if(candy[x][y]->is_special_candy() || candy[i][j]->is_special_candy() || candy[i][j]->is_ingredient() || candy[x][y]->is_ingredient()){
         if(counter_left_right<3 && counter_up_down<3 && counter_left_right2<3 && counter_up_down2<3 && !pc){
             shared_ptr<Item> save2=candy[x][y];
             Point save=Point{candy[x][y]->getCenter().x,candy[x][y]->getCenter().y};

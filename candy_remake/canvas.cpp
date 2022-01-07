@@ -247,16 +247,18 @@ void Canvas::mouseClick(Point mouseLoc){
         for(int i=0;i<9;i++){
             for(int j=0;j<9;j++){
                 if(candy[i][j]->contains(mouseLoc)){
-                    if(candy[i][j]->getFillColor()==255 || candy[i][j]->get_wall()){
+                    if(candy[i][j]->getFillColor()==255 || candy[i][j]->is_ingredient()){
                         candy[i][j]=make_shared<Candy>(candy[i][j]->getCenter(),40,40,COLORS[rand()%5]);
                         candy[i][j]->inc_box();
                     }else{
-                         if(candy[i][j]->current_box()==4){
-                             candy[i][j]=make_shared<Wall>(candy[i][j]->getCenter(),40,40);
-                         }
-                         candy[i][j]->set_box_type(boxes[candy[i][j]->current_box()]);
-                         candy[i][j]->inc_box();
-                         
+                       if(candy[i][j]->current_box()==4){
+                            candy[i][j]=make_shared<Wall>(candy[i][j]->getCenter(),40,40);
+                        }else if(candy[i][j]->get_wall()){
+                            candy[i][j]=make_shared<Ingredient>(candy[i][j]->getCenter(),20);
+                        }
+                    candy[i][j]->set_box_type(boxes[candy[i][j]->current_box()]);
+                    candy[i][j]->inc_box();
+
                     }
                 }
             }
