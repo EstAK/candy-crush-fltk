@@ -229,6 +229,10 @@ void Canvas::mouseClick(Point mouseLoc){
 }
 
 void Canvas::mouseDrag(Point mouseLoc){
+    if(is_board_moving()){
+        return;
+    }
+
     if (has_released){
         for(int i=0;i<9;i++){       //not optimised better do do double while to make it stop cleanly when match found in so it doesn't go through every cell
             for(int j=0;j<9;j++){
@@ -273,6 +277,10 @@ void Canvas::mouseRelease(Point mouseLoc){
     has_released = true;
     current->setCenter(curr_pos);
     
+    if(is_board_moving()){
+        return;
+    }
+
     if (current->has_frosting() || current->get_wall()){
         return;
     }

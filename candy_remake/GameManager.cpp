@@ -250,12 +250,12 @@ void GameManager::destroy_candies(int x,int y,int counter_left_right,int counter
                         if (counter_left_right == 4 && c.x == x && c.y == y){
                             candy[c.x][c.y] = make_shared<Striped_candy>(candy[c.x][c.y]->getCenter(), 40, 40, candy[c.x][c.y]->getFillColor());
                             candy[c.x][c.y]->set_direction(vertical);
-                        }else if ((counter_left_right + counter_up_down - 1) == 5 && c.x == x && c.y == y){     // -1 because the candy is included in each counter
-                            candy[c.x][c.y] = make_shared<Wrapped_candy>(candy[c.x][c.y]->getCenter(), 40, 40, candy[c.x][c.y]->getFillColor());
                         }else if(counter_left_right >= 5 && c.x == x && c.y == y){
                             cout<<"making a bomb"<<endl;
                             candy[c.x][c.y] = make_shared<Bomb_candy>(candy[c.x][c.y]->getCenter(), 40, 40, FL_DARK_GREEN);
                         }
+                        }else if ((counter_left_right + counter_up_down - 1) == 5 && c.x == x && c.y == y){     // -1 because the candy is included in each counter
+                            candy[c.x][c.y] = make_shared<Wrapped_candy>(candy[c.x][c.y]->getCenter(), 40, 40, candy[c.x][c.y]->getFillColor());
                     }
 
                     if (!candy[c.x][c.y]->is_special_candy()){
@@ -317,11 +317,11 @@ void GameManager::destroy_candies(int x,int y,int counter_left_right,int counter
                     if (counter_up_down == 4 && c.x == x && c.y == y){
                         candy[c.x][c.y] = make_shared<Striped_candy>(candy[c.x][c.y]->getCenter(), 40, 40, candy[c.x][c.y]->getFillColor());
                         candy[c.x][c.y]->set_direction(horizontal);
-                    }else if ((counter_left_right + counter_up_down - 1) == 5 && c.x == x && c.y == y){     // -1 because the candy is included in each counter
-                        candy[c.x][c.y] = make_shared<Wrapped_candy>(candy[c.x][c.y]->getCenter(), 40, 40, candy[c.x][c.y]->getFillColor());
                     }else if(counter_up_down >= 5 && c.x == x && c.y == y){
                         cout<<"making a bomb"<<endl;
                         candy[c.x][c.y] = make_shared<Bomb_candy>(candy[c.x][c.y]->getCenter(), 40, 40, FL_DARK_GREEN);
+                    }else if ((counter_left_right + counter_up_down - 1) == 5 && c.x == x && c.y == y){     // -1 because the candy is included in each counter
+                        candy[c.x][c.y] = make_shared<Wrapped_candy>(candy[c.x][c.y]->getCenter(), 40, 40, candy[c.x][c.y]->getFillColor());
                     }
                 }
 
