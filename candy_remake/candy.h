@@ -49,8 +49,8 @@ public:
 
     virtual void set_box_type(Fl_Boxtype){};
     virtual Fl_Boxtype get_box_type(){return FL_FLAT_BOX;}
-    virtual void set_direction(Direction){}
-    virtual Direction get_direction(){return horizontal;}
+    virtual void set_direction(int){}
+    virtual int get_direction(){return horizontal;}
     virtual bool is_striped(){return false;}
     virtual bool is_special_candy(){return false;}
     virtual bool is_neighbour(shared_ptr<Item>){return false;}
@@ -112,16 +112,14 @@ public:
 };
 
 class Striped_candy: public Special_candy{
-    Direction stripes_direction;
+    int stripes_direction;
     // 0 : horizontal --
     // 1 : vertical |
 public:
-    Striped_candy(){}
-    Striped_candy(Point, int, int, Fl_Color=FL_MAGENTA, Fl_Color=FL_BLACK, Fl_Boxtype=FL_DIAMOND_BOX);
+    using Special_candy::Special_candy;
 
-
-    void set_direction(Direction);
-    Direction get_direction();
+    void set_direction(int);
+    int get_direction();
 
     bool is_striped(){return true;}
 };
@@ -184,6 +182,9 @@ public:
     void start_fall_animation(Point, bool);
     void draw();
     bool is_ingredient(){return true;}
+    bool verify_neighbours(shared_ptr<Item>);
+    void set_neigh(shared_ptr<Item>);
+
 };
 
 #endif

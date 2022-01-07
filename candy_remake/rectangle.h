@@ -19,12 +19,18 @@ using namespace std;
 
 struct Point{
   int x; int y;
-  bool operator!=(const Point& e){
-    if(this->x==e.x && this->y==e.y){
+  bool operator!=(const Point& p){
+    if(this->x==p.x && this->y==p.y){
         return false;
       }
     return true;
     }
+  bool operator==(const Point& p){
+    if(this->x==p.x && this->y==p.y){
+      return true;
+    }
+    return false;
+  }
   };
 
 //class declaration Esteban: the code is becoming a total clusterfuck

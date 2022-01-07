@@ -7,6 +7,9 @@
 enum Direction{
         horizontal=0, vertical
     };
+
+const Fl_Color COLORS[6]={FL_RED,FL_BLUE,FL_YELLOW,FL_DARK_CYAN,FL_GREEN, FL_CYAN};
+
 const int windowWidth=550;
 const int windowHeight=550;
 const double refreshPerSecond=60;

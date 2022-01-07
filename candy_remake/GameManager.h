@@ -23,10 +23,17 @@ class GameManager{
    Objective* game_obj;
    bool* can_vibrate;
    bool* not_impossible;
-   Fl_Color color[5]={FL_RED,FL_BLUE,FL_YELLOW,FL_DARK_CYAN,FL_GREEN};
    bool has_moved=false;
    void break_row(int, int);
    void break_column(int, int);
+   void break_bomb_wrapped(int, int);
+   void break_bomb_striped(int, int);
+   void break_board(int, int);
+   void break_striped(int, int);
+   void break_wrapped(int, int, int=1);
+   void break_bomb(int,int);
+   void break_striped_wrapped(int, int);
+   Fl_Color get_most_present_color();
 public:
    GameManager();
    void set_up(shared_ptr<Item>**,Score&,Objective&);
@@ -36,10 +43,6 @@ public:
    void fall_walls(int,int);  
    void set_the_neighbours();
    void set_moved_state(bool);
-   void break_striped(int, int);
-   void break_wrapped(int, int);
-   void break_bomb(int,int);
-   
 };
 
 

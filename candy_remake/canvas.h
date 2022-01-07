@@ -24,7 +24,6 @@ using namespace std;
 class Canvas{
     bool has_moved=false;
     shared_ptr<Item>**candy=new shared_ptr<Item>*[9]();
-    Fl_Color color[5]={FL_RED,FL_BLUE,FL_YELLOW,FL_DARK_CYAN,FL_GREEN};
     vector<string> lines;
     shared_ptr<Item> current=make_shared<Item>(); //stocks the current cell clicked on. esteban: might cause an issue somewhere as base cas is now FL_BLACK
     int x=0;int y=0; //currents coord in the array

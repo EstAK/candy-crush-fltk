@@ -18,7 +18,7 @@ void Objective::setUp(){
        condition="nothing";
      }else if(selected_obj=="Break->x->candies->color"){
          number_to_break=25+(rand()%(40-25+1));
-         condition=to_string(color[rand()%6]);
+         condition=to_string(colors[rand()%6]);
      }else if(selected_obj=="Break x->cubs of ice"){
          number_to_break=25+(rand()%(40-25+1));
          cout<<"Not implemented yet"<<endl; //Vlad: To be continued.

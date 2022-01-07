@@ -13,7 +13,7 @@ class Objective{
   string selected_obj;  //The obj that will be selected.
   int number_to_break=0;
   string condition; //If there is a condition (like candies need to be of a certain color or ice cubs or etc)
-  Fl_Color color[6]={FL_RED,FL_BLUE,FL_YELLOW,FL_BLACK,FL_DARK_CYAN,FL_GREEN};
+  Fl_Color colors[6]={FL_RED,FL_BLUE,FL_YELLOW,FL_BLACK,FL_DARK_CYAN,FL_GREEN};
   bool obj_completed=false;
 public:
   Objective();

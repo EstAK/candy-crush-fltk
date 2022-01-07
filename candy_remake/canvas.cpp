@@ -47,7 +47,7 @@ void Canvas::make_board(string map){ //TODO: Finish it later.
             for (int y = 0; y<9; y++){
                 // should be replace by a switch
                 if (lines[y][x] == *c){
-                    candy[x][y]=make_shared<Candy>(Point{50*x+25,50*y+25},40,40,color[rand()%5],FL_BLACK);
+                    candy[x][y]=make_shared<Candy>(Point{50*x+25,50*y+25},40,40,COLORS[rand()%6],FL_BLACK);
                 }
                 else if(lines[y][x]== *w){
                     candy[x][y]=make_shared<Wall>(Point{50*x+25, 50*y+25}, 40, 40);
@@ -57,15 +57,15 @@ void Canvas::make_board(string map){ //TODO: Finish it later.
                     fruits++;
                     gj=true;
                 }else if(isdigit(lines[y][x])){
-                    candy[x][y]=make_shared<Candy>(Point{50*x+25, 50*y+25},40, 40,color[rand()%5],FL_CYAN);
+                    candy[x][y]=make_shared<Candy>(Point{50*x+25, 50*y+25},40, 40,COLORS[rand()%6],FL_CYAN);
                     candy[x][y]->set_layers_of_frosting(lines[y][x] - '0');
                 }else if(lines[y][x] == 'S'){
-                    candy[x][y]=make_shared<Striped_candy>(Point{50*x+25, 50*y+25},40, 40,color[rand()%5],FL_CYAN);
+                    candy[x][y]=make_shared<Striped_candy>(Point{50*x+25, 50*y+25},40, 40,COLORS[rand()%6],FL_CYAN);
                     candy[x][y]->set_direction(horizontal);
                 }else if(lines[y][x] == 'w'){
                     candy[x][y]=make_shared<Wrapped_candy>(Point{50*x+25, 50*y+25}, 40, 40);
                 }else if(lines[y][x] == 'B'){
-                    candy[x][y]=make_shared<Bomb_candy>(Point{50*x+25, 50*y+25}, 40, 40);
+                    candy[x][y]=make_shared<Bomb_candy>(Point{50*x+25, 50*y+25}, 40, 40, FL_DARK_GREEN);
                 }
             }
         }    
@@ -93,7 +93,7 @@ void Canvas::draw(){
          for(int i=0;i<9;i++){
             for(int j=0;j<9;j++){
                 candy[i][j]->draw();
-                if(candy[i][j]->get_wall()!=true && candy[i][j]->is_ingredient()==false){
+                if(!is_board_moving() && candy[i][j]->get_wall()!=true && candy[i][j]->is_ingredient()==false){
                     gm.break_candies(i,j,0,0,true); //Checks all the candies all the time and breaks them if it must.
                     set_the_neighbours();
                 } 
@@ -145,7 +145,7 @@ void Canvas::draw(){
 
         for(int i=8;i>=0;i--){ //Checks if there is a free place that can be filled ; Takes into consideration the walls(phyics) as well.
             for(int j=8;j>=0;j--){
-                if(candy[i][j]->getFillColor() == FL_BLACK){
+                if(!candy[i][j]->is_special_candy() && !candy[i][j]->is_ingredient() && candy[i][j]->getFillColor() == FL_BLACK){
                     if (not is_board_moving()){
                         gm.fall_candies(i,j,has_moved);
                         timer=0; //reset the timer.
@@ -273,23 +273,22 @@ void Canvas::mouseRelease(Point mouseLoc){
     has_released = true;
     current->setCenter(curr_pos);
     
-    if (current->has_frosting()){
+    if (current->has_frosting() || current->get_wall()){
         return;
     }
 
     for(int i=0;i<9;i++){
         for(int j=0;j<9;j++){
-            
-            
-            
+
             if (candy[i][j]->contains(mouseLoc) && ! candy[i][j]->get_wall() && ! candy[i][j]->has_frosting() && current->verify_neighbours(candy[i][j])){
-                if(current->is_special_candy() || candy[i][j]->is_special_candy()){
-                  special_neigh(i,j);
-                  return;
+                if(current->is_special_candy() || candy[i][j]->is_special_candy() || current->is_ingredient() || candy[i][j]->is_ingredient()){
+                    cout<<"inside dat thing"<<endl;
+                    special_neigh(i,j);
+                    return;
                 }else{
                     if (gm.break_candies(x,y,i,j)){
-                         set_the_neighbours();
-                         current->start_fall_animation(candy[i][j]->getCenter());
+                        set_the_neighbours();
+                        current->start_fall_animation(candy[i][j]->getCenter());
                         candy[i][j]->start_fall_animation(current->getCenter());
                         current=make_shared<Candy>();
                         x=0;

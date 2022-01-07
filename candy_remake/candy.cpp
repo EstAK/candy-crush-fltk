@@ -134,14 +134,12 @@ Special_candy::Special_candy(Point center, int w, int h, Fl_Color fillColor, Fl_
         Candy(center, w, h, fillColor, frameColor, box_type) {}
 
 //Striped_candy
-Striped_candy::Striped_candy(Point center, int w, int h, Fl_Color fillColor, Fl_Color frameColor, Fl_Boxtype box_type):
-        Special_candy(center, w, h, fillColor, frameColor, box_type){}
 
-void Striped_candy::set_direction(Direction d){
+void Striped_candy::set_direction(int d){
     stripes_direction = d;
 }
 
-Direction Striped_candy::get_direction(){
+int Striped_candy::get_direction(){
     return stripes_direction;
 }
 
@@ -191,4 +189,20 @@ void Ingredient::draw(){
 
 void Ingredient::start_fall_animation(Point dest, bool gb){
     animation_fall = new Animation_fall<Circle>(this, dest, gb);
+}
+
+bool Ingredient::verify_neighbours(shared_ptr<Item> current){
+    cout<<"verifying neighbours"<<endl;
+    for(auto i: neighbours){
+        cout<<"neigh"<<endl;
+        if (current->getCenter() == i->getCenter()){
+            cout<<"is a neighbour"<<endl;
+            return true;
+        }
+    }
+    return false;
+}
+
+void Ingredient::set_neigh(shared_ptr<Item> neigh){
+    neighbours.push_back(neigh);
 }
