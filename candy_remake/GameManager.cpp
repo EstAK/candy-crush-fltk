@@ -40,9 +40,12 @@ bool GameManager::break_candies(int x,int y,int i,int j,bool pc){
     
     if (!pc){
         if (candy[x][y]->is_striped() && candy[i][j]->is_striped()){
-            candy[x][y]->set_direction(horizontal);
+            candy[x][y] = make_shared<Candy>(candy[x][y]->getCenter(), 40, 40);
+
             candy[i][j]->set_direction(vertical);
-            break_striped(x,y);
+            break_striped(i, j);
+            candy[i][j] = make_shared<Striped_candy>(candy[x][y]->getCenter(), 40, 40);
+            candy[i][j]->set_direction(horizontal);
             break_striped(i,j);
             return true;
         }else if(candy[x][y]->is_wrapped() && candy[i][j]->is_wrapped()){ 

@@ -73,8 +73,8 @@ template<typename Form>
 Animation_fall<Form>::Animation_fall(Form* candy_to_animate, Point d, bool gb, int animation_time): 
     Animation<Form>{candy_to_animate, animation_time} ,go_back{gb} ,initial_pos{candy_to_animate->getCenter()} , destination{d}{
 
-        distance_x = (destination.x - this->r->getCenter().x)/((int)animation_time/speed); // x distance per animation frame
-        distance_y = (destination.y - this->r->getCenter().y)/((int)animation_time/speed); // y distance per animation frame
+        distance_x = (destination.x - this->r->getCenter().x)/animation_time; // x distance per animation frame
+        distance_y = (destination.y - this->r->getCenter().y)/animation_time; // y distance per animation frame
 
     }
 

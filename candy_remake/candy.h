@@ -24,12 +24,12 @@ public:
     Item(){}
 
     virtual Point getCenter(){return Point{0,0};}
-    virtual void setCenter(Point p){}
+    virtual void setCenter(Point){}
     virtual Fl_Color getFillColor(){return FL_WHITE;}
-    virtual void setFillColor(Fl_Color color){}
-    virtual void setCode(Fl_Color code){}
-    virtual void setFrameColor(Fl_Color color){}
-    virtual bool contains(Point p){return false;}
+    virtual void setFillColor(Fl_Color){}
+    virtual void setCode(Fl_Color){}
+    virtual void setFrameColor(Fl_Color){}
+    virtual bool contains(Point){return false;}
 
     virtual bool verify_neighbours(shared_ptr<Item>){return false;}
     virtual void update_frosted_neighbours(){}

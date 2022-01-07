@@ -216,7 +216,7 @@ void Canvas::save_the_map(){
                l[j]='w';
             }
         }
-        for(int k=0;k<strlen(l);k++){
+        for(size_t k=0;k<strlen(l);k++){
             file.put(l[k]);
             cout<<l[k]<<" ";
         }cout<<endl;

@@ -46,12 +46,12 @@ public:
 template<typename Form>
 class Animation_fall: public Animation<Form>{
     //esteban: inheriting this class from a base class having thoseg private instances might be a good idea as they are nearly the same as in Animation_pop
+    bool go_back;
     Point initial_pos;
     Point destination;
-    bool go_back;
     int distance_x = 0;
     int distance_y = 0;
-    const static int speed = 1.5;
+    const static int speed = 2;
 
 public:
     Animation_fall(Form* candy_to_animate, Point d, bool gb, int animation_time=50/speed);
