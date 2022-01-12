@@ -1,53 +1,42 @@
-#include<iostream>
 #include"rectangle.h"
 #include"circle.h"
-#include<vector>
 #include"candy.h"
-#include<memory>
-#include <FL/Fl.H>
-#include <FL/fl_draw.H>
-#include <FL/Fl_Double_Window.H>
-#include <FL/Fl_Window.H>
-#include <FL/Fl_Box.H>
-#include<Fl/Fl_Button.H>
-#include<Fl/Fl_Text_Display.H>
 
 using namespace std;
-
-
-
 
 Candy::Candy(Point center,int w,int h,Fl_Color fillColor,Fl_Color frameColor, Fl_Boxtype box_type):Item(),Rectangle(center,w,h,fillColor,frameColor, box_type){}
 
 bool Candy::verify_neighbours(shared_ptr<Item> current){
-    if(this->get_wall()==true){
+    // method that verifies if the Item given as an argument is a Candy type neighbour 
+
+    if(this->is_wall()==true){
         return false;
     }
     if(this->is_ingredient() && current->is_ingredient()){
         return false;
     }
 
-     if(this->is_special_candy() || current->is_special_candy() ){
+    if(this->is_special_candy() || current->is_special_candy() ){  // ingredient or candy type Items
         for(auto i:neighbours){
-            if(i->getCenter().x==current->getCenter().x && i->getCenter().y==current->getCenter().y){
-                if(!this->is_ingredient() && !current->is_ingredient()){
+            if(i->getCenter()==current->getCenter()){   // overloading Point struct == operator
+                if(!this->is_ingredient() && !current->is_ingredient()){    // verifying each neighbour
                     return true;
                 }
 
             }
         }
-     }
+    }
 
-    for(auto i:neighbours){
-        if(i->getCenter().x==current->getCenter().x && i->getCenter().y==current->getCenter().y){
+    for(auto i:neighbours){     // verifying neighbours for normal Candy
+        if(i->getCenter()==current->getCenter()){   // overloading Point struct == operator
             if(!this->is_ingredient() && !current->is_ingredient()){
-                Fl_Color save=this->getFillColor();
+                Fl_Color save=this->getFillColor(); //swapping colors
                 this->setCode(i->getFillColor());
                 i->setCode(save);
                 return true;
             }else{
                 if(this->is_ingredient()){
-                    this->set_fruit(false);
+                    this->set_fruit(false); ////swapping ingredients
                     i->set_fruit(true);
                     return true;
                 }else{
@@ -60,6 +49,8 @@ bool Candy::verify_neighbours(shared_ptr<Item> current){
 }
 
 void Candy::update_frosted_neighbours(){
+    // removes a layer of frosting if a neighbour is frosted
+
     for(auto n: this->neighbours){
         if (n->has_frosting() && n->getFillColor() != this->getFillColor() ){
             n->set_layers_of_frosting(n->get_layers_of_frosting()-1);
@@ -68,21 +59,21 @@ void Candy::update_frosted_neighbours(){
 }
 
 void Candy::draw(){
-    if (animation_pop && animation_pop->is_complete()){
+    if (animation_pop && animation_pop->is_complete()){     // when completed assign animation to a nullptr
         delete animation_pop;
         animation_pop = nullptr;
     }
-    if (animation_fall && animation_fall->is_complete()){
+    if (animation_fall && animation_fall->is_complete()){   // when completed assign animation to a nullptr
         delete animation_fall;
         animation_fall = nullptr;
     }
 
-    if (animation_fall){
+    if (animation_fall){                // prioritize the fall animation over the pop animation 
         animation_fall->draw();
     }else if (animation_pop) {
         animation_pop->draw();
     }else{
-        Rectangle::draw();
+        Rectangle::draw();          // if there is no animation draw the rectangle by itself
     }
 }
 
@@ -116,16 +107,7 @@ bool Candy::has_frosting(){
 }
 
 void Candy::set_neigh(shared_ptr<Item> neigh){
-    neighbours.push_back(neigh);
-}
-
-bool Candy::is_neighbour(shared_ptr<Item> item){
-    for (auto n: neighbours){
-        if (n == item){
-            return true;
-        }
-    }
-    return false;
+    neighbours.push_back(neigh);    // add a new Item neighbour to neighbours vector
 }
 
 //Special_Candy
@@ -162,7 +144,7 @@ Fl_Color Bomb_candy::get_color_to_break(){
 //Wall class
 Wall::Wall(Point center, int w, int h, Fl_Color fillColor, Fl_Color frameColor):Item(),Rectangle(center,w,h,fillColor,frameColor, FL_FLAT_BOX){}
 
-bool Wall::get_wall(){
+bool Wall::is_wall(){
     return true;
 }
 
@@ -174,6 +156,8 @@ void Wall::draw(){
 Ingredient::Ingredient(Point center, int radius, Fl_Color fillColor, Fl_Color frameColor):Item(),Circle(center,radius,frameColor,fillColor){}
 
 void Ingredient::draw(){
+    // the same logic as in Candy::draw applies here but without a pop animation because an ingredient can't break
+
     if (animation_fall && animation_fall->is_complete()){
         delete animation_fall;
         animation_fall = nullptr;

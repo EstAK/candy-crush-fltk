@@ -45,7 +45,6 @@ public:
 
 template<typename Form>
 class Animation_fall: public Animation<Form>{
-    //esteban: inheriting this class from a base class having thoseg private instances might be a good idea as they are nearly the same as in Animation_pop
     bool go_back;
     Point initial_pos;
     Point destination;

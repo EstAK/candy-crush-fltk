@@ -1,21 +1,10 @@
-#include<iostream>
-#include<vector>
-#include<array>
-#include<memory>
-#include"candy.h"
-#include"objective.h"
-#include"score.h"
-#include<math.h>
-#include"rectangle.h"
+#include "candy.h"
+#include "objective.h"
+#include "score.h"
+#include "rectangle.h"
 #include "circle.h"
-#include"Animation.h"
-#include <FL/Fl.H>
-#include <FL/fl_draw.H>
-#include <FL/Fl_Double_Window.H>
-#include <FL/Fl_Window.H>
-#include <FL/Fl_Box.H>
-#include<Fl/Fl_Button.H>
-#include<Fl/Fl_Text_Display.H>
+#include "Animation.h"
+#include "const.h"
 
 using namespace std;
 
@@ -80,16 +69,18 @@ Animation_fall<Form>::Animation_fall(Form* candy_to_animate, Point d, bool gb, i
 
 template<typename Form>
 Animation_fall<Form>::~Animation_fall(){
-        if (go_back){
-            this->r->setCenter(initial_pos);
-        }else{
-            this->r->setCenter(destination);
-        }
+    if (go_back){   // puts the rectangle r back to his initial position
+        this->r->setCenter(initial_pos);
+    }else{          // let the rectangle r at his destination ( called in fall_candies )
+        this->r->setCenter(destination);
+    }
         
 }
 
 template<typename Form>
 void Animation_fall<Form>::draw(){
+    // method managinc the fall incrementation
+
         this->time++;
 
         Fall<Form> s ({initial_pos.x+distance_x*this->time, initial_pos.y+distance_y*this->time}, this->r);
@@ -112,12 +103,14 @@ Animation_pop<Form>::~Animation_pop(){
 
 template<typename Form>
 void Animation_pop<Form>::draw(){
+    // method managing the pop incrementation
+
     this->time++;
         
-    int w = log(this->r->getWidth()*this->time)*spread_coeff;
-    int h = log(this->r->getHeight()*this->time)*spread_coeff;
+    int w = log(this->r->getWidth()*this->time)*spread_coeff;       // using log function to make it smoother to the eye on the end of the pop
+    int h = log(this->r->getHeight()*this->time)*spread_coeff;      // same logic
 
-    Pop t{this->r->getCenter().x-w/2, this->r->getCenter().y-h/2, w, h};        //WOP i still have to make it pretty
+    Pop t{this->r->getCenter().x-w/2, this->r->getCenter().y-h/2, w, h};        // centering the pop
         
     this->r->draw();
 }

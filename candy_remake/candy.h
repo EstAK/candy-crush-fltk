@@ -37,7 +37,7 @@ public:
 
     virtual void start_fall_animation(Point, bool=true){}
     virtual bool is_fall_complete(){return true;}
-    virtual bool get_wall(){return false;}
+    virtual bool is_wall(){return false;}
     virtual bool is_ingredient(){return false;}
     virtual void set_fruit(bool){}
     virtual void set_neigh(shared_ptr<Item>){}
@@ -53,7 +53,6 @@ public:
     virtual int get_direction(){return horizontal;}
     virtual bool is_striped(){return false;}
     virtual bool is_special_candy(){return false;}
-    virtual bool is_neighbour(shared_ptr<Item>){return false;}
     virtual bool is_wrapped(){return false;}
     virtual bool is_bomb(){return false;}
     virtual void set_color_to_break(Fl_Color){}
@@ -106,7 +105,6 @@ public:
 
     void draw();
     bool is_special_candy(){return false;}
-    bool is_neighbour(shared_ptr<Item>);
     int current_box(){
         return box;
     }
@@ -184,7 +182,7 @@ public:
     bool contains(Point p){return Rectangle::contains(p);}
     // rectangle polymorphism
 
-    bool get_wall();
+    bool is_wall();
     void draw();
 
 };

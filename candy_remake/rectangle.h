@@ -18,55 +18,52 @@ using namespace std;
 #define RECTANGLE_H_
 
 struct Point{
-  int x; int y;
-  bool operator!=(const Point& p){
-    if(this->x==p.x && this->y==p.y){
+    int x; int y;
+    bool operator!=(const Point& p){        //overloading != operator
+        if(this->x==p.x && this->y==p.y){
+            return false;
+        }
+
+        return true;
+    }
+
+    bool operator==(const Point& p){        //overloading == operator
+        if(this->x==p.x && this->y==p.y){
+            return true;
+        }
+
         return false;
-      }
-    return true;
     }
-  bool operator==(const Point& p){
-    if(this->x==p.x && this->y==p.y){
-      return true;
-    }
-    return false;
-  }
-  };
+};
 
-//class declaration Esteban: the code is becoming a total clusterfuck
-//we should move it to separate files because I don't even where to put     
-//new classes without causing a billion class not found because written 
-//before but cannot write before otherwise code goes full kamikaze mode
-
-//Vlad: Roger Roger
 
 
 class Rectangle {
-  Point center;
-  int w, h;
-  Fl_Color fillColor, frameColor;
-  Fl_Boxtype type;
- public:
-  
-  Rectangle(){}
-  Rectangle(Point,int,int,Fl_Color,Fl_Color, Fl_Boxtype);
-  Fl_Color getFillColor();
-  Fl_Color getFrameColor();
+    Point center;
+    int w, h;
+    Fl_Color fillColor, frameColor;
+    Fl_Boxtype type;
+    public:
 
-  void setCenter(Point);
+    Rectangle(){}
+    Rectangle(Point,int,int,Fl_Color,Fl_Color, Fl_Boxtype);
+    Fl_Color getFillColor();
+    Fl_Color getFrameColor();
 
-  void setWidth(int);
-  void setHeight(int newh);
-  int getWidth();
-  int getHeight();
-  Point getCenter();
-  void setCode(Fl_Color);
-  void draw();
-  void setFillColor(Fl_Color);
-  void setFrameColor(Fl_Color);
-  bool contains(Point);
-  void set_box_type(Fl_Boxtype);
-  Fl_Boxtype get_box_type();
+    void setCenter(Point);
+
+    void setWidth(int);
+    void setHeight(int newh);
+    int getWidth();
+    int getHeight();
+    Point getCenter();
+    void setCode(Fl_Color);
+    void draw();
+    void setFillColor(Fl_Color);
+    void setFrameColor(Fl_Color);
+    bool contains(Point);
+    void set_box_type(Fl_Boxtype);
+    Fl_Boxtype get_box_type();
 
 };
 

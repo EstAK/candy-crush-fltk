@@ -371,7 +371,7 @@ int GameManager::fall_candies(int x, int y, bool animate){
         }
         return 1;
 
-    }else if(!candy[x][y]->get_wall()){
+    }else if(!candy[x][y]->is_wall()){
         Point fall = candy[x][y]->getCenter();
         int x_fork = x;
 
@@ -382,7 +382,7 @@ int GameManager::fall_candies(int x, int y, bool animate){
                 candy[x][y]->setCenter(fall);
             }
 
-        }else if(!candy[x][y-1]->get_wall() && !candy[x][y-1]->has_frosting()){
+        }else if(!candy[x][y-1]->is_wall() && !candy[x][y-1]->has_frosting()){
             candy[x][y]->setCode(candy[x][y-1]->getFillColor());
             if (animate){
                 candy[x][y]->setCenter({candy[x][y]->getCenter().x, candy[x][y]->getCenter().y-50});
@@ -390,7 +390,7 @@ int GameManager::fall_candies(int x, int y, bool animate){
 
         }else{  // has wall on top 
             for (x_fork=x-1;x_fork<=x+1;x_fork+=2){                                  //O(2)
-                if (!candy[x_fork][y-1]->get_wall() && !candy[x_fork][y-1]->has_frosting() && x_fork<9 && x_fork>=0){
+                if (!candy[x_fork][y-1]->is_wall() && !candy[x_fork][y-1]->has_frosting() && x_fork<9 && x_fork>=0){
 
                     if (candy[x_fork][y-1]->is_special_candy() || candy[x_fork][y-1]->is_ingredient()){
                         candy[x][y] = candy[x_fork][y-1];
@@ -435,7 +435,7 @@ void GameManager::set_moved_state(bool b){
 
 void GameManager::break_row(int x, int y){
     for(int i=x+1;i<9;i++){ //right
-        if(!candy[i][y]->get_wall()){
+        if(!candy[i][y]->is_wall()){
             if(candy[i][y]->is_striped()){
                 break_striped(i, y);
             }else if(candy[i][y]->is_wrapped()){
@@ -452,7 +452,7 @@ void GameManager::break_row(int x, int y){
         }
     }
     for(int i=x-1;i>=0;i--){
-        if(!candy[i][y]->get_wall()){   //left
+        if(!candy[i][y]->is_wall()){   //left
             if(candy[x][i]->is_striped()){
                 break_striped(x, i);
             }else if(candy[x][i]->is_wrapped()){
@@ -472,7 +472,7 @@ void GameManager::break_row(int x, int y){
 
 void GameManager::break_column(int x, int y){
     for(int i=y+1;i<9;i++){   //down
-        if(!candy[x][i]->get_wall() && !candy[x][i]->is_ingredient()){
+        if(!candy[x][i]->is_wall() && !candy[x][i]->is_ingredient()){
             if(candy[x][i]->is_striped()){
                 break_striped(x, i);
             }else if(candy[x][i]->is_wrapped()){
@@ -490,7 +490,7 @@ void GameManager::break_column(int x, int y){
         }
     }
     for(int i=y-1;i>=0;i--){    //up
-        if(!candy[x][i]->get_wall() && !candy[x][i]->is_ingredient()){
+        if(!candy[x][i]->is_wall() && !candy[x][i]->is_ingredient()){
             if(candy[x][i]->is_striped()){
                 break_striped(x, i);
             }else if(candy[x][i]->is_wrapped()){
@@ -524,7 +524,7 @@ void GameManager::break_wrapped(int x, int y, int blast_range){
     candy[x][y]->update_frosted_neighbours();
     for(int i=x-blast_range;i<=x+blast_range;i++){
         for(int j=y-blast_range;j<=y+blast_range;j++){
-            if (i>=0 && i<9 && j>=0 && j<9 && !candy[i][j]->get_wall() && !candy[i][j]->is_ingredient()){
+            if (i>=0 && i<9 && j>=0 && j<9 && !candy[i][j]->is_wall() && !candy[i][j]->is_ingredient()){
                 if(candy[i][j]->is_striped()){
                     break_striped(i, j);
                 }else if(candy[i][j]->is_wrapped()){

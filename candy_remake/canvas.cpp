@@ -10,16 +10,7 @@
 #include"const.h"
 #include"canvas.h"
 #include"GameManager.h"
-#include<cstring>
 #include"hint.h"
-#include<random>
-#include <FL/Fl.H>
-#include <FL/fl_draw.H>
-#include <FL/Fl_Double_Window.H>
-#include <FL/Fl_Window.H>
-#include <FL/Fl_Box.H>
-#include<Fl/Fl_Button.H>
-#include<Fl/Fl_Text_Display.H>
 
 using namespace std;
 
@@ -34,12 +25,11 @@ Canvas::Canvas(){
 }
 
 
-
 Canvas::~Canvas(){
     
 }
 
-void Canvas::make_board(string map){ //TODO: Finish it later.
+void Canvas::make_board(string map){ 
         
         has_moved = false;
         gm.set_moved_state(has_moved);
@@ -48,37 +38,41 @@ void Canvas::make_board(string map){ //TODO: Finish it later.
         read_file(map);
         current_map=map;
         int fruits=0;
-        bool gj=false;
+        bool is_fruit_level=false;
         
-        for (int x = 0; x<9; x++){
+        for (int x = 0; x<9; x++){          // makes board array
             for (int y = 0; y<9; y++){
-                // should be replace by a switch
                 if (lines[y][x] == *c){
-                    candy[x][y]=make_shared<Candy>(Point{50*x+25,50*y+25},40,40,COLORS[rand()%6],FL_BLACK);
+                    candy[x][y]=make_shared<Candy>(Point{itemDistance*x+itemDistance/2,itemDistance*y+itemDistance/2},squareLenght,squareLenght,COLORS[rand()%6],FL_BLACK);
                 }
                 else if(lines[y][x]== *w){
-                    candy[x][y]=make_shared<Wall>(Point{50*x+25, 50*y+25});
+                    candy[x][y]=make_shared<Wall>(Point{itemDistance*x+itemDistance/2, itemDistance*y+itemDistance/2});
                 }
                 else if(lines[y][x]== *i){
-                    candy[x][y]=make_shared<Ingredient>(Point{50*x+25, 50*y+25},20);
+                    candy[x][y]=make_shared<Ingredient>(Point{itemDistance*x+itemDistance/2, itemDistance*y+itemDistance/2},20);
                     fruits++;
-                    gj=true;
+                    is_fruit_level=true;
                 }else if(isdigit(lines[y][x])){
-                    candy[x][y]=make_shared<Candy>(Point{50*x+25, 50*y+25},40, 40,COLORS[rand()%6],FL_CYAN);
+                    candy[x][y]=make_shared<Candy>(Point{itemDistance*x+itemDistance/2, itemDistance*y+itemDistance/2},squareLenght, squareLenght,COLORS[rand()%6],FL_CYAN);
                     candy[x][y]->set_layers_of_frosting(lines[y][x] - '0');
                 }else if(lines[y][x] == 'S'){
-                    candy[x][y]=make_shared<Striped_candy>(Point{50*x+25, 50*y+25},40, 40,COLORS[rand()%6],FL_CYAN);
+                    candy[x][y]=make_shared<Striped_candy>(Point{itemDistance*x+itemDistance/2, itemDistance*y+itemDistance/2},squareLenght, squareLenght,COLORS[rand()%6],FL_CYAN);
                     candy[x][y]->set_direction(horizontal);
                 }else if(lines[y][x] == 'w'){
-                    candy[x][y]=make_shared<Wrapped_candy>(Point{50*x+25, 50*y+25});
+                    candy[x][y]=make_shared<Wrapped_candy>(Point{itemDistance*x+itemDistance/2, itemDistance*y+itemDistance/2});
                 }else if(lines[y][x] == 'B'){
-                    candy[x][y]=make_shared<Bomb_candy>(Point{50*x+25, 50*y+25}, 40, 40, FL_DARK_GREEN);
+                    candy[x][y]=make_shared<Bomb_candy>(Point{itemDistance*x+itemDistance/2, itemDistance*y+itemDistance/2}, squareLenght, squareLenght, FL_DARK_GREEN);
                 }else{
-                    candy[x][y]=make_shared<Edit_Candy>(Point{50*x+25, 50*y+25});
+                    candy[x][y]=make_shared<Edit_Candy>(Point{itemDistance*x+itemDistance/2, itemDistance*y+itemDistance/2});
                 }
             }
         }    
-        if(gj){game_obj.fruits_on(fruits);}else{game_obj=Objective();}
+        if(is_fruit_level){
+            game_obj.fruits_on(fruits);
+        }else{
+            game_obj=Objective();
+        }
+
         set_the_neighbours();
         gm.set_up(candy,candy_score,game_obj);
         ht.set_up(candy,can_vibrate,not_impossible);
@@ -92,41 +86,44 @@ void Canvas::edit_level(){
 }
 
 void Canvas::read_file(string map){
-        lines.clear();  //Clear the map so the next one can be loaded in the vector.
-        string line;                        //temporary input var
-        ifstream myfile(map);
-        current_map=map;
-        while (myfile >> line) {
-            lines.push_back(line);
-        }
-        myfile.close(); 
+    // reads a board file
+    lines.clear();  //Clear the map so the next one can be loaded in the vector.
+    string line;                        //temporary input var
+    ifstream myfile(map);
+    current_map=map;
+    while (myfile >> line) {
+        lines.push_back(line);
+    }
+    myfile.close(); 
         
 }
 
 void Canvas::draw(){
-         if(editing){
-             done=true;
-             for(int i=0;i<9;i++){
-                for(int j=0;j<9;j++){
-                candy[i][j]->draw();
-                    if(candy[i][j]->getFillColor()==255){
-                        done=false;
-                    }
-                }
-            }
-            
-            if(done){
-                save_the_map();     
-                editing=false;
-                make_board(maps[0]);
-            }
-            return;
-         }
-
-         for(int i=0;i<9;i++){
+    if(editing){    // draw for the level editor
+        done=true;
+        for(int i=0;i<9;i++){
             for(int j=0;j<9;j++){
                 candy[i][j]->draw();
-                if(!is_board_moving() && candy[i][j]->get_wall()!=true && candy[i][j]->is_ingredient()==false){
+                if(candy[i][j]->getFillColor()==255){
+                    done=false;     // a certain candy is placed
+                }
+            }
+        }
+
+        if(done){   
+            save_the_map();     
+            editing=false;
+            make_board(maps[0]);    // loads the map that the user made
+        }
+
+    return;
+
+    }
+
+    for(int i=0;i<9;i++){
+        for(int j=0;j<9;j++){
+            candy[i][j]->draw();
+            if(!is_board_moving() && candy[i][j]->is_wall()!=true && candy[i][j]->is_ingredient()==false){
                     gm.break_candies(i,j,0,0,true); //Checks all the candies all the time and breaks them if it must.
                     set_the_neighbours();
                 } 
@@ -137,27 +134,28 @@ void Canvas::draw(){
         if(not_impossible){
             not_impossible=false;
 
-        }else{
+        }else{      // no available movement
             make_board(current_map);
         }
 
-        if (has_moved){
-            if(game_obj.constant_check()){ //Always checks if the obj has been completed
-                 game_obj=Objective(); //New obj
-                 if(next_level<4){
+        if (has_moved){     // checks if the player has already made a move to prevent the score from going up by making the board as all the colors are random
+            if(game_obj.constant_check()){ //Always checks if the objective has been completed
+                // user has won
+                game_obj=Objective(); //New objective
+                
+                if (candy_score.get_score()>candy_score.get_best_score()){      //updates best_score (needs restart to apply)
+                    candy_score.set_best_score(candy_score.get_score());
+                }
+                
+                if(next_level<4){   // there is a map after
                     next_level++;
-                    if (candy_score.get_score()>candy_score.get_best_score()){
-                        candy_score.set_best_score(candy_score.get_score());
-                    }
-                      make_board(maps[next_level]);
-                 }else{
-                    if (candy_score.get_score()>candy_score.get_best_score()){
-                        candy_score.set_best_score(candy_score.get_score());
-                    }
+                    make_board(maps[next_level]);
+                }else{              // no more map after
                     make_board(current_map);
-                 }
-     
+                }
+
             }else if(!game_obj.constant_check() && game_obj.nr_tries()==0){
+                // user lost the objective 
                 make_board(current_map);
                 game_obj=Objective();
             }
@@ -167,8 +165,8 @@ void Canvas::draw(){
         string tries=to_string(game_obj.nr_tries());
         string score=to_string(candy_score.get_score());
 
-        fl_draw(obj.c_str(),450,100); //Vlad: Text print of how many blocks it has to break;
-        fl_draw("to break",450,120); //Vlad: Make it prettier yourself :(
+        fl_draw(obj.c_str(),450,100);
+        fl_draw("to break",450,120); 
         fl_draw(tries.c_str(),450,170);
         fl_draw("tries left",450,190);
         fl_draw(score.c_str(),450,210);
@@ -180,13 +178,13 @@ void Canvas::draw(){
             timer=0;
             can_vibrate=true;
 
-            for(int i=0;i<9;i++){
+            for(int i=0;i<9;i++){       //hints the player a possible move 
                 if(candy[i][8]->is_ingredient() && !is_board_moving()){
                     game_obj.dec_fruits();
                     candy[i][8]->set_fruit(false);
                     candy[i][8]=make_shared<Candy>(candy[i][8]->getCenter(),40,40,FL_BLACK);
                     set_the_neighbours();
-                 }
+                }
             }
         }
 
@@ -202,31 +200,35 @@ void Canvas::draw(){
                     can_vibrate=false; //reset the vibrate;
                 }
             }
-            if (is_board_moving()){
+            if (is_board_moving()){     // candies do not fall when the board is moving 
                 break;
             }
         }  
         gm.set_the_neighbours();
 
-} 
+    } 
 
 void Canvas::save_the_map(){
-    fstream file("boards/edited_level.txt", ios::out);
-    
+    // saves the current map to edited_file
+    // only used for level editor 
+
+    fstream file(edited_level, ios::out);
 
     for(int i=0;i<9;i++){
         char l[9];
         for(int j=0;j<9;j++){
-            if(candy[j][i]->get_wall()){
+            if(candy[j][i]->is_wall()){
                l[j]='W';
-            }else if(candy[j][i]->get_box_type()==FL_FLAT_BOX){      
+            }else if(candy[j][i]->get_box_type()==FL_FLAT_BOX){         // normal candy     
               l[j]='C';       
-            }else if(candy[j][i]->get_box_type()==FL_DIAMOND_BOX){
+            }else if(candy[j][i]->get_box_type()==FL_DIAMOND_BOX){      // striped candy
                l[j]='S';
-            }else if(candy[j][i]->get_box_type()==FL_ROUNDED_BOX){
+            }else if(candy[j][i]->get_box_type()==FL_ROUNDED_BOX){      // wrapped candy
                l[j]='B';
-            }else if(candy[j][i]->get_box_type()==FL_PLASTIC_UP_BOX){
+            }else if(candy[j][i]->get_box_type()==FL_PLASTIC_UP_BOX){   // bomb
                l[j]='w';
+            }else if(candy[j][i]->is_ingredient()){   // ingredient
+               l[j]='I';
             }
         }
         for(size_t k=0;k<strlen(l);k++){
@@ -239,37 +241,42 @@ void Canvas::save_the_map(){
 }
 
 void Canvas::mouseMove(Point mouseLoc){
-        for(int i=0;i<9;i++){
-            for(int j=0;j<9;j++){
-                if(candy[i][j]->contains(mouseLoc)){
-                    candy[i][j]->setFrameColor(FL_RED);
+    // event handler for the mouse movement
+    // highlights the Item under the mouse
+
+    for(int i=0;i<9;i++){
+        for(int j=0;j<9;j++){
+            if(candy[i][j]->contains(mouseLoc)){
+                candy[i][j]->setFrameColor(FL_RED);
+            }else{
+                if (candy[i][j]->has_frosting()){
+                    candy[i][j]->setFrameColor(FL_CYAN);
                 }else{
-                    if (candy[i][j]->has_frosting()){
-                        candy[i][j]->setFrameColor(FL_CYAN);
-                    }else{
-                        candy[i][j]->setFrameColor(FL_BLACK);
-                    }
+                    candy[i][j]->setFrameColor(FL_BLACK);
                 }
             }
         }
+    }
 }
 
 void Canvas::mouseClick(Point mouseLoc){
+    // only used for the level editor
+
     if(editing){
         for(int i=0;i<9;i++){
             for(int j=0;j<9;j++){
-                if(candy[i][j]->contains(mouseLoc)){
-                    if(candy[i][j]->getFillColor()==255 || candy[i][j]->is_ingredient()){
-                        candy[i][j]=make_shared<Candy>(candy[i][j]->getCenter(),40,40,COLORS[rand()%5]);
+                if(candy[i][j]->contains(mouseLoc)){    
+                    if(candy[i][j]->getFillColor()==255 || candy[i][j]->is_ingredient()){                   // changes the Item type each time it clicks a cell
+                        candy[i][j]=make_shared<Candy>(candy[i][j]->getCenter(),40,40,COLORS[rand()%5]);    // cycling through normal, walls, ingredients and special candies
                         candy[i][j]->inc_box();
                     }else{
                        if(candy[i][j]->current_box()==4){
                             candy[i][j]=make_shared<Wall>(candy[i][j]->getCenter());
-                        }else if(candy[i][j]->get_wall()){
+                        }else if(candy[i][j]->is_wall()){
                             candy[i][j]=make_shared<Ingredient>(candy[i][j]->getCenter());
                         }
-                    candy[i][j]->set_box_type(boxes[candy[i][j]->current_box()]);
-                    candy[i][j]->inc_box();
+                    candy[i][j]->set_box_type(boxes[candy[i][j]->current_box()]);       // only changes the aspect of a normal candy to make it a special candy as 
+                    candy[i][j]->inc_box();                                             // it's functionalities are not needed in the level editor
 
                     }
                 }
@@ -281,16 +288,18 @@ void Canvas::mouseClick(Point mouseLoc){
 
 
 void Canvas::mouseDrag(Point mouseLoc){
-    if(editing){
+    // drags the candy that can be dragged
+
+    if(editing){            // doesn't work when using level editor
         return;
     }
 
-    if(is_board_moving()){
+    if(is_board_moving()){  // same as above but when the board is moving
         return;
     }
 
-    if (has_released){
-        for(int i=0;i<9;i++){       //not optimised better do do double while to make it stop cleanly when match found in so it doesn't go through every cell
+    if (has_released){              // when first "refresh" of the mouseDrag setting the dragged candy to current
+        for(int i=0;i<9;i++){       
             for(int j=0;j<9;j++){
                 if(candy[i][j]->contains(mouseLoc)){
                     gm.set_moved_state(true);
@@ -305,17 +314,18 @@ void Canvas::mouseDrag(Point mouseLoc){
                 }
             }
         }
-    }else if(current->get_wall() || current->has_frosting()){
+    }else if(current->is_wall() || current->has_frosting()){        // not dragging wall or frosting
         return;
     }else{
-        if (abs(mouseLoc.x - curr_pos.x) > abs(mouseLoc.y - curr_pos.y)){
+        if (abs(mouseLoc.x - curr_pos.x) > abs(mouseLoc.y - curr_pos.y)){       // mouse is further on left or right so the current item snaps to 
+                                                                                // the horizontal line following the mouse
             if (abs(mouseLoc.x - curr_pos.x) <= 50){
-                current->setCenter({mouseLoc.x, curr_pos.y});
-            }else{
-                current->setCenter({curr_pos.x+50*((mouseLoc.x - curr_pos.x)/abs(mouseLoc.x - curr_pos.x)), curr_pos.y});
+                current->setCenter({mouseLoc.x, curr_pos.y});   // follows the mouse if not further than the neigbhour
+
+            }else{                                              // doesn't go further than neighbour                                                       
                 current->setCenter({curr_pos.x+50*((mouseLoc.x - curr_pos.x)/abs(mouseLoc.x - curr_pos.x)), curr_pos.y});
             }
-        }else{
+        }else{                                                  // same logice as above applies
             if (abs(mouseLoc.y - curr_pos.y) <= 50){
                 current->setCenter({curr_pos.x, mouseLoc.y});
             }else{
@@ -331,7 +341,6 @@ void Canvas::mouseRelease(Point mouseLoc){
         return;
     }
 
-    // not proper OOP but will work for now
     timer=0;
     can_vibrate = false;
     has_released = true;
@@ -341,20 +350,20 @@ void Canvas::mouseRelease(Point mouseLoc){
         return;
     }
 
-    if (current->has_frosting() || current->get_wall()){
+    if (current->has_frosting() || current->is_wall()){
         return;
     }
 
     for(int i=0;i<9;i++){
-        for(int j=0;j<9;j++){
+        for(int j=0;j<9;j++){       // checks for item under the mouse at the time of release
 
-            if (candy[i][j]->contains(mouseLoc) && ! candy[i][j]->get_wall() && ! candy[i][j]->has_frosting() && current->verify_neighbours(candy[i][j])){
+            if (candy[i][j]->contains(mouseLoc) && ! candy[i][j]->is_wall() && ! candy[i][j]->has_frosting() && current->verify_neighbours(candy[i][j])){
                     has_moved = true;
                 if(current->is_special_candy() || candy[i][j]->is_special_candy() || current->is_ingredient() || candy[i][j]->is_ingredient()){
                     special_neigh(i,j);
                     return;
                 }else{
-                    if (gm.break_candies(x,y,i,j)){
+                    if (gm.break_candies(x,y,i,j)){     // swaps normal candies
                         set_the_neighbours();
                         current->start_fall_animation(candy[i][j]->getCenter());
                         candy[i][j]->start_fall_animation(current->getCenter());
@@ -368,9 +377,10 @@ void Canvas::mouseRelease(Point mouseLoc){
             
         }
     }
-     current=make_shared<Candy>();
-     x=0;
-     y=0;
+
+    current=make_shared<Candy>();
+    x=0;
+    y=0;
 }
 
 
@@ -390,11 +400,8 @@ bool Canvas::special_neigh(int i,int j){
         x=0;y=0;
         return true;
     }
-    
 
     return false;
-        
-    
     
 }
 

@@ -28,10 +28,10 @@ void Hint::set_up(shared_ptr<Item>** arr,bool& can_vib,bool& not_imp){
 
 void Hint::check_impossible(int i,int j,bool vibrate){
         Fl_Color save=candy[i][j]->getFillColor();
-        if(candy[i][j]->get_wall()){return;}
+        if(candy[i][j]->is_wall()){return;}
         if(candy[i][j]->is_ingredient()){return;}
         candy[i][j]->setFillColor(FL_WHITE); //Set it temp white(colorless) so the algo doesn't include this one when it's forshadowing this candy.
-        if(i+1<9 && !candy[i+1][j]->get_wall() && !candy[i+1][j]->is_ingredient()){
+        if(i+1<9 && !candy[i+1][j]->is_wall() && !candy[i+1][j]->is_ingredient()){
             if(forshadowing_over_9000(i+1,j,save,vibrate)){
                *not_impossible=true;
                if(vibrate){
@@ -41,7 +41,7 @@ void Hint::check_impossible(int i,int j,bool vibrate){
             }
         }
 
-        if(j+1<9 && !candy[i][j+1]->get_wall() && !candy[i][j+1]->is_ingredient()){
+        if(j+1<9 && !candy[i][j+1]->is_wall() && !candy[i][j+1]->is_ingredient()){
              if(forshadowing_over_9000(i,j+1,save,vibrate)){
                 *not_impossible=true;
                  if(vibrate){
@@ -51,7 +51,7 @@ void Hint::check_impossible(int i,int j,bool vibrate){
              }
         }
 
-        if(i-1>=0 && !candy[i-1][j]->get_wall() && !candy[i-1][j]->is_ingredient()){
+        if(i-1>=0 && !candy[i-1][j]->is_wall() && !candy[i-1][j]->is_ingredient()){
             if(forshadowing_over_9000(i-1,j,save,vibrate)){
                *not_impossible=true;
                 if(vibrate){
@@ -61,7 +61,7 @@ void Hint::check_impossible(int i,int j,bool vibrate){
             }
         }
 
-        if(j-1>=0 && !candy[i][j-1]->get_wall() && !candy[i][j-1]->is_ingredient()){
+        if(j-1>=0 && !candy[i][j-1]->is_wall() && !candy[i][j-1]->is_ingredient()){
             if(forshadowing_over_9000(i,j-1,save,vibrate)){
                *not_impossible=true;
                 if(vibrate){
