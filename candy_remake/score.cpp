@@ -18,10 +18,15 @@ Score::Score(int score=0):current_score(score){
 }
 
 void Score::set_score(int new_score){
+
     current_score+=new_score;
         if(best_score<=current_score){ //If the current score is better than the best score than we update the best_score
             best_score=current_score;
         }
+    ifstream myfile(score_file);                           
+    while(myfile>>best_score){                                          
+    }
+    myfile.close();
 }
 
 int Score::get_score(){return current_score;}
@@ -29,7 +34,7 @@ int Score::get_best_score(){return best_score;}
 
 void Score::set_best_score(int score){
     fstream file(score_file, ios::out);
-    file.put(score);
+    file<<(to_string(score));
     file.close();
 }
 

@@ -13,6 +13,7 @@ using namespace std;
 #define SCORE_H_
 
 class Score{
+    // in order to update the best score you have to restart the program
     int current_score=0;
     int best_score=0; 
 public:

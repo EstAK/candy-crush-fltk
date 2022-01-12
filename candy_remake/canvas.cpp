@@ -145,7 +145,10 @@ void Canvas::draw(){
             if(game_obj.constant_check()){ //Always checks if the obj has been completed
                  game_obj=Objective(); //New obj
                  if(next_level<4){
-                      next_level++;
+                    next_level++;
+                    if (candy_score.get_score()>candy_score.get_best_score()){
+                        candy_score.set_best_score(candy_score.get_score());
+                    }
                       make_board(maps[next_level]);
                  }else{
                     if (candy_score.get_score()>candy_score.get_best_score()){

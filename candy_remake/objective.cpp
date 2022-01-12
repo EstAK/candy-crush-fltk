@@ -83,8 +83,6 @@ void Objective::mv_done(int nr,int nr_of_candies,Fl_Color candy_color=FL_WHITE){
          objCompleted();
      }else if(selected_obj=="Break->x->candies->color"){
           if(to_string(candy_color)==condition){
-
-
               number_to_break-=nr_of_candies;
               cout<<number_to_break<<" candies left to break of color "<<color_to_print<<" left"<<endl;
               objCompleted();

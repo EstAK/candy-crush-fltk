@@ -22,10 +22,10 @@
 using namespace std;
 
 class Canvas{
-   int next_level=0;
-   bool has_moved=false;
-   shared_ptr<Item>**candy=new shared_ptr<Item>*[9]();
-   vector<string> lines;
+    int next_level=0;
+    bool has_moved=false;
+    shared_ptr<Item>**candy=new shared_ptr<Item>*[9]();
+    vector<string> lines;
     shared_ptr<Item> current=make_shared<Item>(); //stocks the current cell clicked on. esteban: might cause an issue somewhere as base cas is now FL_BLACK
     int x=0;int y=0; //currents coord in the array
     Score candy_score{0}; //By default the score begins at 0
