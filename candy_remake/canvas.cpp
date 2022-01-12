@@ -41,13 +41,14 @@ Canvas::~Canvas(){
 
 void Canvas::make_board(string map){ //TODO: Finish it later.
         
+        has_moved = false;
+        gm.set_moved_state(has_moved);
+
         candy_score=Score(0);
         read_file(map);
         current_map=map;
         int fruits=0;
         bool gj=false;
-        
-        
         
         for (int x = 0; x<9; x++){
             for (int y = 0; y<9; y++){
@@ -56,7 +57,7 @@ void Canvas::make_board(string map){ //TODO: Finish it later.
                     candy[x][y]=make_shared<Candy>(Point{50*x+25,50*y+25},40,40,COLORS[rand()%6],FL_BLACK);
                 }
                 else if(lines[y][x]== *w){
-                    candy[x][y]=make_shared<Wall>(Point{50*x+25, 50*y+25}, 40, 40);
+                    candy[x][y]=make_shared<Wall>(Point{50*x+25, 50*y+25});
                 }
                 else if(lines[y][x]== *i){
                     candy[x][y]=make_shared<Ingredient>(Point{50*x+25, 50*y+25},20);
@@ -69,11 +70,11 @@ void Canvas::make_board(string map){ //TODO: Finish it later.
                     candy[x][y]=make_shared<Striped_candy>(Point{50*x+25, 50*y+25},40, 40,COLORS[rand()%6],FL_CYAN);
                     candy[x][y]->set_direction(horizontal);
                 }else if(lines[y][x] == 'w'){
-                    candy[x][y]=make_shared<Wrapped_candy>(Point{50*x+25, 50*y+25}, 40, 40);
+                    candy[x][y]=make_shared<Wrapped_candy>(Point{50*x+25, 50*y+25});
                 }else if(lines[y][x] == 'B'){
                     candy[x][y]=make_shared<Bomb_candy>(Point{50*x+25, 50*y+25}, 40, 40, FL_DARK_GREEN);
                 }else{
-                    candy[x][y]=make_shared<Edit_Candy>(Point{50*x+25, 50*y+25}, 40, 40);
+                    candy[x][y]=make_shared<Edit_Candy>(Point{50*x+25, 50*y+25});
                 }
             }
         }    
@@ -85,7 +86,6 @@ void Canvas::make_board(string map){ //TODO: Finish it later.
 }
 
 void Canvas::edit_level(){
-    cout<<"Yoo"<<endl;
     editing=true;
     make_board("edit_board.txt");
    
@@ -134,14 +134,6 @@ void Canvas::draw(){
             }
         } 
 
-        // for(int i=0;i<9;i++){
-        //     if(candy[i][8]->is_ingredient()){
-        //         game_obj.dec_fruits();
-        //         candy[i][8]->set_fruit(false);
-        //         candy[i][8]->setFillColor(FL_BLACK);
-        //     }
-        // }
-
         if(not_impossible){
             not_impossible=false;
 
@@ -149,14 +141,24 @@ void Canvas::draw(){
             make_board(current_map);
         }
 
-        if(game_obj.constant_check()){ //Always checks if the obj has been completed
-             game_obj=Objective(); //New obj
-             //TODO makeboard(next_map)
- 
-        }else if(!game_obj.constant_check() && game_obj.nr_tries()==0){
-            make_board(current_map);
-            game_obj=Objective();
-        } 
+        if (has_moved){
+            if(game_obj.constant_check()){ //Always checks if the obj has been completed
+                 game_obj=Objective(); //New obj
+                 if(next_level<4){
+                      next_level++;
+                      make_board(maps[next_level]);
+                 }else{
+                    if (candy_score.get_score()>candy_score.get_best_score()){
+                        candy_score.set_best_score(candy_score.get_score());
+                    }
+                    make_board(current_map);
+                 }
+     
+            }else if(!game_obj.constant_check() && game_obj.nr_tries()==0){
+                make_board(current_map);
+                game_obj=Objective();
+            }
+        }
 
         string obj=to_string(game_obj.nr_breaks());
         string tries=to_string(game_obj.nr_tries());
@@ -174,6 +176,15 @@ void Canvas::draw(){
         }else{          //restart the timer.
             timer=0;
             can_vibrate=true;
+
+            for(int i=0;i<9;i++){
+                if(candy[i][8]->is_ingredient() && !is_board_moving()){
+                    game_obj.dec_fruits();
+                    candy[i][8]->set_fruit(false);
+                    candy[i][8]=make_shared<Candy>(candy[i][8]->getCenter(),40,40,FL_BLACK);
+                    set_the_neighbours();
+                 }
+            }
         }
 
         for(int i=8;i>=0;i--){ //Checks if there is a free place that can be filled ; Takes into consideration the walls(phyics) as well.
@@ -194,7 +205,6 @@ void Canvas::draw(){
         }  
         gm.set_the_neighbours();
 
-        
 } 
 
 void Canvas::save_the_map(){
@@ -229,7 +239,6 @@ void Canvas::mouseMove(Point mouseLoc){
         for(int i=0;i<9;i++){
             for(int j=0;j<9;j++){
                 if(candy[i][j]->contains(mouseLoc)){
-                    //cout<<"here "<<i<<" "<<j<<endl;
                     candy[i][j]->setFrameColor(FL_RED);
                 }else{
                     if (candy[i][j]->has_frosting()){
@@ -252,9 +261,9 @@ void Canvas::mouseClick(Point mouseLoc){
                         candy[i][j]->inc_box();
                     }else{
                        if(candy[i][j]->current_box()==4){
-                            candy[i][j]=make_shared<Wall>(candy[i][j]->getCenter(),40,40);
+                            candy[i][j]=make_shared<Wall>(candy[i][j]->getCenter());
                         }else if(candy[i][j]->get_wall()){
-                            candy[i][j]=make_shared<Ingredient>(candy[i][j]->getCenter(),20);
+                            candy[i][j]=make_shared<Ingredient>(candy[i][j]->getCenter());
                         }
                     candy[i][j]->set_box_type(boxes[candy[i][j]->current_box()]);
                     candy[i][j]->inc_box();
@@ -281,7 +290,6 @@ void Canvas::mouseDrag(Point mouseLoc){
         for(int i=0;i<9;i++){       //not optimised better do do double while to make it stop cleanly when match found in so it doesn't go through every cell
             for(int j=0;j<9;j++){
                 if(candy[i][j]->contains(mouseLoc)){
-                    has_moved = true;
                     gm.set_moved_state(true);
                     current = candy[i][j];
                     curr_pos = current->getCenter();
@@ -338,8 +346,8 @@ void Canvas::mouseRelease(Point mouseLoc){
         for(int j=0;j<9;j++){
 
             if (candy[i][j]->contains(mouseLoc) && ! candy[i][j]->get_wall() && ! candy[i][j]->has_frosting() && current->verify_neighbours(candy[i][j])){
+                    has_moved = true;
                 if(current->is_special_candy() || candy[i][j]->is_special_candy() || current->is_ingredient() || candy[i][j]->is_ingredient()){
-                    cout<<"inside dat thing"<<endl;
                     special_neigh(i,j);
                     return;
                 }else{

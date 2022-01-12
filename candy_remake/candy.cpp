@@ -105,7 +105,6 @@ bool Candy::is_fall_complete(){
 
 void Candy::set_layers_of_frosting(int new_layers){
     layers = new_layers;
-    cout<<this->get_layers_of_frosting()<<endl;
 }
 
 int Candy::get_layers_of_frosting(){
@@ -192,11 +191,8 @@ void Ingredient::start_fall_animation(Point dest, bool gb){
 }
 
 bool Ingredient::verify_neighbours(shared_ptr<Item> current){
-    cout<<"verifying neighbours"<<endl;
     for(auto i: neighbours){
-        cout<<"neigh"<<endl;
         if (current->getCenter() == i->getCenter()){
-            cout<<"is a neighbour"<<endl;
             return true;
         }
     }

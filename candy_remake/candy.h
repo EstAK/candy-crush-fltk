@@ -76,7 +76,7 @@ class Candy:public Item, public Rectangle{
 public:
     
     Candy(){} //Dummy Constructor
-    Candy(Point center, int w, int h,Fl_Color fillColor = FL_WHITE, Fl_Color frameColor = FL_BLACK, Fl_Boxtype=FL_FLAT_BOX);
+    Candy(Point center, int w=squareLenght, int h=squareLenght,Fl_Color fillColor = FL_WHITE, Fl_Color frameColor = FL_BLACK, Fl_Boxtype=FL_FLAT_BOX);
 
     
     // polymorphism of rectangle methods
@@ -130,7 +130,7 @@ class Special_candy: public Candy{
 
 public:
     Special_candy(){}
-    Special_candy(Point, int, int, Fl_Color=FL_MAGENTA, Fl_Color=FL_BLACK, Fl_Boxtype=FL_DIAMOND_BOX);
+    Special_candy(Point, int=squareLenght, int=squareLenght, Fl_Color=FL_MAGENTA, Fl_Color=FL_BLACK, Fl_Boxtype=FL_DIAMOND_BOX);
 
     bool is_special_candy(){return true;}
 };
@@ -152,7 +152,7 @@ class Wrapped_candy: public Special_candy{
 
 public:
     Wrapped_candy(){}
-    Wrapped_candy(Point, int, int, Fl_Color=FL_MAGENTA, Fl_Color=FL_BLACK, Fl_Boxtype=FL_PLASTIC_UP_BOX);
+    Wrapped_candy(Point, int=squareLenght, int=squareLenght, Fl_Color=FL_MAGENTA, Fl_Color=FL_BLACK, Fl_Boxtype=FL_PLASTIC_UP_BOX);
 
     bool is_wrapped(){return true;}
 };
@@ -161,7 +161,7 @@ class Bomb_candy: public Special_candy{
     Fl_Color color_to_break = FL_BLACK;
 public:
     Bomb_candy(){}
-    Bomb_candy(Point, int, int, Fl_Color=FL_DARK_GREEN, Fl_Color=FL_BLACK, Fl_Boxtype=FL_ROUNDED_BOX);
+    Bomb_candy(Point, int=squareLenght, int=squareLenght, Fl_Color=FL_DARK_GREEN, Fl_Color=FL_BLACK, Fl_Boxtype=FL_ROUNDED_BOX);
 
     void set_color_to_break(Fl_Color);
     Fl_Color get_color_to_break();
@@ -172,7 +172,7 @@ public:
 class Wall:public Item, public Rectangle{
 public:
     Wall(){}
-    Wall(Point, int, int, Fl_Color=FL_MAGENTA, Fl_Color=FL_BLACK);
+    Wall(Point, int=squareLenght, int=squareLenght, Fl_Color=GRAY, Fl_Color=FL_BLACK);
 
     // rectangle polymorhism
     Point getCenter(){return Rectangle::getCenter();}
@@ -194,7 +194,7 @@ class Ingredient:public Item, public Circle{
     Animation_fall<Circle>* animation_fall = nullptr;
 public:
     Ingredient(){}
-    Ingredient(Point, int, Fl_Color=FL_DARK_RED, Fl_Color=FL_BLACK);
+    Ingredient(Point, int=circleRadius, Fl_Color=FL_DARK_RED, Fl_Color=FL_BLACK);
 
     Point getCenter(){return Circle::getCenter();}
     bool contains(Point p){return Circle::contains(p);}

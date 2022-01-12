@@ -8,6 +8,7 @@
 #include <string>
 #include <iostream>
 #include <array>
+#include "const.h"
 #include"rectangle.h"
 #include<unistd.h>
 
@@ -45,11 +46,12 @@ void Rectangle::setHeight(int newh){
 
 void Rectangle::setCode(Fl_Color code){
    if(code==216){setFillColor(FL_BLUE);}
-      else if(code==140){setFillColor(FL_DARK_CYAN);}
+      else if(code==4288230144){setFillColor(ORANGE);}
       else if(code==56){setFillColor(FL_BLACK);}
       else if(code==95){setFillColor(FL_YELLOW);}
       else if(code==88){setFillColor(FL_RED);}
-      else if(code==63){setFillColor(FL_GREEN);}
+      else if(code==10027008){setFillColor(GREEN);}
+      else if(code==1711328256){setFillColor(PURPLE);}
 }
 
 void Rectangle::draw(){

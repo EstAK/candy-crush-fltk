@@ -27,6 +27,7 @@ public:
     int get_score();
     int get_best_score();
 
+    void set_best_score(int);
 };
 
 class Score_board {
@@ -37,7 +38,6 @@ public:
     Score_board(int, int , int , int);
     void read_score_file();                                         
     ~Score_board(){
-        cout<<"refreshing scores"<<endl;
     }
 };
 
