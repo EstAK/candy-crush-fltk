@@ -47,13 +47,14 @@ void Rectangle::setHeight(int newh){
 }
 
 void Rectangle::setCode(Fl_Color code){
+    //Method used to change colors between candies when 1 movement is done.
    if(code==216){setFillColor(FL_BLUE);}
-      else if(code==4288230144){setFillColor(ORANGE);}
+      else if(code==ORANGE_INT){setFillColor(ORANGE);}
       else if(code==56){setFillColor(FL_BLACK);}
       else if(code==95){setFillColor(FL_YELLOW);}
       else if(code==88){setFillColor(FL_RED);}
-      else if(code==10027008){setFillColor(GREEN);}
-      else if(code==1711328256){setFillColor(PURPLE);}
+      else if(code==GREEN_INT){setFillColor(GREEN);}
+      else if(code==PURPLE_INT){setFillColor(PURPLE);}
 }
 
 void Rectangle::draw(){
@@ -89,5 +90,6 @@ void Rectangle::set_box_type(Fl_Boxtype box){
 }
 
 Fl_Boxtype Rectangle::get_box_type(){
+    //Method used for the editing part of the game.
     return type;
 }

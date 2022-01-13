@@ -11,6 +11,7 @@
 #include"canvas.h"
 #include"GameManager.h"
 #include"hint.h"
+#include<cstring>
 
 using namespace std;
 
@@ -33,41 +34,40 @@ void Canvas::make_board(string map){
         
         has_moved = false;
         gm.set_moved_state(has_moved);
-
+        
         candy_score=Score(0);
         read_file(map);
         current_map=map;
         int fruits=0;
         bool is_fruit_level=false;
-        
         for (int x = 0; x<9; x++){          // makes board array based on the selected file level
             for (int y = 0; y<9; y++){
-                if (lines[y][x] == *c){
+                if (lines[y][x] == *c){ // If line = C then makes a candy with a random color.
                     candy[x][y]=make_shared<Candy>(Point{itemDistance*x+itemDistance/2,itemDistance*y+itemDistance/2},squareLenght,squareLenght,COLORS[rand()%6],FL_BLACK);
                 }
-                else if(lines[y][x]== *w){
+                else if(lines[y][x]== *w){ //If line= W then makes a wall candy
                     candy[x][y]=make_shared<Wall>(Point{itemDistance*x+itemDistance/2, itemDistance*y+itemDistance/2});
                 }
-                else if(lines[y][x]== *i){
+                else if(lines[y][x]== *i){ //If line = I then it makes a fruit.
                     candy[x][y]=make_shared<Ingredient>(Point{itemDistance*x+itemDistance/2, itemDistance*y+itemDistance/2},20);
                     fruits++;
                     is_fruit_level=true;
-                }else if(isdigit(lines[y][x])){
+                }else if(isdigit(lines[y][x])){  // If is a number (1..9) then it makes a frozen candy with(1..9) layers of frost.
                     candy[x][y]=make_shared<Candy>(Point{itemDistance*x+itemDistance/2, itemDistance*y+itemDistance/2},squareLenght, squareLenght,COLORS[rand()%6],FL_CYAN);
                     candy[x][y]->set_layers_of_frosting(lines[y][x] - '0');
-                }else if(lines[y][x] == 'S'){
+                }else if(lines[y][x] == 'S'){  //stripped Candy
                     candy[x][y]=make_shared<Striped_candy>(Point{itemDistance*x+itemDistance/2, itemDistance*y+itemDistance/2},squareLenght, squareLenght,COLORS[rand()%6],FL_CYAN);
                     candy[x][y]->set_direction(horizontal);
-                }else if(lines[y][x] == 'w'){
+                }else if(lines[y][x] == 'w'){ //Wrapped candy
                     candy[x][y]=make_shared<Wrapped_candy>(Point{itemDistance*x+itemDistance/2, itemDistance*y+itemDistance/2});
-                }else if(lines[y][x] == 'B'){
+                }else if(lines[y][x] == 'B'){ //Bomb candy
                     candy[x][y]=make_shared<Bomb_candy>(Point{itemDistance*x+itemDistance/2, itemDistance*y+itemDistance/2}, squareLenght, squareLenght, FL_DARK_GREEN);
                 }else{
                     candy[x][y]=make_shared<Edit_Candy>(Point{itemDistance*x+itemDistance/2, itemDistance*y+itemDistance/2});
                 }
             }
         }    
-        if(is_fruit_level){
+        if(is_fruit_level){ //If fruits have been detected on the map then the objectif will be to make all the fruits fall of.
             game_obj.fruits_on(fruits);
         }else{
             game_obj=Objective();
@@ -110,7 +110,7 @@ void Canvas::draw(){
             }
         }
 
-        if(done){   
+        if(done){   //If all the white candies have been modified then the level will be saved.
             save_the_map();     
             editing=false;
             make_board(maps[0]);    // loads the map that the user made
@@ -385,7 +385,10 @@ void Canvas::mouseRelease(Point mouseLoc){
 
 
 bool Canvas::special_neigh(int i,int j){
-    
+    //Method that will make a changement between 2 special candies or 1 special candy with 1 normal candy.
+    //First the 2 candies will be changed and the it will be checked if the changement is possible by the method break_candies.
+    //If movement not possible break_candies will change them back like how they were.
+    //If movement is possible then the animations will start
     shared_ptr<Item> save2=candy[x][y];
     Point save=Point{current->getCenter().x,current->getCenter().y};
     current->setCenter(Point{candy[i][j]->getCenter().x,candy[i][j]->getCenter().y});
@@ -406,6 +409,8 @@ bool Canvas::special_neigh(int i,int j){
 }
 
 void Canvas::set_the_neighbours(){
+    //Set up the neigh of each candy in a vector.
+    //Used to make the changement between candies.
     for(int i=0;i<9;i++){
         for(int j=0;j<9;j++){
             if(i+1<9) candy[i][j]->set_neigh(candy[i+1][j]);
@@ -417,6 +422,8 @@ void Canvas::set_the_neighbours(){
 }
 
 bool Canvas::is_board_moving(){
+    //Method is used to check if an animation of fall_candies is happening.
+    //If true then the player can't make a movement untill the animation is over.
     for (int x = 0;x<9;x++){
         for (int y = 0;y<9;y++){
             if (not candy[x][y]->is_fall_complete()){

@@ -13,13 +13,13 @@
 using namespace std;
 
 
-Score::Score(int score=0):current_score(score){
+Score::Score(int score=0):current_score(score){ //Init score at 0.
 
 }
 
 void Score::set_score(int new_score){
-
-    current_score+=new_score;
+    //Updates score after candies have been destroyed.
+    current_score+=new_score;  
         if(best_score<=current_score){ //If the current score is better than the best score than we update the best_score
             best_score=current_score;
         }
@@ -39,7 +39,7 @@ void Score::set_best_score(int score){
 }
 
 Score_board::Score_board(int posx, int posy, int height, int width){
-        read_score_file();
+        read_score_file(); //Reads bestScore from the txt file.
         pt=letsgo.c_str(); //Now it works.
         Fl_Box* box_window = new Widget_wrapper<Fl_Box>(posx, posy, height, width,pt); //Try to make it a pointer rather than auto bcs bad use i think.
     }
