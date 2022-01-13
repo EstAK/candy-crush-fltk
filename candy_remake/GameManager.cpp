@@ -459,8 +459,11 @@ void GameManager::break_row(int x, int y){
             }else if(candy[i][y]->has_frosting()){
                 candy[i][y]->set_layers_of_frosting(candy[i][y]->get_layers_of_frosting()-1);
                 protect = true;
+            }else{
+                game_obj->mv_done(0,1,candy[i][y]->getFillColor());
             }
             if (!protect){
+                
                 candy[i][y]->setFillColor(FL_BLACK);
                 candy[i][y]->update_frosted_neighbours();
                 candy[i][y]->start_pop_animation();
@@ -485,6 +488,8 @@ void GameManager::break_row(int x, int y){
             }else if(candy[i][y]->has_frosting()){
                 candy[i][y]->set_layers_of_frosting(candy[i][y]->get_layers_of_frosting()-1);
                 protect = true;
+            }else{
+                game_obj->mv_done(0,1,candy[i][y]->getFillColor());
             }
 
             if (!protect){
@@ -517,6 +522,8 @@ void GameManager::break_column(int x, int y){
             }else if(candy[x][i]->has_frosting()){
                 candy[x][i]->set_layers_of_frosting(candy[x][i]->get_layers_of_frosting()-1);
                 protect = true;
+            }else{
+                game_obj->mv_done(0,1,candy[x][i]->getFillColor());
             }
             if (!protect){      // if no frosting or ingredient
                 candy[x][i]->setFillColor(FL_BLACK);
@@ -551,6 +558,8 @@ void GameManager::break_column(int x, int y){
                 candy[x][i]->update_frosted_neighbours();
                 candy[x][i]->start_pop_animation();
                 protect = false;
+            }else{
+                game_obj->mv_done(0,1,candy[x][i]->getFillColor());
             }
         }else{
             break;
@@ -592,6 +601,7 @@ void GameManager::break_wrapped(int x, int y, int blast_range){     // breaks ne
 
 void GameManager::break_bomb(int x, int y){     // breaks every candy of color to break
     cout<<"Boom"<<endl;
+    int nr=0;
     for(int i=0;i<9;i++){
         for(int j=0;j<9;j++){
             if (candy[i][j]->getFillColor() == candy[x][y]->get_color_to_break()){
@@ -600,12 +610,14 @@ void GameManager::break_bomb(int x, int y){     // breaks every candy of color t
                 }else if(candy[i][j]->is_wrapped()){
                     break_wrapped(i, j);
                 }else{
+                    nr++;
                     candy[i][j]->setFillColor(FL_BLACK);
                     candy[i][j]->update_frosted_neighbours();
                 }
             }
         }
     }
+    game_obj->mv_done(1,nr,candy[x][y]->get_color_to_break());
     candy[x][y] = make_shared<Candy>(candy[x][y]->getCenter());
     candy[x][y]->update_frosted_neighbours();
 }

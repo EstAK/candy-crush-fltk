@@ -183,7 +183,10 @@ void Canvas::draw(){
             timer=0;
             can_vibrate=true;
 
-            for(int i=0;i<9;i++){       //hints the player a possible move 
+           
+        }
+
+         for(int i=0;i<9;i++){       //hints the player a possible move 
                 if(candy[i][8]->is_ingredient() && !is_board_moving()){
                     game_obj.dec_fruits();
                     candy[i][8]->set_fruit(false);
@@ -191,7 +194,6 @@ void Canvas::draw(){
                     set_the_neighbours();
                 }
             }
-        }
 
         for(int i=8;i>=0;i--){ //Checks if there is a free place that can be filled ; Takes into consideration the walls(phyics) as well.
             for(int j=8;j>=0;j--){

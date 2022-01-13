@@ -22,10 +22,10 @@ enum INDEX_COLORS{
 #define GREEN fl_rgb_color(0,153,0)
 #define GRAY fl_rgb_color(160,160,160)
 
-const unsigned int PURPLE_INT=PURPLE;
-const unsigned int ORANGE_INT=ORANGE;
-const unsigned int GREEN_INT=GREEN;
-const unsigned int GRAY_INT=GRAY;
+const int PURPLE_INT=PURPLE;
+const int ORANGE_INT=ORANGE;
+const int GREEN_INT=GREEN;
+const int GRAY_INT=GRAY;
 
 
 const Fl_Color COLORS[6]={FL_RED,FL_BLUE,FL_YELLOW,ORANGE,GREEN, PURPLE};
