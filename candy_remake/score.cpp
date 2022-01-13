@@ -46,7 +46,7 @@ void Score::set_best_score(int score){
 Score_board::Score_board(int posx, int posy, int height, int width){
         read_score_file(); //Reads bestScore from the txt file.
         pt=letsgo.c_str(); //Now it works.
-        Fl_Box* box_window = new Widget_wrapper<Fl_Box>(posx, posy, height, width,pt); //Try to make it a pointer rather than auto bcs bad use i think.
+        Fl_Box* box_window = new Widget_wrapper<Fl_Box>(posx, posy, height, width,pt);
     }
 
 void Score_board::read_score_file(){
