@@ -30,8 +30,9 @@ void Hint::check_impossible(int i,int j,bool vibrate){
         Fl_Color save=candy[i][j]->getFillColor();
         if(candy[i][j]->is_wall()){return;}
         if(candy[i][j]->is_ingredient()){return;}
+        if(candy[i][j]->has_frosting()){return;}
         candy[i][j]->setFillColor(FL_WHITE); //Set it temp white(colorless) so the algo doesn't include this one when it's forshadowing this candy.
-        if(i+1<9 && !candy[i+1][j]->is_wall() && !candy[i+1][j]->is_ingredient()){
+        if(i+1<9 && !candy[i+1][j]->is_wall() && !candy[i+1][j]->is_ingredient() && !candy[i+1][j]->has_frosting()){
             if(forshadowing_over_9000(i+1,j,save,vibrate)){
                *not_impossible=true;
                if(vibrate){
@@ -41,7 +42,7 @@ void Hint::check_impossible(int i,int j,bool vibrate){
             }
         }
 
-        if(j+1<9 && !candy[i][j+1]->is_wall() && !candy[i][j+1]->is_ingredient()){
+        if(j+1<9 && !candy[i][j+1]->is_wall() && !candy[i][j+1]->is_ingredient() && !candy[i][j+1]->has_frosting()){
              if(forshadowing_over_9000(i,j+1,save,vibrate)){
                 *not_impossible=true;
                  if(vibrate){
@@ -51,7 +52,7 @@ void Hint::check_impossible(int i,int j,bool vibrate){
              }
         }
 
-        if(i-1>=0 && !candy[i-1][j]->is_wall() && !candy[i-1][j]->is_ingredient()){
+        if(i-1>=0 && !candy[i-1][j]->is_wall() && !candy[i-1][j]->is_ingredient() && !candy[i-1][j]->has_frosting()){
             if(forshadowing_over_9000(i-1,j,save,vibrate)){
                *not_impossible=true;
                 if(vibrate){
@@ -61,7 +62,7 @@ void Hint::check_impossible(int i,int j,bool vibrate){
             }
         }
 
-        if(j-1>=0 && !candy[i][j-1]->is_wall() && !candy[i][j-1]->is_ingredient()){
+        if(j-1>=0 && !candy[i][j-1]->is_wall() && !candy[i][j-1]->is_ingredient() && !candy[i][j-1]->has_frosting()){
             if(forshadowing_over_9000(i,j-1,save,vibrate)){
                *not_impossible=true;
                 if(vibrate){
@@ -74,15 +75,14 @@ void Hint::check_impossible(int i,int j,bool vibrate){
         candy[i][j]->setCode(save); //Sets the color back.
 }
 
-bool Hint::forshadowing_over_9000(int x,int y,Fl_Color color,bool vibrate){ //Vlad: just change it's name later.... IT'S OVER 9000!!!
-       //Vlad: Prototype method; I will change break_candies in order to work with this as well when i will have the mood -_-
+bool Hint::forshadowing_over_9000(int x,int y,Fl_Color color,bool vibrate){     // unlimited cpu usage because it's over 9000
        shared_ptr<Item> temp_candy=candy[x][y];
        Fl_Color save=candy[x][y]->getFillColor(); 
        temp_candy->setCode(color);
        int counter_left_right=1; 
        int counter_up_down=1;
         for(int i=x+1;i<9;i++){  //Counter the same candies on the right line of the same color; counter begins of 1
-            if(candy[i][y]->getFillColor()!=temp_candy->getFillColor() || candy[i][y]->is_ingredient()){
+            if(candy[i][y]->getFillColor()!=temp_candy->getFillColor() || candy[i][y]->is_ingredient() || candy[i][y]->has_frosting()){
                 break;
             }else{
                 counter_left_right+=1;
@@ -91,7 +91,7 @@ bool Hint::forshadowing_over_9000(int x,int y,Fl_Color color,bool vibrate){ //Vl
         
 
         for(int i=y+1;i<9;i++){  //Counts the candies under.
-            if(candy[x][i]->getFillColor()!=temp_candy->getFillColor() || candy[x][i]->is_ingredient()){
+            if(candy[x][i]->getFillColor()!=temp_candy->getFillColor() || candy[x][i]->is_ingredient() || candy[x][i]->has_frosting()){
                 break;
             }else{
                 counter_up_down+=1;
@@ -99,7 +99,7 @@ bool Hint::forshadowing_over_9000(int x,int y,Fl_Color color,bool vibrate){ //Vl
         }
   
         for(int i=y-1;i>=0;i--){  //Counts the candies upwards
-            if(candy[x][i]->getFillColor()!=temp_candy->getFillColor() || candy[x][i]->is_ingredient()){
+            if(candy[x][i]->getFillColor()!=temp_candy->getFillColor() || candy[x][i]->is_ingredient() || candy[x][i]->has_frosting()){
                 break;
             }else{
                 counter_up_down+=1;
@@ -107,7 +107,7 @@ bool Hint::forshadowing_over_9000(int x,int y,Fl_Color color,bool vibrate){ //Vl
         }
        
         for(int i=x-1;i>=0;i--){  //Left
-            if(candy[i][y]->getFillColor()!=temp_candy->getFillColor() || candy[i][y]->is_ingredient()){
+            if(candy[i][y]->getFillColor()!=temp_candy->getFillColor() || candy[i][y]->is_ingredient() || candy[i][y]->has_frosting()){
                 break;
             }else{
                 counter_left_right+=1;

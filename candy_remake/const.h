@@ -27,7 +27,7 @@ const int circleRadius=20;
 const int itemDistance=50;
 
 const double refreshPerSecond=60;
-const std::string maps[5]={"boards/board0.txt","boards/board1.txt","boards/board2.txt", "boards/board3.txt","boards/edited_level.txt"}; //[2] changed -> number of maps.
+const std::string maps[5]={"boards/board0.txt","boards/board1.txt","boards/board2.txt", "boards/board3.txt","boards/edited_level.txt"};
 const std::string score_file = "score_file.txt";
 const std::string edited_level = "boards/edited_level.txt";
 const char* const w = "W";

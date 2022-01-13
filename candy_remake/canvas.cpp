@@ -40,7 +40,7 @@ void Canvas::make_board(string map){
         int fruits=0;
         bool is_fruit_level=false;
         
-        for (int x = 0; x<9; x++){          // makes board array
+        for (int x = 0; x<9; x++){          // makes board array based on the selected file level
             for (int y = 0; y<9; y++){
                 if (lines[y][x] == *c){
                     candy[x][y]=make_shared<Candy>(Point{itemDistance*x+itemDistance/2,itemDistance*y+itemDistance/2},squareLenght,squareLenght,COLORS[rand()%6],FL_BLACK);
@@ -192,12 +192,12 @@ void Canvas::draw(){
             for(int j=8;j>=0;j--){
                 if(!candy[i][j]->is_special_candy() && !candy[i][j]->is_ingredient() && candy[i][j]->getFillColor() == FL_BLACK){
                     if (not is_board_moving()){
-                        gm.fall_candies(i,j,has_moved);
-                        timer=0; //reset the timer.
+                        gm.fall_candies(i,j,has_moved);     // removes everything that is black
+                        timer=0;        //reset the timer.
                     }else{
                         break;
                     }
-                    can_vibrate=false; //reset the vibrate;
+                    can_vibrate=false;  //reset the vibrate;
                 }
             }
             if (is_board_moving()){     // candies do not fall when the board is moving 
@@ -227,7 +227,7 @@ void Canvas::save_the_map(){
                l[j]='B';
             }else if(candy[j][i]->get_box_type()==FL_PLASTIC_UP_BOX){   // bomb
                l[j]='w';
-            }else if(candy[j][i]->is_ingredient()){   // ingredient
+            }else if(candy[j][i]->is_ingredient()){                     // ingredient
                l[j]='I';
             }
         }
@@ -290,11 +290,11 @@ void Canvas::mouseClick(Point mouseLoc){
 void Canvas::mouseDrag(Point mouseLoc){
     // drags the candy that can be dragged
 
-    if(editing){            // doesn't work when using level editor
+    if(editing){                    // doesn't work when using level editor
         return;
     }
 
-    if(is_board_moving()){  // same as above but when the board is moving
+    if(is_board_moving()){          // same as above but when the board is moving
         return;
     }
 

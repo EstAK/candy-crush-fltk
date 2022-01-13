@@ -12,6 +12,8 @@
 #include"rectangle.h"
 #include<unistd.h>
 
+// copy pasted from the TP
+
 using namespace std;
 
 Rectangle::Rectangle(Point center,int w, int h,Fl_Color fillColor=FL_WHITE,Fl_Color frameColor=FL_BLACK, Fl_Boxtype type=FL_FLAT_BOX): center(center),w(w),h(h),fillColor(fillColor),frameColor(frameColor), type(type) {}
