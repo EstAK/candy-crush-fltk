@@ -1,3 +1,8 @@
+/*
+name : candy crush
+author : Vlad Marian Moruntale & Aguililla Klein Esteban
+date : 13/01/22
+*/
 #include <FL/Fl.H>
 #include <FL/fl_draw.H>
 #include <FL/Fl_Double_Window.H>

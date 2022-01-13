@@ -1,3 +1,8 @@
+/*
+name : candy crush
+author : Vlad Marian Moruntale & Aguililla Klein Esteban
+date : 13/01/22
+*/
 #include <FL/Fl.H>
 #include <FL/fl_draw.H>
 #include <FL/Fl_Double_Window.H>
@@ -43,7 +48,7 @@ bool GameManager::break_candies(int x,int y,int i,int j,bool pc){
         // combos between special candies below
         if (candy[x][y]->is_striped() && candy[i][j]->is_striped()){        // double striped breaking in a cross pattern +
             candy[x][y] = make_shared<Candy>(candy[x][y]->getCenter());
-            
+
             candy[i][j]->set_direction(vertical);
             break_striped(i, j);
             candy[i][j] = make_shared<Striped_candy>(candy[i][j]->getCenter());

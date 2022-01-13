@@ -1,3 +1,8 @@
+/*
+name : candy crush
+author : Vlad Marian Moruntale & Aguililla Klein Esteban
+date : 13/01/22
+*/
 #include <iostream>
 
 #ifndef CONST_H_

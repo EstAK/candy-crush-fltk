@@ -1,3 +1,8 @@
+/*
+name : candy crush
+author : Vlad Marian Moruntale & Aguililla Klein Esteban
+date : 13/01/22
+*/
 #include <iostream>
 #include "wrapper.h"
 #include "score.h"
@@ -32,7 +37,7 @@ class MainWindow : public Fl_Window {
         return canva;
     }
 
-    MainWindow() : Fl_Window(500, 500, windowWidth, windowHeight, "Candy_Try") {
+    MainWindow() : Fl_Window(500, 500, windowWidth, windowHeight, "Surprise") {
         Fl::add_timeout(1.0/refreshPerSecond, Timer_CB, this);
     }
     void draw() override {
@@ -72,17 +77,18 @@ class Intro_Window : public Fl_Window{                                          
     int current_map=0; //int to know the pos in the maps
 
 public:
-    Intro_Window() : Fl_Window(500, 500, 500, 500, "Candy Try") {
-        Fl_Box* txt_display = new Widget_wrapper<Fl_Box>(70,70,300,100,"Esteban Matricule: 514341\nVlad Matricule: 515147\nCandy Try");
+    Intro_Window() : Fl_Window(500, 500, 500, 500, "Candy Glitch saga") {
+        Fl_Box* txt_display = new Widget_wrapper<Fl_Box>(70,70,300,100,"Esteban Matricule: 514341\nVlad Matricule: 515147\n\nCandy Glitch saga");
+        Fl_Box* branding = new Widget_wrapper<Fl_Box>(70,100,300,120,"@FLTK");
         Score_board* test_button = new Score_board(0,0,120,120);            //Esteban:instead of insisting with clmultihtreading I think drawing a Box would be smarter
                                                                             //Vlad: Roger Roger
         static Fl_Button* start_game = new Fl_Button(300,350,120,120,"Start The Game");     //Button to the the game.
         start_game->callback((Fl_Callback*)start_game_candy,this);     
 
-        static Fl_Button* prev = new Fl_Button(50,370,70,70,"Prev Map");  //Buttons for the prev map, next map and create map.
-        static Fl_Button* next = new Fl_Button(120,370,70,70,"Next Map");
-        static Fl_Button* create_map=new Fl_Button(70,280,80,80,"Create map");
-        
+        static Fl_Button* prev = new Fl_Button(50,370,70,70,"@<-");  //Buttons for the prev map, next map and create map.
+        static Fl_Button* next = new Fl_Button(120,370,70,70,"@->");
+        static Fl_Button* create_map=new Fl_Button(70,280,100,80,"Create map");
+
         prev->callback((Fl_Callback*)prev_map,this);
         next->callback((Fl_Callback*)next_map,this);
         create_map->callback((Fl_Callback*)create,this);
