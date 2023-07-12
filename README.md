@@ -1,5 +1,11 @@
-﻿# crispy-bassoon
-TODO:
-  VLAD MORUNTALE: 1,4,5
-  ESTEBAN: 2,3, 6
-# crispy-bassoon
+# Candy crush FLTK
+A school project about making Candy Crush in C++ using the fltk library
+# Dependencies
+- fltk
+- make
+# How to run 
+```
+cd candy_remake
+make
+./candy
+```
